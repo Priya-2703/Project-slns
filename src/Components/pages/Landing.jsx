@@ -84,7 +84,9 @@ const Landing = () => {
         </div>
 
         {/* scroll saree */}
-        <div className="overflow-hidden grid grid-cols-1 py-4 bg-black">
+        <div className="overflow-hidden relative grid grid-cols-1 py-4 bg-black">
+          <span className="bg-black w-full h-32 rounded-[50%] top-[-30px] absolute z-30">
+          </span>
           <div className="flex justify-center items-center gap-4 card-wrapper">
             {images.map((item, index) => {
               return (
@@ -95,12 +97,14 @@ const Landing = () => {
                   <img
                     src={item.img}
                     alt={item.saree}
-                    className="object-cover w-[300px] h-[400px]"
+                    className="object-cover w-[300px] h-[500px] object-center"
                   />
                 </div>
               );
             })}
           </div>
+          <span className="bg-black w-full h-32 rounded-[50%] bottom-[-75px] absolute z-30">
+          </span>
         </div>
 
         {/* Elevating Your Style */}

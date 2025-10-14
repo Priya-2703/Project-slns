@@ -3,6 +3,7 @@ import "./Footer.css"
 import { assets } from "../../../public/assets/asset";
 import gsap from "gsap";
 import _ScrollTrigger from "gsap/ScrollTrigger";
+import { Link } from "react-router-dom";
 
 gsap.registerPlugin(_ScrollTrigger);
 
@@ -13,7 +14,7 @@ const Footer = () => {
   //logo animation
   gsap.fromTo(
       logoRef.current,
-      { scale: 0.3 },
+      { scale: 0.1 },
       {
         scale: 1,
         ease: "power2.out",
@@ -87,14 +88,14 @@ const Footer = () => {
             <div className="footer-links">
               <div className="footer-column">
                 <h4>Product</h4>
-                <a href="./">Home</a>
+                <Link to={"/"}><a >Home</a></Link>
                 <a href="./sort-by/all-products">Advisable</a>
                 <a href="./sort-by/churidars">Promotions</a>
               </div>
               <div className="footer-column">
                 <h4>Company</h4>
-                <a href="./contact">Contact</a>
-                <a href="./faq">FAQ</a>
+                <Link to={"/contact"}><a>Contact</a></Link>
+                <Link to={"/faq"}><a >FAQ</a></Link>
               </div>
               <div className="footer-column">
                 <h4>Legal</h4>

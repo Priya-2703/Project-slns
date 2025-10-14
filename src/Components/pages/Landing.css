@@ -147,7 +147,7 @@
 
 .review {
   position: absolute;
-  left: max(calc(290px * 4));
+  left: max(calc(340px * 4));
   animation: scroll-left;
   animation-duration: 20s;
   animation-timing-function: linear;
