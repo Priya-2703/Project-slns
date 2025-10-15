@@ -39,6 +39,7 @@ const ContactForm = () => {
               onChange={handleChange}
               placeholder="Jane Smith"
               className="form-input"
+              required
             />
           </div>
 
@@ -52,6 +53,7 @@ const ContactForm = () => {
               onChange={handleChange}
               placeholder="jane@gmail.com"
               className="form-input"
+              required
             />
           </div>
 
@@ -64,6 +66,7 @@ const ContactForm = () => {
                 value={formData.location}
                 onChange={handleChange}
                 className="form-select"
+                required
               >
                 <option value="">Select...</option>
                 <option value="north-america">North America</option>

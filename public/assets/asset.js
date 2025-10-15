@@ -43,4 +43,9 @@ export const assets={
     box4,
     box5,
     poc1,
+import signup from "./signup.mp4"
+
+export const assets={
+    logo,
+    signup,
 }
