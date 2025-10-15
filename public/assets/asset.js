@@ -20,6 +20,7 @@ import poc1 from "./poc1.jpg"
 import trending from "./trending.mp4"
 import arrival from "./arrival.mp4"
 import review from "./review.mp4"
+import signup from "./signup.mp4"
 
 export const assets={
     logo,
@@ -43,9 +44,6 @@ export const assets={
     box4,
     box5,
     poc1,
-import signup from "./signup.mp4"
-
-export const assets={
-    logo,
     signup,
+
 }

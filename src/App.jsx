@@ -11,13 +11,11 @@ import Cart from "./Components/Cart/Cart";
 import ProductDetail from "./Components/Product/ProductDetail";
 import ProductReview from "./Components/Product/ProductReview";
 import ScrollToTop from "./Components/ScrollToTop";
-import ContactForm from './Components/ContactForm/ContactForm'
 import SignUp from './Components/SignUp/SignUp';
 import SignIn from './Components/SignIn/SignIn';
 import ForgotPassword from './Components/ForgotPassword/ForgotPassword';
 import B2bSignUp from './Components/B2bSignUp/B2bSignup';
 import B2bSignIn from './Components/B2bSignIn/B2bSignIn';
-function App() {
 
 function App() {
   return (
