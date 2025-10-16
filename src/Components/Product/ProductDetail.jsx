@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { assets } from "../../../public/assets/asset";
 import "./product.css";
 import {
@@ -6,9 +6,11 @@ import {
   MdKeyboardArrowRight,
   MdVerified,
 } from "react-icons/md";
-import { UserRoundCheck } from "lucide-react";
 import ProductSwiper from "./ProductSwiper";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+import UseFetchData from "../../Hooks/UseFetchData";
+import { FaArrowLeft } from "react-icons/fa";
+import { CartContext } from "../../Context/UseCartContext";
 
 const img = [`${assets.dhosti1}`, `${assets.dhosti2}`, `${assets.dhosti3}`];
 const images = [
@@ -55,6 +57,19 @@ const images = [
 ];
 
 const ProductDetail = () => {
+  const { data } = UseFetchData();
+  const [product, setProduct] = useState({});
+  const {cart,addToCart} = useContext(CartContext)
+  const { id } = useParams();
+
+  useEffect(() => {
+    if (data && data.length > 0) {
+      const productId = parseInt(id);
+      const foundProduct = data.find((item) => item.id === productId);
+      setProduct(foundProduct);
+    }
+  }, [data, id]);
+
   const [cur, setCur] = useState(0);
   const [openIndex, setOpenIndex] = useState(null);
   const [isZoomed, setIsZoomed] = useState(false);
@@ -103,6 +118,15 @@ const ProductDetail = () => {
   return (
     <>
       <div className="w-full bg-black mx-auto mt-16 py-20">
+        <Link
+          to={"/product"}
+          aria-label="Go to product details"
+          title="Go to Product"
+          className="group absolute top-[150px] left-[50px] z-20 inline-flex items-center justify-center rounded-full border border-neutral-700 bg-black p-2 text-gray-300 hover:text-white hover:border-gray-500 focus:outline-none backdrop-blur"
+        >
+          {/* Package/Box icon (SVG) */}
+          <FaArrowLeft className="transition-transform group-hover:-translate-y-0.5 text-white text-[18px]" />
+        </Link>
         <div className="w-[85%] mx-auto grid grid-cols-2 gap-7">
           {/* image */}
           <div className="flex sticky top-[40px] justify-center items-start px-2">
@@ -110,7 +134,7 @@ const ProductDetail = () => {
               {img.map((item, id) => (
                 <img
                   key={id}
-                  src={item}
+                  src={product.image}
                   alt="img"
                   className={`object-cover object-center min-w-full transition-all ease-out duration-500 ${
                     isZoomed ? "cursor-move" : "cursor-zoom-in"
@@ -166,26 +190,26 @@ const ProductDetail = () => {
           <div className="flex flex-col justify-start h-auto items-start px-20 py-3">
             <div className="flex justify-start items-start">
               <p className="text-white text-[12px] tracking-wide font2">
-                Dhoti & Shirt For Mens
+                {product.category}
               </p>
             </div>
             <div className="text-white mt-20">
-              <h1 className="font1 text-[35px]">
-                Men Matching Border Dhoti & Half Sleeves Shirt Set Green C36
-              </h1>
+              <h1 className="font1 text-[35px]">{product.name}</h1>
             </div>
             <div className="text-white mt-14">
               <h1 className="font2 border border-white tracking-wider p-2 text-[18px]">
-                FULL-STOCK
+                {product.stockStatus}
               </h1>
             </div>
             <div className="text-white my-5 border-t-[1px] border-t-white/10 border-b-[1px] border-b-white/10 flex justify-between items-center w-full py-5 px-1">
-              <p className="font2 text-[28px]">₹1,120.00</p>
+              <p className="font2 text-[28px]">₹{product.price}</p>
               <div className="flex justify-center items-center gap-3">
                 <p className="font-['Poppins'] line-through text-white/30 text-[14px]">
-                  ₹1,400
+                  ₹{product.actualPrice}
                 </p>
-                <p className="font-['Poppins']  text-[14px]">20%</p>
+                <p className="font-['Poppins']  text-[14px]">
+                  {product.discount}%
+                </p>
               </div>
             </div>
             <div className="flex flex-col gap-2">
@@ -221,33 +245,25 @@ const ProductDetail = () => {
               </div>
             </div>
             <div className="flex items-center mt-7 gap-1">
-              <div className="bg-white uppercase rounded-[4px] w-[60px] px-2 py-1 flex justify-center items-center font2 text-black text-[16px] hover:bg-white/80 transition-all duration-200 cursor-pointer">
-                S
-              </div>
-              <div className="bg-white uppercase rounded-[4px] w-[60px] px-2 py-1 flex justify-center items-center font2 text-black text-[16px] hover:bg-white/80 transition-all duration-200 cursor-pointer">
-                m
-              </div>
-              <div className="bg-white uppercase rounded-[4px] w-[60px] px-2 py-1 flex justify-center items-center font2 text-black text-[16px] hover:bg-white/80 transition-all duration-200 cursor-pointer">
-                l
-              </div>
-              <div className="bg-white uppercase rounded-[4px] w-[60px] px-2 py-1 flex justify-center items-center font2 text-black text-[16px] hover:bg-white/80 transition-all duration-200 cursor-pointer">
-                xl
-              </div>
-              <div className="bg-white uppercase rounded-[4px] w-[60px] px-2 py-1 flex justify-center items-center font2 text-black text-[16px] hover:bg-white/80 transition-all duration-200 cursor-pointer">
-                xxl
-              </div>
-              <div className="bg-white uppercase rounded-[4px] w-[60px] px-2 py-1 flex justify-center items-center font2 text-black text-[16px] hover:bg-white/80 transition-all duration-200 cursor-pointer">
-                xxxl
-              </div>
+              {product?.sizes?.map((size, id) => (
+                <div
+                  key={id}
+                  className="bg-white uppercase rounded-[4px] min-w-[60px] px-2 py-1 flex justify-center items-center font2 text-black text-[16px] hover:bg-white/80 transition-all duration-200 cursor-pointer"
+                >
+                  {size}
+                </div>
+              ))}
             </div>
 
             <div className="flex w-full flex-col py-8 mt-5 gap-3">
               <button className="text-[16px] text-black px-3 py-4 font2-bold rounded-[8px] w-full bg-white">
                 Purchase Now
               </button>
-              <button className="text-[16px] text-white px-3 py-4 font2-bold rounded-[8px] w-full bg-[#955E30]">
-                Add to Cart
-              </button>
+              <Link to={"/cart"}>
+                <button onClick={()=>addToCart(product)} className="text-[16px] text-white px-3 py-4 font2-bold rounded-[8px] w-full bg-[#955E30]">
+                  Add to Cart
+                </button>
+              </Link>
             </div>
 
             <div className="flex flex-col items-center px-2">
@@ -281,23 +297,18 @@ const ProductDetail = () => {
                 >
                   <div className="mt-2 pb-5">
                     <ul className="space-y-5 leading-normal text-[12px] font2 text-white">
-                      <li className="pl-2">Dhoti Border Design May Vary</li>
-                      <li className="pl-2">
-                        Ideal for weddings, festivals, or formal gatherings,
-                        this ensemble offers the perfect balance of heritage and
-                        modern style. The rich design and matching elements of
-                        the dhoti and shirt create a cohesive, visually striking
-                        outfit. Pair with traditional footwear like leather
-                        sandals or modern loafers, and you’re ready to turn
-                        heads at any cultural event or celebration. With this
-                        set, the modern man can express his appreciation for
-                        tradition while embracing a sharp, fashionable look.
-                      </li>
-                      <li className="pl-2">Wash Care</li>
-                      <li className="pl-2">Wash separately.</li>
+                      {/* <li className="pl-2">Dhoti Border Design May Vary</li> */}
+                      <li className="pl-2">{product.description}</li>
+                      {product?.washCare?.map((item, id) => (
+                        <li key={id} className="pl-2">
+                          {item}
+                        </li>
+                      ))}
+
+                      {/* <li className="pl-2">Wash separately.</li>
                       <li className="pl-2">Use white Colour detergents.</li>
                       <li className="pl-2">Gentle Wash.</li>
-                      <li className="pl-2">Don't use fabric bluing agents.</li>
+                      <li className="pl-2">Don't use fabric bluing agents.</li> */}
                     </ul>
                   </div>
                 </div>
@@ -332,13 +343,17 @@ const ProductDetail = () => {
                 >
                   <div className="mt-2 pb-5">
                     <ul className="space-y-5 leading-normal text-[12px] font2 text-white">
-                      <li className="pl-2">Material - Cotton</li>
-                      <li className="pl-2">Colour - Pink</li>
-                      <li className="pl-2">Fit - Prestigious Fit</li>
-                      <li className="pl-2">Sleeves - Half Sleeves</li>
-                      <li className="pl-2">Dhoti Size - 1.27 m X 2.00 m</li>
                       <li className="pl-2">
-                        Style - Matching Border Dhoti & Shirt Set
+                        Material - {product?.details?.Material}
+                      </li>
+                      <li className="pl-2">
+                        Colour - {product?.details?.Colour}
+                      </li>
+                      <li className="pl-2">
+                        Pattern - {product?.details?.Pattern}
+                      </li>
+                      <li className="pl-2">
+                        Occasion - {product?.details?.Occasion}
                       </li>
                     </ul>
                   </div>
@@ -512,10 +527,10 @@ const ProductDetail = () => {
               </div>
             </div>
           </div>
-          <Link to={'/product/product-review'}>
-              <button className="w-full py-2 bg-[#955E30] cursor-pointer text-[18px] text-white font2-bold mt-8 rounded-[5px]">
-                Write a Review for this Product
-              </button>
+          <Link to={"/product/product-review"}>
+            <button className="w-full py-2 bg-[#955E30] cursor-pointer text-[18px] text-white font2-bold mt-8 rounded-[5px]">
+              Write a Review for this Product
+            </button>
           </Link>
         </div>
 
@@ -604,7 +619,7 @@ const ProductDetail = () => {
               Curated Styles for Everyone
             </h1>
           </div>
-          <ProductSwiper/>
+          <ProductSwiper />
         </div>
       </div>
     </>
