@@ -16,6 +16,7 @@ import SignIn from './Components/SignIn/SignIn';
 import ForgotPassword from './Components/ForgotPassword/ForgotPassword';
 import B2bSignUp from './Components/B2bSignUp/B2bSignup';
 import B2bSignIn from './Components/B2bSignIn/B2bSignIn';
+import CheckOut from "./Components/CheckOut/CheckOut";
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
         <Route path="/signin" element={<SignIn />} />
         <Route path="/b2b-signin" element={<B2bSignIn />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/checkout" element={<CheckOut />} />
 
       </Routes>
       <Footer />
