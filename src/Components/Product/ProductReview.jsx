@@ -1,6 +1,6 @@
 // Review.jsx
 import { useState } from "react";
-import { IoArrowUndoCircle } from "react-icons/io5";
+import { FaArrowLeft } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 function ProductReview() {
@@ -24,13 +24,13 @@ function ProductReview() {
     <div className="min-h-screen bg-black text-gray-100 py-16 px-4 mt-16">
       {/* Top-left Icon -> Product Detail */}
       <Link
-        to={'/product/:id'}
-        aria-label="Go to product details"
+        to={'/product'}
+        aria-label="Go to product"
         title="Go to Product"
         className="group absolute top-[150px] left-[100px] z-20 inline-flex items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/70 p-2 text-gray-300 hover:text-white hover:border-gray-500 focus:outline-none backdrop-blur"
       >
         {/* Package/Box icon (SVG) */}
-        <IoArrowUndoCircle className="transition-transform group-hover:-translate-y-0.5 text-white text-[20px]" />
+        <FaArrowLeft className="transition-transform group-hover:-translate-y-0.5 text-white text-[20px]" />
       </Link>
       <h1 className="text-center text-4xl md:text-[30px] font-semibold tracking-wide py-5">
         RATINGS & REVIEWS
