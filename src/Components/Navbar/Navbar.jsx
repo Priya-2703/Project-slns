@@ -114,32 +114,30 @@ const Navbar = () => {
                       <FaHeart className="text-white/60 text-[14px]" /> Wishlist
                     </p>
                   </a>
-                  <a
-                    href="/"
+                  <Link to={"/signin"}
                     className="w-full bg-black/50 px-5 py-1.5 rounded-[10px]"
                   >
                     <p className="text-white/60 flex justify-center items-center gap-2 text-[14px]">
                       Sign In
                     </p>
-                  </a>
-                  <a
-                    href="/"
+                  </Link>
+                  <Link to={"/b2b-signin"}
                     className="w-full bg-black/50 px-5 py-1.5 rounded-[10px]"
                   >
                     <p className="text-white/60 flex justify-center items-center gap-2 text-[14px]">
                       <FaHeart className="text-white/60 text-[12px]" /> B 2 B{" "}
                     </p>
-                  </a>
-                  <span className="bg-white/50 w-full h-[1px] my-1"></span>
-                  <a
-                    href="/"
+                  </Link>
+                  <span className="bg-white/20 w-full h-[1px] my-1"></span>
+                  <Link
+                    to={"/"}
                     className="w-full bg-black/50 px-5 py-1.5 rounded-[10px]"
                   >
                     <p className="text-white/60 flex justify-center items-center gap-2 text-[14px]">
                       <FaCircleArrowLeft className="text-white/60 text-[15px]" />{" "}
                       Sign Out
                     </p>
-                  </a>
+                  </Link>
                 </div>
               </div>
             </span>

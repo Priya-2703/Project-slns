@@ -43,7 +43,7 @@ const Footer = () => {
             <div className="footer-brand">
               <div className="social-icons">
                 <a
-                  href="https://www.instagram.com/"
+                  href="https://www.instagram.com/sri_lakshmi_narayana_silk"
                   target="_blank"
                   className="social-icon"
                 >
@@ -70,7 +70,7 @@ const Footer = () => {
                   </svg>
                 </a>
                 <a
-                  href="https://youtube.com/"
+                  href="https://www.youtube.com/@srilakshminarayanasilk"
                   target="_blank"
                   className="social-icon"
                 >

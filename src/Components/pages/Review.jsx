@@ -32,22 +32,31 @@ const Review = () => {
   return (
     <>
       <div className="mx-auto py-16">
-        <div className="flex flex-col justify-center items-center  text-white mb-8">
-          <h1 className="text-[42px] py-3 font1 font-[200] uppercase relative leading-14 z-10">
-            CUSTOMERS FEEDBACK
-          </h1>
-          <p className="text-[16px] tracking-wide font2-medium uppercase py-4 z-10">
-            OVER 10.000+ SATISFIED CUSTOMERS
-          </p>
-          <video
-            src={assets.review}
-            loop
-            autoPlay
-            muted
-            playsInline
-            preload="auto"
-            className="absolute h-[200px] w-[800px] object-cover"
-          />
+        <div className="flex flex-col items-center text-white mb-8">
+          <div className="relative w-[800px] h-[200px] overflow-hidden flex flex-col justify-center items-center">
+            {/* Text on top */}
+            <h1 className="text-[42px] py-3 font1 font-[200] uppercase relative z-20 leading-14">
+              CUSTOMERS FEEDBACK
+            </h1>
+            <p className="text-[16px] tracking-wide font2-medium uppercase py-4 relative z-20">
+              OVER 10.000+ SATISFIED CUSTOMERS
+            </p>
+
+            {/* Video as background */}
+            <video
+              src={assets.review}
+              loop
+              autoPlay
+              muted
+              playsInline
+              preload="auto"
+              className="absolute inset-0 h-full w-full object-cover z-0"
+            />
+
+            {/* Feather overlays */}
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black to-transparent z-10" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black to-transparent z-10" />
+          </div>
         </div>
 
         <div className="flex justify-center items-center review-wrapper gap-4">
