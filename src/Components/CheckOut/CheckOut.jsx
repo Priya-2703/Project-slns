@@ -22,7 +22,7 @@ export default function CheckOut() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden mt-1 py-10">
 
       {/* Background Overlay */}
     

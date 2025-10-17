@@ -21,7 +21,7 @@ const About = () => {
 
   return (
     <>
-      <div ref={container} className="w-full mx-auto bg-black mt-28 py-5">
+      <div ref={container} className="w-full mx-auto bg-black mt-8 py-5">
         <div className="flex justify-center items-center">
           <h1 className="about-reveal text-[45px] py-3 font1 font-[200] uppercase text-white">
             About us

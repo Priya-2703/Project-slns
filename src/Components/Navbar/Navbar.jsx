@@ -8,12 +8,17 @@ import {
 import { FaHeart } from "react-icons/fa";
 import { assets } from "../../../public/assets/asset";
 import { FaCircleArrowLeft } from "react-icons/fa6";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { IoSearch } from "react-icons/io5";
+import { IoBusiness, IoSearch } from "react-icons/io5";
+import { CartContext } from "../../Context/UseCartContext";
+import { GoHeart } from "react-icons/go";
+import { WishlistContext } from "../../Context/UseWishListContext";
 
 const Navbar = () => {
-  const [productOpen, setProductOpen] = useState(false); // dropdown
+  // const [productOpen, setProductOpen] = useState(false); // dropdown
+  const { cart } = useContext(CartContext);
+  const { wishlist } = useContext(WishlistContext);
   const [showCard, setShowCard] = useState(false); // profile card
   const [menuOpen, setMenuOpen] = useState(false); // side menu
   const [search, setSearch] = useState(false); // side menu
@@ -54,7 +59,7 @@ const Navbar = () => {
 
   return (
     <>
-      <div className="fixed w-full top-0 mx-auto py-1 md:py-4 px-5 md:px-10 z-40">
+      <div className="w-full mx-auto py-1 md:py-4 px-5 md:px-10 z-50 bg-transparent">
         <div className="flex justify-between items-center md:px-6">
           <div>
             <img
@@ -66,24 +71,41 @@ const Navbar = () => {
           </div>
 
           <div className="flex justify-center items-center gap-8 md:gap-16">
-            <span>
-              <Search
-                onClick={() => setSearch((q) => !q)}
-                strokeWidth={1.5}
-                size={20}
-                color="#955E30"
-                className="nav-item"
-              />
-            </span>
+            <Link to={"/wishlist"}>
+              <div className="relative">
+                <span>
+                  <GoHeart
+                    // onClick={() => setSearch((q) => !q)}
+                    size={20}
+                    color="#955E30"
+                    className="nav-item"
+                  />
+                </span>
+                {/* 🔴 Notification Badge */}
+                {wishlist.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[8px] font-semibold rounded-full w-3 h-3 flex justify-center items-center">
+                    {wishlist.length}
+                  </span>
+                )}
+              </div>
+            </Link>
             <Link to={"/cart"}>
-              <span>
-                <ShoppingCart
-                  size={20}
-                  strokeWidth={1.5}
-                  color="#955E30"
-                  className="nav-item"
-                />
-              </span>
+              <div className="flex items-center relative gap-2">
+                <span>
+                  <ShoppingCart
+                    size={20}
+                    strokeWidth={1.5}
+                    color="#955E30"
+                    className="nav-item"
+                  />
+                </span>
+                {/* 🔴 Notification Badge */}
+                {cart.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[8px] font-semibold rounded-full w-3 h-3 flex justify-center items-center">
+                    {cart.length}
+                  </span>
+                )}
+              </div>
             </Link>
             <span
               ref={signRef}
@@ -99,43 +121,44 @@ const Navbar = () => {
               />
               <div
                 ref={cardRef}
-                className={`absolute top-[30px] right-[-3px] w-[160px] glass-card py-2 px-1 rounded-[14px] transition-all duration-300 ${
+                className={`absolute top-[30px] z-[50] font-['Poppins'] right-[-3px] w-[160px] glass-card py-2 px-1 rounded-[14px] transition-all duration-300 ${
                   showCard
                     ? "opacity-100 scale-100 pointer-events-auto"
                     : "opacity-0 scale-95 pointer-events-none"
                 }`}
               >
                 <div className="flex flex-col justify-center items-center gap-1">
-                  <a
-                    href="/"
+                  {/* <Link
+                    to={"/wishlist"}
                     className="w-full bg-black/50 px-5 py-1.5 rounded-[10px]"
                   >
-                    <p className="text-white/60 flex justify-center items-center gap-2 text-[14px]">
-                      <FaHeart className="text-white/60 text-[14px]" /> Wishlist
+                    <p className="text-white/60 hover:text-white transition-all duration-200 flex justify-center items-center gap-2 text-[14px]">
+                      <FaHeart className=" text-[14px]" /> Wishlist
                     </p>
-                  </a>
-                  <Link to={"/signin"}
+                  </Link> */}
+                  <Link
+                    to={"/signin"}
                     className="w-full bg-black/50 px-5 py-1.5 rounded-[10px]"
                   >
-                    <p className="text-white/60 flex justify-center items-center gap-2 text-[14px]">
+                    <p className="text-white/60 hover:text-white transition-all duration-200 flex justify-center items-center gap-2 text-[14px]">
                       Sign In
                     </p>
                   </Link>
-                  <Link to={"/b2b-signin"}
+                  <Link
+                    to={"/b2b-signin"}
                     className="w-full bg-black/50 px-5 py-1.5 rounded-[10px]"
                   >
-                    <p className="text-white/60 flex justify-center items-center gap-2 text-[14px]">
-                      <FaHeart className="text-white/60 text-[12px]" /> B 2 B{" "}
+                    <p className="text-white/60 hover:text-white transition-all duration-200 flex justify-center items-center gap-2 text-[14px]">
+                      <IoBusiness className=" text-[12px]" /> B 2 B{" "}
                     </p>
                   </Link>
                   <span className="bg-white/20 w-full h-[1px] my-1"></span>
                   <Link
                     to={"/"}
-                    className="w-full bg-black/50 px-5 py-1.5 rounded-[10px]"
+                    className="w-full bg-black/50 text-white/60 hover:bg-[#bb5e00] hover:text-white transition-all duration-200  px-5 py-1.5 rounded-[10px]"
                   >
-                    <p className="text-white/60 flex justify-center items-center gap-2 text-[14px]">
-                      <FaCircleArrowLeft className="text-white/60 text-[15px]" />{" "}
-                      Sign Out
+                    <p className=" flex justify-center items-center gap-2 text-[14px]">
+                      <FaCircleArrowLeft className=" text-[15px]" /> Sign Out
                     </p>
                   </Link>
                 </div>
@@ -190,32 +213,34 @@ const Navbar = () => {
               </p>
             </Link>
 
-            {/* Product + Dropdown */}
-            <div className="w-full mb-[-15px]">
-              <button
-                type="button"
-                onClick={() => setProductOpen((o) => !o)}
-                className="w-full flex justify-between items-center font-['Poppins'] text-[16px] tracking-wide uppercase text-white cursor-pointer select-none"
-                aria-expanded={productOpen}
-                aria-controls="product-menu"
-              >
-                Product
-                <svg
-                  className={`h-6 w-6 transition-transform duration-300 ${
-                    productOpen ? "rotate-180" : ""
-                  }`}
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
+            {/* Product + Dropdown  mb-[-15px]*/}
+            <div className="w-full">
+              <Link to={"/product"}>
+                <button
+                  type="button"
+                  // onClick={() => setProductOpen((o) => !o)}
+                  className="w-full flex justify-between items-center font-['Poppins'] text-[16px] tracking-wide uppercase text-white cursor-pointer select-none"
+                  // aria-expanded={productOpen}
+                  // aria-controls="product-menu"
                 >
-                  <path
-                    fillRule="evenodd"
-                    d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
+                  Product
+                  {/* <svg
+                    className={`h-6 w-6 transition-transform duration-300 ${
+                      productOpen ? "rotate-180" : ""
+                    }`}
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
+                      clipRule="evenodd"
+                    />
+                  </svg> */}
+                </button>
+              </Link>
 
-              <div
+              {/* <div
                 id="product-menu"
                 className={`pl-4 mt-3 overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
                   productOpen ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
@@ -248,12 +273,14 @@ const Navbar = () => {
                     </a>
                   </li>
                 </ul>
-              </div>
+              </div> */}
             </div>
 
-            <p className="font-['Poppins'] text-[16px] tracking-wide uppercase text-white">
-              Wishlist
-            </p>
+            <Link to={"/wishlist"}>
+              <p className="font-['Poppins'] text-[16px] tracking-wide uppercase text-white">
+                Wishlist
+              </p>
+            </Link>
             <p className="font-['Poppins'] text-[16px] tracking-wide uppercase text-white">
               profile
             </p>
@@ -289,7 +316,9 @@ const Navbar = () => {
           onClick={(e) => e.stopPropagation()} // stop closing when clicking inside
         >
           <div className="flex justify-center items-center mb-6 gap-2 px-3">
-            <div><IoSearch className="text-white text-[20px]" /></div>
+            <div>
+              <IoSearch className="text-white text-[20px]" />
+            </div>
             <input
               type="text"
               placeholder="Search..."

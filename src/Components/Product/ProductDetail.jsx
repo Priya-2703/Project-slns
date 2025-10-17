@@ -117,7 +117,7 @@ const ProductDetail = () => {
 
   return (
     <>
-      <div className="w-full bg-black mx-auto mt-16 py-20">
+      <div className="w-full bg-black mx-auto mt-2 py-20">
         <Link
           to={"/product"}
           aria-label="Go to product details"
@@ -398,8 +398,8 @@ const ProductDetail = () => {
                         days from the confirmation of the order.
                       </li>
                       <li className="pl-2">
-                        The delivery cost is 100 INR for orders under 500 INR
-                        and free for orders over 500 INR.
+                        The delivery cost is 100 INR for orders under 1000 INR
+                        and free for orders over 1000 INR.
                       </li>
                       <li className="pl-2">
                         You can choose to have your order delivered to an
@@ -576,7 +576,7 @@ const ProductDetail = () => {
             </h1>
           </div>
 
-          <div className="w-[95%] mx-auto py-8">
+          <div className="w-[90%] mx-auto py-8">
             <div className="w-[300px] flex flex-col gap-4 cursor-pointer group">
               <div className="relative overflow-hidden rounded-[12px]">
                 <img
