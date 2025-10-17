@@ -11,7 +11,7 @@ const WishList = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-black text-white mt-4">
+      <div className="min-h-screen bg-black text-white mt-32">
         <Link
           to={"/product"}
           aria-label="Go to product details"

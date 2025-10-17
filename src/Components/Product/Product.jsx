@@ -9,7 +9,7 @@ const Product = () => {
 
   return (
     <>
-      <div className="w-full mx-auto py-6 mt-1">
+      <div className="w-full mx-auto py-6 mt-28">
         <div className="w-[90%] flex justify-between items-center mx-auto mt-4">
           <div className="flex justify-start items-start">
             <p className="text-white text-[12px] tracking-wide font2">

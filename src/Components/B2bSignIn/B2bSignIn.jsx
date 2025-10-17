@@ -26,7 +26,7 @@ export default function B2bSignIn() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden">
       {/* Background Video */}
-      <div className="w-[90%] h-[90%] mx-auto flex justify-center items-center absolute py-5">
+      <div className="w-full h-full mx-auto flex justify-center items-center absolute py-5">
         <video
           autoPlay
           muted
@@ -37,7 +37,8 @@ export default function B2bSignIn() {
         </video>
 
         {/* Background Overlay */}
-        <div className="absolute inset-0 bg-black/15" />
+       <div className="absolute top-0 w-full h-[30vh] bg-gradient-to-b from-black to-transparent" />
+        <div className="absolute bottom-0 w-full h-[30vh] bg-gradient-to-t from-black to-transparent" />
       </div>
 
       {/* Content */}

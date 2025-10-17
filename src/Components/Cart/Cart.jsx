@@ -26,7 +26,7 @@ function Cart() {
   const shipping = subtotal > 1000 && subtotal < 7000 ? 0 : 100;
 
   return (
-    <div className="min-h-screen bg-black text-white mt-2">
+    <div className="min-h-screen bg-black text-white mt-28">
       <Link
         to={"/product"}
         aria-label="Go to product details"
