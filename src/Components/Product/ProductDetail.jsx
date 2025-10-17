@@ -117,7 +117,7 @@ const ProductDetail = () => {
 
   return (
     <>
-      <div className="w-full bg-black mx-auto mt-2 py-20">
+      <div className="w-full bg-black mx-auto mt-28 py-20">
         <Link
           to={"/product"}
           aria-label="Go to product details"
