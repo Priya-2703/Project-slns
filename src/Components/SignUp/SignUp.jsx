@@ -8,6 +8,11 @@ export default function SignUp() {
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
+  
+  // ⭐ NEW: State for loading and error handling
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -15,11 +20,51 @@ export default function SignUp() {
       ...prev,
       [name]: value
     }));
+    // Clear error when user starts typing
+    setError('');
   };
 
-  const handleSubmit = (e) => {
+  // ⭐ NEW: Backend connection function
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      // 🔗 CONNECTION POINT: Send POST request to Flask backend
+      const response = await fetch('http://localhost:5000/api/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // ✅ Success: Store token and user data
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        setSuccess('Account created successfully!');
+        
+        // Redirect to dashboard or home page after 1.5 seconds
+        setTimeout(() => {
+          window.location.href = '/'; // Change to your route
+        }, 1500);
+      } else {
+        // ❌ Error from backend
+        setError(data.error || 'Signup failed. Please try again.');
+      }
+    } catch (err) {
+      // ❌ Network or other error
+      console.error('Signup error:', err);
+      setError('Unable to connect to server. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -28,21 +73,35 @@ export default function SignUp() {
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=800&fit=crop')`,
+          backgroundImage: "url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=800&fit=crop')",
           filter: 'brightness(0.6)'
         }}
       />
-      
+
       {/* Content */}
       <div className="relative z-10 w-full max-w-2xl px-6">
-         {/* Heading */}
-          <h1 className="text-4xl font-bold text-center text-black mb-8">
-            Create a new account
-          </h1>
+        {/* Heading */}
+        <h1 className="text-4xl font-bold text-center text-black mb-8">
+          Create a new account
+        </h1>
+
         <div className="bg-gray-398 bg-opacity-30 backdrop-blur-sm rounded-2xl p-8">
+          {/* ⭐ NEW: Error Alert */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-500 bg-opacity-80 text-white rounded-lg">
+              {error}
+            </div>
+          )}
+
+          {/* ⭐ NEW: Success Alert */}
+          {success && (
+            <div className="mb-4 p-3 bg-green-500 bg-opacity-80 text-white rounded-lg">
+              {success}
+            </div>
+          )}
 
           {/* Form */}
-          <div className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name Input */}
             <div>
               <label className="block text-sm font-medium text-black mb-2">
@@ -54,7 +113,8 @@ export default function SignUp() {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Jane Smith"
-                className="w-full px-4 py-3 rounded-lg bg-yellow-50  bg-opacity-90 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-598"
+                required
+                className="w-full px-4 py-3 rounded-lg bg-yellow-50 bg-opacity-90 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-598"
               />
             </div>
 
@@ -69,7 +129,8 @@ export default function SignUp() {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="jane@framer.com"
-                className="w-full px-4 py-3 rounded-lg bg-yellow-50  bg-opacity-90 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-598"
+                required
+                className="w-full px-4 py-3 rounded-lg bg-yellow-50 bg-opacity-90 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-598"
               />
             </div>
 
@@ -85,7 +146,8 @@ export default function SignUp() {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="jane@123456"
-                  className="w-full px-4 py-3 rounded-lg bg-yellow-50  bg-opacity-90 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-598"
+                  required
+                  className="w-full px-4 py-3 rounded-lg bg-yellow-50 bg-opacity-90 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-598"
                 />
                 <button
                   type="button"
@@ -101,14 +163,15 @@ export default function SignUp() {
               </div>
             </div>
 
-            {/* Sign Up Button */}
+            {/* Sign Up Button - ⭐ UPDATED with loading state */}
             <button
-              onClick={handleSubmit}
-              className="w-full bg-[#8E6740] hover:bg-[#8e6740cc] text-white font-semibold py-3 rounded-lg transition duration-200 transform hover:scale-105"
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#8E6740] hover:bg-[#8e6740cc] text-white font-semibold py-3 rounded-lg transition duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign Up
+              {loading ? 'Creating Account...' : 'Sign Up'}
             </button>
-          </div>
+          </form>
 
           {/* Sign In Link */}
           <p className="text-center text-gray-800 mt-6">

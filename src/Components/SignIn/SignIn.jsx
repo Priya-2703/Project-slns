@@ -7,6 +7,11 @@ export default function SignIn() {
     password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
+  
+  // ⭐ NEW: State for loading and error handling
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -14,11 +19,51 @@ export default function SignIn() {
       ...prev,
       [name]: value
     }));
+    // Clear error when user starts typing
+    if (error) setError('');
   };
 
-  const handleSubmit = (e) => {
+  // ⭐ NEW: Backend connection function
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      // 🔗 CONNECTION POINT: Send POST request to Flask backend
+      const response = await fetch('http://localhost:5000/api/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // ✅ Success: Store token and user data
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        setSuccess('Login successful! Redirecting...');
+        
+        // Redirect to dashboard or home page after 1 second
+        setTimeout(() => {
+          window.location.href = '/'; // Change to your desired route
+        }, 1000);
+      } else {
+        // ❌ Error from backend
+        setError(data.error || 'Login failed. Please try again.');
+      }
+    } catch (err) {
+      // ❌ Network or other error
+      console.error('Login error:', err);
+      setError('Unable to connect to server. Please check your connection and try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -42,14 +87,28 @@ export default function SignIn() {
       {/* Content */}
       <div className="relative z-10 w-full max-w-2xl px-6">
         {/* Heading */}
-          <h1 className="text-4xl font-bold text-center text-white mb-10">
-            Sign in your account
-          </h1>
+        <h1 className="text-4xl font-bold text-center text-white mb-10">
+          Sign in your account
+        </h1>
 
         <div className="bg-gray-400 bg-opacity-30 backdrop-blur-md rounded-3xl p-10">
+          
+          {/* ⭐ NEW: Error Alert */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-500 bg-opacity-90 text-white rounded-lg font-medium animate-pulse">
+              {error}
+            </div>
+          )}
 
-          {/* Form */}
-          <div className="space-y-6">
+          {/* ⭐ NEW: Success Alert */}
+          {success && (
+            <div className="mb-6 p-4 bg-green-500 bg-opacity-90 text-white rounded-lg font-medium">
+              {success}
+            </div>
+          )}
+
+          {/* Form - ⭐ UPDATED: Added onSubmit handler */}
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email Input */}
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-3">
@@ -61,7 +120,9 @@ export default function SignIn() {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="jane@framer.com"
-                className="w-full px-4 py-3 rounded-lg bg-white bg-opacity-80 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                required
+                disabled={loading}
+                className="w-full px-4 py-3 rounded-lg bg-white bg-opacity-80 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -77,12 +138,15 @@ export default function SignIn() {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="jane@123456"
-                  className="w-full px-4 py-3 rounded-lg bg-white bg-opacity-80 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                  required
+                  disabled={loading}
+                  className="w-full px-4 py-3 rounded-lg bg-white bg-opacity-80 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800"
+                  disabled={loading}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800 disabled:opacity-50"
                 >
                   {showPassword ? (
                     <EyeOff size={20} />
@@ -93,14 +157,25 @@ export default function SignIn() {
               </div>
             </div>
 
-            {/* Sign In Button */}
+            {/* Sign In Button - ⭐ UPDATED: Changed to submit button with loading state */}
             <button
-              onClick={handleSubmit}
-              className="w-full bg-[#8E6740] hover:bg-[#8e6740cc] text-white font-semibold py-3 rounded-lg transition duration-200 transform hover:scale-105 mt-8"
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#8E6740] hover:bg-[#8e6740cc] text-white font-semibold py-3 rounded-lg transition duration-200 transform hover:scale-105 mt-8 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              Sign In
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Signing In...
+                </span>
+              ) : (
+                'Sign In'
+              )}
             </button>
-          </div>
+          </form>
 
           {/* Links */}
           <div className="mt-8 space-y-4">
