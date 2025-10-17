@@ -72,7 +72,7 @@ export default function SignIn() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center overflow-hidden">
       {/* Background Video */}
-      <div className="w-[90%] h-[90%] mx-auto flex justify-center items-center absolute py-5">
+      <div className="w-full h-full mx-auto flex justify-center items-center absolute py-5">
         <video
           autoPlay
           muted
@@ -83,7 +83,8 @@ export default function SignIn() {
         </video>
 
         {/* Background Overlay */}
-        <div className="absolute inset-0 bg-black/15" />
+        <div className="absolute top-0 w-full h-[30vh] bg-gradient-to-b from-black to-transparent" />
+        <div className="absolute bottom-0 w-full h-[30vh] bg-gradient-to-t from-black to-transparent" />
       </div>
 
       {/* Content */}
@@ -95,12 +96,8 @@ export default function SignIn() {
 
         <div className="bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-black/15 justify-center overflow-hidden rounded-[25px] px-10 py-4">
           {/* Form */}
-          <div className="w-[80%] mx-auto space-y-3">
-        <h1 className="text-4xl font-bold text-center text-white mb-10">
-          Sign in your account
-        </h1>
-
-        <div className="bg-gray-400 bg-opacity-30 backdrop-blur-md rounded-3xl p-10">
+        <div className="w-[80%] mx-auto space-y-3">
+      
           
           {/* ⭐ NEW: Error Alert */}
           {error && (
@@ -117,7 +114,7 @@ export default function SignIn() {
           )}
 
           {/* Form - ⭐ UPDATED: Added onSubmit handler */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-2">
             {/* Email Input */}
             <div className="py-2">
               <label className="block text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
@@ -200,8 +197,9 @@ export default function SignIn() {
               </Link>
             </p>
           </div>
-        </div>
       </div>
+    </div>
+    </div>
     </div>
   );
 }

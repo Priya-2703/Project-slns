@@ -59,7 +59,7 @@ const Navbar = () => {
 
   return (
     <>
-      <div className="w-full mx-auto py-1 md:py-4 px-5 md:px-10 z-50 bg-transparent">
+      <div className="absolute top-0 w-full mx-auto py-1 md:py-4 px-5 md:px-10 z-50 bg-transparent">
         <div className="flex justify-between items-center md:px-6">
           <div>
             <img
