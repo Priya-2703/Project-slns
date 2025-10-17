@@ -9,8 +9,8 @@ const Product = () => {
 
   return (
     <>
-      <div className="w-full mx-auto py-10 mt-18">
-        <div className="w-[90%] mx-auto mt-4">
+      <div className="w-full mx-auto py-6 mt-1">
+        <div className="w-[90%] flex justify-between items-center mx-auto mt-4">
           <div className="flex justify-start items-start">
             <p className="text-white text-[12px] tracking-wide font2">
               <Link to={"/"} className="text-white/80 hover:text-white">
@@ -19,10 +19,14 @@ const Product = () => {
               / Product
             </p>
           </div>
+
+          <div className="">
+
+          </div>
         </div>
 
-        <div className="w-[95%] mx-auto grid-cols-1 mt-5 py-10">
-          <div className="flex justify-center flex-wrap items-center gap-7">
+        <div className="w-[90%] mx-auto grid grid-cols-1 mt-5 py-10">
+          <div className="grid grid-cols-5 gap-5">
             {data.map((item, id) => (
                 <ProductCard key={id} product={item}/>
             ))}

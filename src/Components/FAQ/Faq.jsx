@@ -207,8 +207,8 @@ const Faq = () => {
 
   return (
     <>
-      <div className="w-full mx-auto bg-black mt-28 py-5">
-        <div className="w-[60%] mx-auto">
+      <div className="w-full mx-auto bg-black mt-2 py-5">
+        <div className="w-[80%] mx-auto">
           <div className="flex justify-start items-start">
             <p className="text-white text-[12px] tracking-wide font2">
               <Link to={"/"} className="text-white/80 hover:text-white">

@@ -21,7 +21,7 @@ function ProductReview() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-gray-100 py-16 px-4 mt-16">
+    <div className="min-h-screen bg-black text-gray-100 py-16 px-4 mt-1">
       {/* Top-left Icon -> Product Detail */}
       <Link
         to={'/product'}

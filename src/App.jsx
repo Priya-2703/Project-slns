@@ -19,33 +19,43 @@ import B2bSignIn from "./Components/B2bSignIn/B2bSignIn";
 import Product from "./Components/Product/Product";
 import CartProvider from "./Context/UseCartContext";
 import CheckOut from "./Components/CheckOut/CheckOut";
+import WishList from "./Components/WishList/WishList";
+import WishlistProvider from "./Context/UseWishListContext";
+import { ToastProvider } from "./Context/UseToastContext";
+import BackToTopButton from "./Components/BacktoTopButton";
 
 function App() {
   return (
     <>
-      <CartProvider>
-        <Router>
-          <ScrollToTop behavior="smooth" />
-          <Navbar />
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/product" element={<Product />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/product/product-review" element={<ProductReview />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/faq" element={<Faq />} />
-            <Route path="/contact" element={<ContactForm />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/b2b-signup" element={<B2bSignUp />} />
-            <Route path="/signin" element={<SignIn />} />
-            <Route path="/b2b-signin" element={<B2bSignIn />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/checkout" element={<CheckOut />} />
-          </Routes>
-          <Footer />
-        </Router>
-      </CartProvider>
+      <ToastProvider>
+        <WishlistProvider>
+          <CartProvider>
+            <Router>
+              <ScrollToTop behavior="smooth" />
+              <Navbar />
+              <Routes>
+                <Route path="/" element={<Landing />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/product" element={<Product />} />
+                <Route path="/product/:id" element={<ProductDetail />} />
+                <Route path="/product/product-review" element={<ProductReview />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/wishlist" element={<WishList />} />
+                <Route path="/checkout" element={<CheckOut />} />
+                <Route path="/faq" element={<Faq />} />
+                <Route path="/contact" element={<ContactForm />} />
+                <Route path="/signup" element={<SignUp />} />
+                <Route path="/b2b-signup" element={<B2bSignUp />} />
+                <Route path="/signin" element={<SignIn />} />
+                <Route path="/b2b-signin" element={<B2bSignIn />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+              </Routes>
+              <Footer />
+            </Router>
+          </CartProvider>
+        </WishlistProvider>
+      </ToastProvider>
+      <BackToTopButton/>
     </>
   );
 }

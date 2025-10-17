@@ -61,12 +61,14 @@ const Landing = () => {
             muted
             playsInline
             preload="auto"
-            className="fixed top-0 left-0 w-full h-full object-cover z-[-1]"
+            className="fixed top-0 left-0 w-full h-full object-cover -z-20"
           />
+
+          <div className="fixed top-0 w-full h-[70vh] bg-gradient-to-b from-black to-transparent -z-10"></div>
 
           {/* 🔹 Top + Bottom Overlay (scrolls with content) */}
           <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-            <div className="absolute top-0 w-full h-[50vh] bg-gradient-to-b from-black to-transparent"></div>
+            {/* <div className="absolute top-0 w-full h-[50vh] bg-gradient-to-b from-black to-transparent"></div> */}
             <div className="absolute bottom-0 w-full h-[100vh] bg-gradient-to-t from-black to-black/5"></div>
           </div>
         </div>
@@ -85,8 +87,7 @@ const Landing = () => {
 
         {/* scroll saree */}
         <div className="overflow-hidden relative grid grid-cols-1 py-4 bg-black">
-          <span className="bg-black w-full h-32 rounded-[50%] top-[-30px] absolute z-30">
-          </span>
+          <span className="bg-black w-full h-32 rounded-[50%] top-[-30px] absolute z-30"></span>
           <div className="flex justify-center items-center gap-4 card-wrapper">
             {images.map((item, index) => {
               return (
@@ -103,8 +104,7 @@ const Landing = () => {
               );
             })}
           </div>
-          <span className="bg-black w-full h-32 rounded-[50%] bottom-[-75px] absolute z-30">
-          </span>
+          <span className="bg-black w-full h-32 rounded-[50%] bottom-[-75px] absolute z-30"></span>
         </div>
 
         {/* Elevating Your Style */}
@@ -219,15 +219,13 @@ const Landing = () => {
         </div>
 
         {/* TRENDING NOW */}
-        <Trending/>
+        <Trending />
 
         {/* NEW ARRIVALS*/}
-        <NewArrival/> 
+        <NewArrival />
 
         {/* Review*/}
-        <Review/> 
-
-
+        <Review />
       </div>
     </>
   );

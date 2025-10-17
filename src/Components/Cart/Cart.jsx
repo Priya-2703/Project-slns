@@ -1,5 +1,5 @@
 import React, { useContext, useMemo, useState } from "react";
-import { FaMinus, FaPlus } from "react-icons/fa";
+import { FaArrowLeft, FaMinus, FaPlus } from "react-icons/fa";
 import { FaTrashCan } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 import { CartContext } from "../../Context/UseCartContext";
@@ -23,10 +23,19 @@ function Cart() {
   );
 
   // Optional: basic delivery fee logic (edit/Remove if not needed)
-  const shipping = subtotal > 500 && subtotal < 7000 ? 0 : 100;
+  const shipping = subtotal > 1000 && subtotal < 7000 ? 0 : 100;
 
   return (
-    <div className="min-h-screen bg-black text-white mt-20">
+    <div className="min-h-screen bg-black text-white mt-2">
+      <Link
+        to={"/product"}
+        aria-label="Go to product details"
+        title="Go to Product"
+        className="group absolute top-[150px] left-[100px] z-20 inline-flex items-center justify-center rounded-full border border-neutral-700 bg-black p-2 text-gray-300 hover:text-white hover:border-gray-500 focus:outline-none backdrop-blur"
+      >
+        {/* Package/Box icon (SVG) */}
+        <FaArrowLeft className="transition-transform group-hover:-translate-y-0.5 text-white text-[18px]" />
+      </Link>
       <div className="mx-auto max-w-6xl px-4 py-10">
         <h1 className="mb-8 text-[30px] font1 uppercase text-white">
           Shopping Cart
@@ -60,7 +69,7 @@ function Cart() {
 
                       <div className=" col-span-6 flex items-center gap-4">
                         <Link
-                          to={"/product/:id"}
+                          to={`/product/${it.id}`}
                           className="flex items-center gap-4"
                         >
                           <img
@@ -83,7 +92,7 @@ function Cart() {
                       <div className="col-span-3 flex justify-center">
                         <div className="inline-flex items-center gap-2 rounded-full border border-neutral-700 bg-neutral-900 px-2 py-1">
                           <button
-                            onClick={() => updateCartItemQuantity(it.id,-1)}
+                            onClick={() => updateCartItemQuantity(it.id, -1)}
                             className="h-5 w-5 inline-flex items-center justify-center rounded-full hover:bg-neutral-800"
                             aria-label="Decrease"
                           >
@@ -99,7 +108,7 @@ function Cart() {
                             className="w-10 bg-transparent font2 text-center outline-none"
                           />
                           <button
-                            onClick={() => updateCartItemQuantity(it.id,1)}
+                            onClick={() => updateCartItemQuantity(it.id, 1)}
                             className="h-5 w-5 inline-flex items-center justify-center rounded-full hover:bg-neutral-800"
                             aria-label="Increase"
                           >
@@ -151,12 +160,14 @@ function Cart() {
                   large
                 />
               </div>
-              <button
-                disabled={cart.length === 0}
-                className="mt-5 w-full rounded-full cursor-pointer font2-bold bg-[#815a37] px-5 py-3 font-medium text-white hover:text-black hover:bg-[#8f673f] transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Checkout Now
-              </button>
+              <Link to={"/checkout"}>
+                <button
+                  disabled={cart.length === 0}
+                  className="mt-5 w-full rounded-full cursor-pointer font2-bold bg-[#815a37] px-5 py-3 font-medium text-white hover:text-black hover:bg-[#8f673f] transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Checkout Now
+                </button>
+              </Link>
             </div>
           </aside>
         </div>
