@@ -10,6 +10,11 @@ export default function SignUp() {
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
+  
+  // ⭐ NEW: State for loading and error handling
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -17,11 +22,52 @@ export default function SignUp() {
       ...prev,
       [name]: value,
     }));
+    // Clear error when user starts typing
+    setError('');
   };
 
-  const handleSubmit = (e) => {
+  // ⭐ NEW: Backend connection function
+  const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Form submitted:", formData);
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      // 🔗 CONNECTION POINT: Send POST request to Flask backend
+      const response = await fetch('http://localhost:5000/api/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // ✅ Success: Store token and user data
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        setSuccess('Account created successfully!');
+        
+        // Redirect to dashboard or home page after 1.5 seconds
+        setTimeout(() => {
+          window.location.href = '/'; // Change to your route
+        }, 1500);
+      } else {
+        // ❌ Error from backend
+        setError(data.error || 'Signup failed. Please try again.');
+      }
+    } catch (err) {
+      // ❌ Network or other error
+      console.error('Signup error:', err);
+      setError('Unable to connect to server. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -50,6 +96,27 @@ export default function SignUp() {
         <div className="bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-black/15 justify-center overflow-hidden rounded-[25px] px-10 py-4">
           {/* Form */}
           <div className="w-[80%] mx-auto space-y-3">
+        <h1 className="text-4xl font-bold text-center text-black mb-8">
+          Create a new account
+        </h1>
+
+        <div className="bg-gray-398 bg-opacity-30 backdrop-blur-sm rounded-2xl p-8">
+          {/* ⭐ NEW: Error Alert */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-500 bg-opacity-80 text-white rounded-lg">
+              {error}
+            </div>
+          )}
+
+          {/* ⭐ NEW: Success Alert */}
+          {success && (
+            <div className="mb-4 p-3 bg-green-500 bg-opacity-80 text-white rounded-lg">
+              {success}
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name Input */}
             <div className="py-2">
               <label className="block text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
@@ -104,14 +171,17 @@ export default function SignUp() {
               </div>
             </div>
 
-            {/* Sign Up Button */}
+            {/* Sign Up Button - ⭐ UPDATED with loading state */}
             <button
               onClick={handleSubmit}
               className="w-full bg-[#8E6740] text-[14px] font-['Poppins'] hover:bg-[#8e6740cc] text-white font-semibold py-2 rounded-lg transition duration-200 transform mt-2"
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#8E6740] hover:bg-[#8e6740cc] text-white font-semibold py-3 rounded-lg transition duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign Up
+              {loading ? 'Creating Account...' : 'Sign Up'}
             </button>
-          </div>
+          </form>
 
           {/* Sign In Link */}
           <p className="text-center font-['Poppins'] text-gray-900 mt-6">
