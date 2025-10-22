@@ -11,6 +11,8 @@ import { Link, useParams } from "react-router-dom";
 import UseFetchData from "../../Hooks/UseFetchData";
 import { FaArrowLeft } from "react-icons/fa";
 import { CartContext } from "../../Context/UseCartContext";
+import { ToastContext } from "../../Context/UseToastContext";
+
 
 const img = [`${assets.dhosti1}`, `${assets.dhosti2}`, `${assets.dhosti3}`];
 const images = [
@@ -61,6 +63,17 @@ const ProductDetail = () => {
   const [product, setProduct] = useState({});
   const {cart,addToCart} = useContext(CartContext)
   const { id } = useParams();
+  const { showToast } = useContext(ToastContext);
+
+  const isInCart = cart.some((item) => item.id === product.id);
+
+  const handleCart = () => {
+    if (isInCart) {
+      showToast("Item already added in Cart", "success");
+    } else {
+      showToast("Item added in Cart", "success");
+    }
+  };
 
   useEffect(() => {
     if (data && data.length > 0) {
@@ -260,7 +273,9 @@ const ProductDetail = () => {
                 Purchase Now
               </button>
               <Link to={"/cart"}>
-                <button onClick={()=>addToCart(product)} className="text-[16px] text-white px-3 py-4 font2-bold rounded-[8px] w-full bg-[#955E30]">
+                <button onClick={()=>{addToCart(product)
+                  handleCart()
+                }} className="text-[16px] text-white px-3 py-4 font2-bold rounded-[8px] w-full bg-[#955E30]">
                   Add to Cart
                 </button>
               </Link>

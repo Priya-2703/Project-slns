@@ -124,9 +124,9 @@ const NewArrival = () => {
 
   return (
     <>
-      <div className="mx-auto py-8 px-6 bg-black">
-        <div className="flex flex-col justify-center relative items-center text-white mb-8 py-6">
-          <h1 className="text-[42px] py-3 font1 font-[200] uppercase leading-14 z-10">
+      <div className="mx-auto py-3 md:py-8 px-14 bg-black">
+        <div className="flex flex-col justify-center relative items-center text-white md:mb-8 py-3">
+          <h1 className="text-[28px] md:text-[42px] py-3 font1 font-[700] lg:font-[200] uppercase leading-14 z-20">
             New Arrivals
           </h1>
           <video
@@ -136,11 +136,11 @@ const NewArrival = () => {
             muted
             playsInline
             preload="auto"
-            className="absolute h-[200px] w-[700px] object-cover"
+            className="absolute h-[100px] md:h-[200px] w-[700px] object-cover"
           />
         </div>
 
-        <div className="max-w-[1400px] mx-auto relative overflow-visible py-8">
+        <div className="max-w-[1400px] mx-auto relative overflow-visible py-2 lg:py-10">
           <Swiper
             modules={[Navigation]}
             className="trending-swiper"
@@ -151,14 +151,14 @@ const NewArrival = () => {
             spaceBetween={48}
             speed={600}
             slidesPerView={4}
-            slidesPerGroup={4} // 1 click = 4 slides
-            allowTouchMove={false} // swipe off
+            slidesPerGroup={1} // 1 click = 4 slides
+            allowTouchMove={true} // swipe off
             loop={false}
             watchOverflow={true} // lock when no overflow
             breakpoints={{
-              320: { slidesPerView: 1, spaceBetween: 20 },
+              460: { slidesPerView: 1, spaceBetween: 20 },
               640: { slidesPerView: 2, spaceBetween: 30 },
-              768: { slidesPerView: 3, spaceBetween: 40 },
+              768: { slidesPerView: 2, spaceBetween: 30 },
               1024: { slidesPerView: 4, spaceBetween: 48 },
             }}
           >
@@ -208,7 +208,7 @@ const NewArrival = () => {
             ref={prevRef}
             aria-label="Previous"
             aria-disabled={atStart || locked}
-            className={`absolute top-1/2 -translate-y-1/2 -left-[60px] z-20 p-3 rounded-full transition-all backdrop-blur-sm
+            className={`absolute top-1/2 -translate-y-1/2 -left-[50px] md:-left-[60px] z-20 p-3 rounded-full transition-all backdrop-blur-sm
             ${
               atStart || locked
                 ? "opacity-0 invisible pointer-events-none scale-95"
@@ -235,7 +235,7 @@ const NewArrival = () => {
             ref={nextRef}
             aria-label="Next"
             aria-disabled={atEnd || locked}
-            className={`absolute top-1/2 -translate-y-1/2 -right-[60px] z-20 p-3 rounded-full transition-all backdrop-blur-sm
+            className={`absolute top-1/2 -translate-y-1/2 -right-[50px] md:-right-[60px] z-20 p-3 rounded-full transition-all backdrop-blur-sm
             ${
               atEnd || locked
                 ? "opacity-0 invisible pointer-events-none scale-95"

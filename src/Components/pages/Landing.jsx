@@ -1,4 +1,4 @@
-import React from "react";
+ import { motion } from "framer-motion";
 import { assets } from "../../../public/assets/asset";
 import "./Landing.css";
 import Trending from "./Trending";
@@ -87,7 +87,7 @@ const Landing = () => {
 
         {/* scroll saree */}
         <div className="overflow-hidden relative grid grid-cols-1 py-4 bg-black">
-          <span className="bg-black w-full h-32 rounded-[50%] top-[-30px] absolute z-30"></span>
+          <span className="bg-black w-full h-10 lg:h-32 rounded-[50%] top-[40px] lg:top-[-30px] absolute z-30"></span>
           <div className="flex justify-center items-center gap-4 card-wrapper">
             {images.map((item, index) => {
               return (
@@ -98,27 +98,51 @@ const Landing = () => {
                   <img
                     src={item.img}
                     alt={item.saree}
-                    className="object-cover w-[300px] h-[500px] object-center"
+                    className="object-cover w-[180px] h-[250px] md:w-[200px] md:h-[350px] lg:w-[300px] lg:h-[500px] object-center"
                   />
                 </div>
               );
             })}
           </div>
-          <span className="bg-black w-full h-32 rounded-[50%] bottom-[-75px] absolute z-30"></span>
+          <span className="bg-black w-full h-10 lg:h-32 rounded-[50%] bottom-[35px] lg:bottom-[-75px] absolute z-30"></span>
         </div>
+
+        {/* offer or festival banner */}
+        <motion.div
+          className="relative w-full h-[200px] lg:h-[400px] mx-auto  flex justify-center items-start overflow-hidden my-20 ;g:my-40 shadow-2xl"
+          animate={{
+            boxShadow: [
+              "0 0 20px #ff0080",
+              "0 0 20px #ff8c00",
+              "0 0 20px #955E30",
+              "0 0 20px #fffff",
+            ],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+        >
+          <img
+            src={assets.banner}
+            alt="banner"
+            className="object-cover w-full h-full object-top"
+          />
+        </motion.div>
 
         {/* Elevating Your Style */}
         <div className="w-[100%] mx-auto py-8">
           <div className="flex flex-col justify-center items-center text-white">
-            <h1 className="text-[42px] py-3 font1 font-[200] uppercase leading-14">
+            <h1 className="text-[25px] md:text-[42px] font-[800] md:py-3 font1 lg:font-[200] uppercase leading-8 md:leading-14">
               Elevating Your Style
             </h1>
-            <p className="w-[40%] text-[12px] font2 tracking-wide font-[100] uppercase text-center">
+            <p className="w-[90%] md:w-[40%] text-[8px] md:text-[12px] font2 tracking-wide font-[100] uppercase text-center">
               Discover the Perfect Blend of Comfort and Trend with Our Exclusive
               Collection. Explore Deals on Jeans, Sneakers, and More!
             </p>
           </div>
-          <div className="w-[90%] h-full mx-auto grid grid-cols-3 py-6 mt-8 gap-4">
+          <div className="w-[90%] h-full mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 py-6 mt-8 gap-4">
             <div className="grid grid-cols-1">
               <div className="flex flex-col gap-4">
                 <div className="relative h-[500px] w-full card rounded-md bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 border border-gray-700 justify-start overflow-hidden box1">
@@ -181,13 +205,13 @@ const Landing = () => {
             </div>
 
             <div className="grid grid-col-1">
-              <div className="flex flex-col gap-4">
-                <div className="relative h-[300px] w-full card rounded-md bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 border border-gray-700 justify-start overflow-hidden box4">
+              <div className="flex flex-col md:flex-row lg:flex-col gap-4 md:gap-3 lg:gap-4">
+                <div className="relative h-[300px] w-full lg:w-full md:w-[340px] card rounded-md bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 border border-gray-700 justify-start overflow-hidden box4">
                   <h1 className="font2-bold text-center text-[30px] uppercase text-white leading-[40px] py-3">
                     Pochampally sarees
                   </h1>
 
-                  <div className="absolute bottom-[-170px] right-0">
+                  <div className="absolute bottom-[-170px] right-0 md:right-10 lg:right-0">
                     <img
                       src={assets.box4}
                       alt="Pochampally saree"
@@ -196,16 +220,16 @@ const Landing = () => {
                   </div>
                 </div>
 
-                <div className="relative h-[500px] w-full card rounded-md bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 border border-gray-700 justify-start overflow-hidden box5">
-                  <h1 className="font2-bold text-center text-[30px] uppercase text-white leading-[40px] pt-4">
+                <div className="relative h-[500px] md:h-[300px] lg:h-[500px] w-full md:w-[340px] lg:w-full card rounded-md bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 border border-gray-700 justify-start overflow-hidden box5">
+                  <h1 className="font2-bold text-center md:text-[23px] lg:text-[30px] text-[30px] uppercase text-white leading-[40px] pt-4">
                     Cotton sarees
                   </h1>
-                  <p className="font2 tracking-wide text-[12px] text-white/65 text-center py-4">
+                  <p className="font2 tracking-wide lg:tracking-wide md:tracking-normal text-[12px] lg:text-[12px] md:text-[10px] text-white/65 text-center py-4 md:py-1 lg:py-4">
                     Passion for fashion and comfort is reflected in every pair
                     of sneakers. Experience style and functionality in a single
                     step.
                   </p>
-                  <div className="absolute bottom-[-180px] flex justify-center w-[100%]">
+                  <div className="absolute lg:bottom-[-180px] md:bottom-[-220px] bottom-[-180px] flex justify-center w-[100%]">
                     <img
                       src={assets.box5}
                       alt="Cotton saree"

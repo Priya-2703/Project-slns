@@ -31,14 +31,14 @@ const Review = () => {
 
   return (
     <>
-      <div className="mx-auto py-16">
-        <div className="flex flex-col items-center text-white mb-8">
+      <div className="mx-auto py-3 md:py-10 lg:py-16">
+        <div className="flex flex-col items-center text-white md:mb-8">
           <div className="relative w-[800px] h-[200px] overflow-hidden flex flex-col justify-center items-center">
             {/* Text on top */}
-            <h1 className="text-[42px] py-3 font1 font-[200] uppercase relative z-20 leading-14">
+            <h1 className="text-[26px] md:text-[42px] md:py-3 font1 font-[200] uppercase relative z-20 leading-14">
               CUSTOMERS FEEDBACK
             </h1>
-            <p className="text-[16px] tracking-wide font2-medium uppercase py-4 relative z-20">
+            <p className="text-[10px] md:text-[16px] tracking-wide font2-medium uppercase py-4 relative z-20">
               OVER 10.000+ SATISFIED CUSTOMERS
             </p>
 
@@ -64,7 +64,7 @@ const Review = () => {
             return (
               <div
                 key={index}
-                className={`border-2 review ${item.box} border-white/5 w-[400px] px-5 py-4 rounded-[2px]`}
+                className={`border-2 review ${item.box} border-white/5 w-[300px] lg:w-[400px] px-5 py-4 rounded-[2px]`}
               >
                 <div className="flex flex-col justify-center items-start gap-5">
                   <p className="text-white text-[12px]">{item.rate}</p>

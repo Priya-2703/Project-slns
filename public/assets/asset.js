@@ -24,10 +24,12 @@ import review from "./review.mp4"
 import signup from "./signup.mp4"
 import bgvideo from "./bgvideo.mp4"
 import forpassbg from "./forpassbg.mp4"
+import banner from "./banner.jpg"
 
 export const assets={
     logo,
     owner,
+    banner,
     visa,
     mastercard,
     ipay,

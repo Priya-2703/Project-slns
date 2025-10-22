@@ -20,8 +20,7 @@ const Navbar = () => {
   const { cart } = useContext(CartContext);
   const { wishlist } = useContext(WishlistContext);
   const [showCard, setShowCard] = useState(false); // profile card
-  const [menuOpen, setMenuOpen] = useState(false); // side menu
-  const [search, setSearch] = useState(false); // side menu
+  const [menuOpen, setMenuOpen] = useState(false); // side menu 
   const cardRef = useRef(null);
   const signRef = useRef(null);
   const location = useLocation();
@@ -57,15 +56,18 @@ const Navbar = () => {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, []);
 
+  //responsive
+  const mobileView = window.innerWidth < 480
+
   return (
     <>
-      <div className="absolute top-0 w-full mx-auto py-1 md:py-4 px-5 md:px-10 z-50 bg-transparent">
+      <div className="absolute top-0 w-full mx-auto py-1 md:py-4 px-5 lg:px-10 z-50 bg-transparent">
         <div className="flex justify-between items-center md:px-6">
           <div>
             <img
               src={assets.logo}
               alt="logo"
-              className="w-[70px] md:w-[80px] cursor-pointer select-none"
+              className="w-[60px] md:w-[80px] cursor-pointer select-none"
               onClick={() => setMenuOpen(true)} // Logo click -> open menu
             />
           </div>
@@ -76,14 +78,14 @@ const Navbar = () => {
                 <span>
                   <GoHeart
                     // onClick={() => setSearch((q) => !q)}
-                    size={20}
+                    size={mobileView ?16: 20}
                     color="#955E30"
                     className="nav-item"
                   />
                 </span>
                 {/* 🔴 Notification Badge */}
                 {wishlist.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[8px] font-semibold rounded-full w-3 h-3 flex justify-center items-center">
+                  <span className="absolute -top-3 -right-3 md:-top-4 md:-right-4 bg-[#955E30] text-white text-[10px] md:text-[12px] font-semibold rounded-full w-4 h-4 md:w-5 md:h-5 flex justify-center items-center">
                     {wishlist.length}
                   </span>
                 )}
@@ -93,7 +95,7 @@ const Navbar = () => {
               <div className="flex items-center relative gap-2">
                 <span>
                   <ShoppingCart
-                    size={20}
+                    size={mobileView? 16: 20}
                     strokeWidth={1.5}
                     color="#955E30"
                     className="nav-item"
@@ -101,7 +103,7 @@ const Navbar = () => {
                 </span>
                 {/* 🔴 Notification Badge */}
                 {cart.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[8px] font-semibold rounded-full w-3 h-3 flex justify-center items-center">
+                  <span className="absolute -top-3 -right-3 md:-top-4 md:-right-4  bg-[#955E30] text-white text-[10px] md:text-[12px] font-semibold rounded-full w-4 h-4 md:w-5 md:h-5 flex justify-center items-center">
                     {cart.length}
                   </span>
                 )}
@@ -114,7 +116,7 @@ const Navbar = () => {
               onClick={() => setShowCard(true)}
             >
               <CircleUserRound
-                size={20}
+                size={mobileView ? 16 : 20}
                 strokeWidth={1.5}
                 color="#955E30"
                 className="nav-item"
@@ -180,15 +182,15 @@ const Navbar = () => {
 
       {/* Side Menu (slides from left) */}
       <div
-        className={`fixed z-50 left-0 top-[100px] w-[330px] h-auto px-8 py-8 rounded-r-[20px] bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-white/5 justify-center overflow-hidden transform transition-transform duration-300 ease-in-out ${
+        className={`fixed z-50 left-0 top-[80px] md:top-[100px] w-[200px] md:w-[330px] h-auto px-4 md:px-8 py-4 md:py-8 rounded-r-[20px] bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-white/5 justify-center overflow-hidden transform transition-transform duration-300 ease-in-out ${
           menuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
         aria-hidden={!menuOpen}
       >
-        <div className="flex flex-col gap-16">
+        <div className="flex flex-col gap-8 md:gap-16 font-['Poppins']">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="font2-medium text-[16px] tracking-wide uppercase text-white">
+              <h1 className="font2-medium text-[12px] md:text-[16px] tracking-wide uppercase text-white">
                 Menu
               </h1>
             </div>
@@ -201,14 +203,14 @@ const Navbar = () => {
             </button>
           </div>
 
-          <div className="w-[100%] flex flex-col justify-center gap-10">
+          <div className="w-[100%] flex flex-col text-[12px] md:text-[16px] justify-center gap-8 md:gap-10">
             <Link to={"/"}>
-              <p className="font-['Poppins'] text-[16px] tracking-wide uppercase text-white">
+              <p className=" tracking-wide uppercase text-white">
                 Home
               </p>
             </Link>
             <Link to={"/about"}>
-              <p className="font-['Poppins'] text-[16px] tracking-wide uppercase text-white">
+              <p className="tracking-wide uppercase text-white">
                 About Us
               </p>
             </Link>
@@ -219,7 +221,7 @@ const Navbar = () => {
                 <button
                   type="button"
                   // onClick={() => setProductOpen((o) => !o)}
-                  className="w-full flex justify-between items-center font-['Poppins'] text-[16px] tracking-wide uppercase text-white cursor-pointer select-none"
+                  className="w-full flex justify-between items-center tracking-wide uppercase text-white cursor-pointer select-none"
                   // aria-expanded={productOpen}
                   // aria-controls="product-menu"
                 >
@@ -277,20 +279,22 @@ const Navbar = () => {
             </div>
 
             <Link to={"/wishlist"}>
-              <p className="font-['Poppins'] text-[16px] tracking-wide uppercase text-white">
+              <p className=" tracking-wide uppercase text-white">
                 Wishlist
               </p>
             </Link>
-            <p className="font-['Poppins'] text-[16px] tracking-wide uppercase text-white">
-              profile
-            </p>
+            <Link to={"/profile"}>
+              <p className=" tracking-wide uppercase text-white">
+                profile
+              </p>
+            </Link>
             <Link to={"/faq"}>
-              <p className="font-['Poppins'] text-[16px] tracking-wide uppercase text-white">
+              <p className=" tracking-wide uppercase text-white">
                 FAQ
               </p>
             </Link>
             <Link to={"/contact"}>
-              <p className="font-['Poppins'] text-[16px] tracking-wide uppercase text-white">
+              <p className=" tracking-wide uppercase text-white">
                 Contact
               </p>
             </Link>
@@ -298,40 +302,9 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* search page */}
 
-      {/* Search Overlay (slides from left) */}
-      <div
-        className={`fixed top-0 left-0 h-screen w-full bg-black/40 backdrop-blur-sm z-50 transition-opacity duration-300 ${
-          search
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
-        }`}
-        onClick={() => setSearch(false)} // click outside -> close
-      >
-        <div
-          className={`absolute top-0 left-0 h-screen w-[350px] bg-black p-6 shadow-xl rounded-r-2xl transform transition-transform duration-500 ease-in-out ${
-            search ? "translate-x-0" : "-translate-x-full"
-          }`}
-          onClick={(e) => e.stopPropagation()} // stop closing when clicking inside
-        >
-          <div className="flex justify-center items-center mb-6 gap-2 px-3">
-            <div>
-              <IoSearch className="text-white text-[20px]" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search..."
-              className='bg-transparent outline-none focus:outline-none text-white font-["Poppins"]  text-[16px]'
-            />
-          </div>
 
-          {/* Optional — search results area */}
-          <div className="mt-6 text-white text-sm">
-            Start typing to see results...
-          </div>
-        </div>
-      </div>
+
     </>
   );
 };
