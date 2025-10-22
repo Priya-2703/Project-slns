@@ -62,12 +62,6 @@
   font-family: Arial, sans-serif;
 }
 
-.form-input::placeholder,
-.form-select::placeholder,
-.form-textarea::placeholder {
-  color: #4b5563;
-}
-
 .form-input:focus,
 .form-select:focus,
 .form-textarea:focus {
@@ -82,12 +76,19 @@
   appearance: none;
   cursor: pointer;
   padding-right: 2.5rem;
-  color: #6b7280;
+  color: white; /* text color of selected value */
+  background-color: black; /* select box bg color */
 }
 
 .form-select option {
   background-color: #000000;
   color: #ffffff;
+}
+
+.form-input::placeholder,
+.form-select::placeholder,
+.form-textarea::placeholder {
+  color: #4b5563;
 }
 
 .select-arrow {
@@ -106,7 +107,12 @@
 
 .submit-button {
   width: 100%;
-  background: linear-gradient(180deg,rgba(189, 130, 79, 1) 0%, rgba(174, 92, 19, 1) 75%, rgba(148, 88, 42, 1) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(189, 130, 79, 1) 0%,
+    rgba(174, 92, 19, 1) 75%,
+    rgba(148, 88, 42, 1) 100%
+  );
   color: #000000;
   font-weight: 500;
   padding: 1rem;
@@ -124,19 +130,74 @@
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 800px) {
   .contact-title {
-    font-size: 2.5rem;
+    font-size: 32px;
+    margin-bottom: 2rem;
   }
-  
   .contact-form-container {
-    padding: 2rem 1rem;
+    padding: 6rem 1rem 5rem 1rem;
+  }
+  .contact-form-wrapper {
+    width: 90%;
+  }
+  .contact-form {
+    gap: 18px;
+  }
+  .form-label {
+    font-size: 13px;
+    margin-bottom: 8px;
+    letter-spacing: 0;
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  .submit-button {
+    color: #000000;
+    font-weight: 700;
+    padding: 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    letter-spacing: 0;
   }
 }
 
 @media (max-width: 480px) {
   .contact-title {
-    font-size: 2rem;
+    font-size: 24px;
     margin-bottom: 2rem;
+  }
+  .contact-form-container {
+    padding: 6rem 1rem 5rem 1rem;
+  }
+  .contact-form-wrapper {
+    width: 90%;
+  }
+  .contact-form {
+    gap: 14px;
+  }
+  .form-label {
+    font-size: 12px;
+    margin-bottom: 8px;
+    letter-spacing: 0;
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  .submit-button {
+    color: #000000;
+    font-weight: 700;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    letter-spacing: 0;
   }
 }

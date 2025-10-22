@@ -30,7 +30,7 @@ const ProductCard = ({ product }) => {
     <>
       <Link
         to={`/product/${product.id}`}
-        className="w-[250px] min-h-[550px] relative flex flex-col gap-4 cursor-pointer group"
+        className="lg:w-[250px] w-[160px] min-h-[330px] md:w-[200px] md:min-h-[430px] lg:min-h-[550px] relative flex flex-col gap-2 lg:gap-4 cursor-pointer group"
       >
         <button
           onClick={(e) => {
@@ -38,7 +38,7 @@ const ProductCard = ({ product }) => {
             e.stopPropagation(); // stop event bubbling
             handleWishlist();
           }}
-          className="absolute top-3 right-3 z-20 rounded-[4px] w-9 h-9 bg-slate-800 flex justify-center items-center"
+          className="absolute top-2 right-2 lg:top-3 lg:right-3 z-20 rounded-[4px] lg:w-9 lg:h-9 md:w-7 md:h-7 w-6 h-6 bg-slate-800 flex justify-center items-center"
         >
           <AnimatePresence>
             {isInWishlist && (
@@ -80,9 +80,9 @@ const ProductCard = ({ product }) => {
             transition={{ duration: 0.4, ease: "easeOut" }}
           >
             {isInWishlist ? (
-              <IoHeartSharp className="text-[19px] text-pink-600" />
+              <IoHeartSharp className="text-[16px] lg:text-[19px] text-pink-600" />
             ) : (
-              <GoHeart className="text-[18px] text-white" />
+              <GoHeart className="text-[15px] lg:text-[18px] text-white" />
             )}
           </motion.div>
         </button>
@@ -90,28 +90,28 @@ const ProductCard = ({ product }) => {
           <img
             src={product.image}
             alt={product.name}
-            className="w-full h-[400px] object-cover transition-transform duration-500 group-hover:scale-110"
+            className="w-full h-[250px] md:h-[300px] lg:h-[400px] object-cover transition-transform duration-500 group-hover:scale-110"
           />
         </div>
 
         <div className="flex justify-between items-start text-white">
-          <div className="flex flex-col justify-center items-start gap-3">
-            <h1 className="w-[90%] text-[18px] font2-bold capitalize leading-7">
+          <div className="flex flex-col justify-center items-start gap-2 lg:gap-3">
+            <h1 className="w-[90%] text-[12px] md:text-[15px] lg:text-[18px] font2-bold capitalize lg:leading-7">
               {product.name}
             </h1>
-            <p className="font2 text-[16px] leading-none">₹{product.price}</p>
+            <p className="font2 text-[12px] md:text-[14px] lg:text-[16px] leading-none">₹{product.price}</p>
           </div>
-          <div className="flex flex-col justify-center items-start gap-3">
-            <p className="px-2 py-1 border-2 border-white text-[16px] font2">
+          <div className="flex flex-col justify-center items-start gap-2 md:gap-3">
+            <p className="px-2 py-1 border-2 border-white text-[12px] md:text-[14px] lg:text-[16px] font2">
               {product.discount}%
             </p>
-            <p className="text-gray-500 line-through font2 text-[16px]">
+            <p className="text-gray-500 line-through font2 text-[12px] md:text-[14px] lg:text-[16px]">
               ₹{product.actualPrice}
             </p>
           </div>
         </div>
-        <div className="flex justify-start">
-          <p className="text-white/65 tracking-wide font2 capitalize text-[12px] leading-0">
+        <div className="flex justify-start pt-1 lg:pt-0">
+          <p className="text-white/65 tracking-wide font2 capitalize text-[8px] md:text-[10px] lg:text-[12px] leading-0">
             {product.id + 2} styling Available
           </p>
         </div>

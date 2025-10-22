@@ -26,26 +26,121 @@ function Cart() {
   const shipping = subtotal > 1000 && subtotal < 7000 ? 0 : 100;
 
   return (
-    <div className="min-h-screen bg-black text-white mt-28">
+    <div className="min-h-screen bg-black text-white mt-20 md:mt-28">
       <Link
         to={"/product"}
         aria-label="Go to product details"
         title="Go to Product"
-        className="group absolute top-[150px] left-[100px] z-20 inline-flex items-center justify-center rounded-full border border-neutral-700 bg-black p-2 text-gray-300 hover:text-white hover:border-gray-500 focus:outline-none backdrop-blur"
+        className="group absolute top-[90px] left-[20px] md:top-[130px] lg:top-[150px] md:left-[30px] lg:left-[100px] z-20 inline-flex items-center justify-center rounded-full border border-neutral-700 bg-black p-2 text-gray-300 hover:text-white hover:border-gray-500 focus:outline-none backdrop-blur"
       >
         {/* Package/Box icon (SVG) */}
-        <FaArrowLeft className="transition-transform group-hover:-translate-y-0.5 text-white text-[18px]" />
+        <FaArrowLeft className="transition-transform group-hover:-translate-y-0.5 text-white text-[12px] md:text-[18px]" />
       </Link>
-      <div className="mx-auto max-w-6xl px-4 py-10">
-        <h1 className="mb-8 text-[30px] font1 uppercase text-white">
+
+      <div className="w-[90%] lg:w-[80%] mx-auto flex justify-start items-center py-3 px-10">
+        <h1 className="mb-8 text-[20px] md:text-[30px] font1 uppercase text-white">
           Shopping Cart
         </h1>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="mx-auto max-w-6xl px-4 py-2 md:py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* mobile view */}
+          <section className="grid md:hidden grid-cols-1 gap-3 mb-[350px]">
+            {cart.length === 0 ? (
+              <div className="p-8 text-center font2 text-[13px] text-neutral-400">
+                Your cart is empty.
+              </div>
+            ) : (
+              cart.map((it) => {
+                const line = it.quantity * it.price;
+                return (
+                  <div
+                    key={it.id}
+                    className="w-[100%] border border-neutral-800 bg-black/20 rounded-xl px-3 py-3"
+                  >
+                    {/* Product */}
+
+                    <div className="flex justify-between items-center gap-4">
+                      <div className="flex justify-center items-center gap-3">
+                        <Link
+                          to={`/product/${it.id}`}
+                          className="flex items-center gap-4"
+                        >
+                          <img
+                            src={it.image}
+                            alt={it.name}
+                            className="h-[100px] w-[60px] rounded-lg object-cover ring-1 ring-neutral-800"
+                          />
+                        </Link>
+                        <div className="flex flex-col gap-2 items-start justify-center">
+                          <div>
+                            <p className="font-medium font2-medium text-white leading-5">
+                              {it.name}
+                            </p>
+                            <p className="text-sm font2 text-neutral-400">
+                              {it.category}
+                            </p>
+                          </div>
+                          <div className="w-full flex justify-between items-center">
+                            {/* Line total */}
+                            <div className=" text-center font2-medium font-medium tabular-nums">
+                              {currency(line)}
+                            </div>
+  
+                            {/* Remove */}
+                            <div className=" flex justify-center items-center mx-3">
+                              <button
+                                onClick={() => removeFromCart(it.id)}
+                                className="h-5 w-5 inline-flex items-center justify-center rounded-full hover:bg-neutral-800 text-neutral-300"
+                                aria-label="Remove item"
+                              >
+                                <FaTrashCan />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Qty */}
+                      <div className=" flex flex-col justify-center">
+                        <div className="flex flex-col items-center gap-4 rounded-[10px] border border-neutral-800 bg-gray-900/40 py-3">
+                          <button
+                            onClick={() => updateCartItemQuantity(it.id, -1)}
+                            className="h-3 w-3 inline-flex items-center justify-center rounded-full hover:bg-neutral-800"
+                            aria-label="Decrease"
+                          >
+                            <FaMinus />
+                          </button>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            min={1}
+                            value={it.quantity}
+                            readOnly
+                            className="w-10 bg-transparent text-[16px] font2 text-center outline-none"
+                          />
+                          <button
+                            onClick={() => updateCartItemQuantity(it.id, 1)}
+                            className="h-3 w-3 inline-flex items-center justify-center rounded-full hover:bg-neutral-800"
+                            aria-label="Increase"
+                          >
+                            <FaPlus />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </section>
+
           {/* Items */}
-          <section className="lg:col-span-2">
-            <div className="rounded-2xl border border-neutral-800 bg-black/20">
-              <div className="w-[100%] grid grid-cols-12 px-4  py-4 text-[12px] font2 uppercase text-neutral-400">
+          <section className="lg:col-span-2 hidden md:block">
+            <div className="w-full rounded-2xl border border-neutral-800 bg-black/20">
+              <div className="lg:w-[100%] grid grid-cols-12 px-4  py-4 text-[12px] font2 uppercase text-neutral-400">
                 <div className="col-span-6">Product</div>
                 <div className="col-span-3 text-center">Quantity</div>
                 <div className="col-span-2 text-center">Total</div>
@@ -140,13 +235,18 @@ function Cart() {
           </section>
 
           {/* Summary */}
-          <aside className="lg:col-span-1">
-            <div className="rounded-2xl border border-neutral-800 bg-black/20 p-5">
+          <aside className="lg:col-span-1 lg:static fixed bottom-0 left-0 w-full lg:w-auto">
+            <div className="rounded-t-2xl lg:rounded-2xl border border-neutral-800 bg-black md:bg-black/20 z-50 p-5">
               <h3 className="mb-3 text-lg font2 uppercase font-semibold">
                 Order Summary
               </h3>
               <div className="my-5 h-px bg-neutral-800" />
+
               <div className="font2-bold text-[14px] flex flex-col gap-3">
+                <SummaryRow
+                  label="Total no. of Items"
+                  value={cart.reduce((sum, it) => sum + it.quantity, 0)}
+                />
                 <SummaryRow label="Sub Total" value={currency(subtotal)} />
                 <SummaryRow
                   label="Delivery fee"

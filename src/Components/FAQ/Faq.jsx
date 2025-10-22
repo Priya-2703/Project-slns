@@ -42,17 +42,17 @@ const faqSections = [
 
 function AccordionItem({ id, question, answer, isOpen, onToggle }) {
   return (
-    <div className="flex justify-center flex-col items-center text-[15px] font-['Poppins'] px-8">
+    <div className="flex justify-center flex-col items-center md:text-[15px] font-['Poppins'] px-3 md:px-8">
       <button
         onClick={() => onToggle(id)}
-        className="w-full flex justify-between items-center text-[15px] tracking-wide text-white cursor-pointer select-none text-left"
+        className="w-full flex justify-between items-center text-[12px] md:text-[15px] tracking-wide text-white cursor-pointer select-none text-left"
         aria-expanded={isOpen}
         aria-controls={`panel-${id}`}
         id={`accordion-${id}`}
       >
         {question}
         <svg
-          className={`h-6 w-6 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+          className={`md:h-6 md:w-6 w-4 h-4 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
           viewBox="0 0 20 20"
           fill="currentColor"
           aria-hidden="true"
@@ -68,7 +68,7 @@ function AccordionItem({ id, question, answer, isOpen, onToggle }) {
         id={`panel-${id}`}
         role="region"
         aria-labelledby={`accordion-${id}`}
-        className={`mt-3 py-1 overflow-hidden transition-[max-height,opacity] font2 text-[12px] duration-300 ease-in-out ${
+        className={`mt-3 py-1 overflow-hidden transition-[max-height,opacity] font2 text-[10px] md:text-[12px] duration-300 ease-in-out ${
           isOpen ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
         }`}
       >
@@ -207,10 +207,10 @@ const Faq = () => {
 
   return (
     <>
-      <div className="w-full mx-auto bg-black mt-28 py-5">
-        <div className="w-[80%] mx-auto">
+      <div className="w-full mx-auto bg-black mt-20 md:mt-28 py-3 md:py-5">
+        <div className="w-[85%] lg:w-[80%] mx-auto">
           <div className="flex justify-start items-start">
-            <p className="text-white text-[12px] tracking-wide font2">
+            <p className="text-white text-[10px] lg:text-[12px] tracking-wide font2">
               <Link to={"/"} className="text-white/80 hover:text-white">
                 Home
               </Link>{" "}
@@ -220,15 +220,15 @@ const Faq = () => {
         </div>
 
         <div className="flex justify-center items-center">
-          <h1 className="about-reveal text-[45px] py-3 font1 font-[200] uppercase text-white">
+          <h1 className="about-reveal text-[26px] md:text-[32px] lg:text-[45px] py-2 md:py-3 font1 font-[200] uppercase text-white">
             FAQ
           </h1>
         </div>
 
         {/* content */}
-        <div className="w-[70%] mx-auto flex justify-center items-start py-10 gap-10">
+        <div className="w-[90%] lg:w-[70%] mx-auto flex justify-center items-start py-5 md:py-10 gap-10">
           {/* Short topic */}
-          <div className="w-[30%] flex justify-center items-center gap-8 sticky top-24">
+          <div className="w-[30%] justify-center items-center gap-8 sticky top-24 hidden lg:flex">
             <span
               ref={trackRef}
               className="h-[170px] w-[2px] relative bg-white/10 rounded-4xl overflow-hidden"
@@ -264,15 +264,15 @@ const Faq = () => {
           </div>
 
           {/* Right side: Qs and As */}
-          <div className="w-[70%] flex flex-col justify-center items-center px-8">
+          <div className="w-full lg:w-[70%] flex flex-col justify-center items-center lg:px-8">
             {faqSections.map((section, idx) => (
               <section
                 key={section.title}
                 id={`section-${section.prefix}`}
                 ref={(el) => (sectionRefs.current[idx] = el)}
-                className="w-full text-white flex flex-col gap-6 pb-8"
+                className="w-full text-white flex flex-col gap-3 md:gap-6 pb-3 md:pb-8"
               >
-                <h1 className="w-full bg-white/10 text-[15px] px-8 py-6 font2-bold">
+                <h1 className="w-full bg-white/10 text-[12px] md:text-[15px] px-8 py-4 md:py-6 font2-bold">
                   {section.title}
                 </h1>
 

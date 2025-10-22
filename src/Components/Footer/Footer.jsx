@@ -1,18 +1,24 @@
 import React, { useEffect, useRef } from "react";
-import "./Footer.css"
+import "./Footer.css";
 import { assets } from "../../../public/assets/asset";
 import gsap from "gsap";
 import _ScrollTrigger from "gsap/ScrollTrigger";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useIsMobile } from "../../Hooks/useIsMobile";
 
 gsap.registerPlugin(_ScrollTrigger);
 
 const Footer = () => {
- const logoRef = useRef(null);
+  const logoRef = useRef(null);
 
- useEffect(()=>{
-  //logo animation
-  gsap.fromTo(
+  const location = useLocation();
+  const isMobile = useIsMobile();
+
+ 
+
+  useEffect(() => {
+    //logo animation
+    gsap.fromTo(
       logoRef.current,
       { scale: 0.1 },
       {
@@ -26,10 +32,12 @@ const Footer = () => {
         },
       }
     );
+  }, []);
 
- },[])
-
-
+   // mobile & cart page
+  if (isMobile && location.pathname === "/cart") {
+    return null; // hide footer
+  }
 
   return (
     <>
@@ -37,7 +45,12 @@ const Footer = () => {
         {/* Footer */}
         <footer className="footer bg-black">
           <div className="w-full flex justify-center items-center pb-20">
-              <img ref={logoRef} src={assets.logo} alt="logo" className="w-40"/>
+            <img
+              ref={logoRef}
+              src={assets.logo}
+              alt="logo"
+              className="w-20 md:w-40"
+            />
           </div>
           <div className="footer-content">
             <div className="footer-brand">
@@ -88,14 +101,20 @@ const Footer = () => {
             <div className="footer-links">
               <div className="footer-column">
                 <h4>Product</h4>
-                <Link to={"/"}><a >Home</a></Link>
+                <Link to={"/"}>
+                  <a>Home</a>
+                </Link>
                 <a href="./sort-by/all-products">Advisable</a>
                 <a href="./sort-by/churidars">Promotions</a>
               </div>
               <div className="footer-column">
                 <h4>Company</h4>
-                <Link to={"/contact"}><a>Contact</a></Link>
-                <Link to={"/faq"}><a >FAQ</a></Link>
+                <Link to={"/contact"}>
+                  <a>Contact</a>
+                </Link>
+                <Link to={"/faq"}>
+                  <a>FAQ</a>
+                </Link>
               </div>
               <div className="footer-column">
                 <h4>Legal</h4>
@@ -106,24 +125,26 @@ const Footer = () => {
             </div>
           </div>
           <div className="footer-bottom">
-            <p className="copyright">© 2025 lunai. All rights reserved.</p>
-            <div className="payment-methods">
-              <div className="payment-icon" >
+            <p className="copyright order-2 md:order-1">
+              © 2025 lunai. All rights reserved.
+            </p>
+            <div className="payment-methods order-1 md:order-2">
+              <div className="payment-icon">
                 <img src={assets.visa} alt="visa" />
               </div>
-              <div className="payment-icon" >
+              <div className="payment-icon">
                 <img src={assets.mastercard} alt="mastercard" />
               </div>
-              <div className="payment-icon" >
+              <div className="payment-icon">
                 <img src={assets.ipay} alt="ipay" />
               </div>
-              <div className="payment-icon" >
+              <div className="payment-icon">
                 <img src={assets.gpay} alt="gpay" />
               </div>
-              <div className="payment-icon" >
+              <div className="payment-icon">
                 <img src={assets.paypal} alt="paypal" />
               </div>
-              <div className="payment-icon" >
+              <div className="payment-icon">
                 <img src={assets.stripe} alt="stripe" />
               </div>
             </div>

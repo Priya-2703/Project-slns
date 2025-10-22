@@ -23,6 +23,7 @@ import WishList from "./Components/WishList/WishList";
 import WishlistProvider from "./Context/UseWishListContext";
 import { ToastProvider } from "./Context/UseToastContext";
 import BackToTopButton from "./Components/BacktoTopButton";
+import Profile from "./Components/Profile/Profile";
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
                 <Route path="/" element={<Landing />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/product" element={<Product />} />
+                <Route path="/profile" element={<Profile />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/product/product-review" element={<ProductReview />} />
                 <Route path="/cart" element={<Cart />} />
