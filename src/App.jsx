@@ -25,6 +25,13 @@ import { ToastProvider } from "./Context/UseToastContext";
 import BackToTopButton from "./Components/BacktoTopButton";
 import Profile from "./Components/Profile/Profile";
 
+import ProtectedAdminRoute, { RedirectIfAdmin } from './Components/Auth/ProtectedAdminRoute';
+
+import AdminDashboard from "./Components/Admin/AdminDashboard";
+import AddProduct from "./Components/Admin/AddProduct";
+import BulkImport from "./Components/Admin/BulkImport";
+
+
 function App() {
   return (
     <>
@@ -35,6 +42,9 @@ function App() {
               <ScrollToTop behavior="smooth" />
               <Navbar />
               <Routes>
+                {/* ========================================
+                    PUBLIC ROUTES (Everyone can access)
+                  ======================================== */}
                 <Route path="/" element={<Landing />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/product" element={<Product />} />
@@ -46,11 +56,34 @@ function App() {
                 <Route path="/checkout" element={<CheckOut />} />
                 <Route path="/faq" element={<Faq />} />
                 <Route path="/contact" element={<ContactForm />} />
-                <Route path="/signup" element={<SignUp />} />
+
+              {/* ========================================
+                AUTH ROUTES (Redirect admin if already logged in)
+                ======================================== */}
+                <Route path="/signin" element={<RedirectIfAdmin ><SignIn /></RedirectIfAdmin >} />
+                <Route path="/signup" element={<RedirectIfAdmin ><SignUp /></RedirectIfAdmin >} />
                 <Route path="/b2b-signup" element={<B2bSignUp />} />
-                <Route path="/signin" element={<SignIn />} />
                 <Route path="/b2b-signin" element={<B2bSignIn />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
+
+                 {/* ========================================
+                      ADMIN ROUTES (Protected - Admin Only)
+                    ======================================== */}
+                <Route path="/admin/dashboard" element={ <ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute> }  />
+                <Route path="/admin/products/add" element={<ProtectedAdminRoute><AddProduct /></ProtectedAdminRoute>  } />
+                <Route path="/admin/import" element={ <ProtectedAdminRoute><BulkImport /></ProtectedAdminRoute> } />
+
+                {/* ========================================
+                  404 NOT FOUND
+                ======================================== */}
+                <Route path="*" element={
+                  <div className="min-h-screen bg-black flex items-center justify-center">
+                  <div className="text-center">
+                    <h1 className="text-6xl font-bold text-white mb-4">404</h1>
+                    <p className="text-white text-xl">Page not found</p>
+                  </div>
+                  </div>
+                } />
               </Routes>
               <Footer />
             </Router>

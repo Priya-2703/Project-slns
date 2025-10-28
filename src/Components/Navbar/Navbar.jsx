@@ -1,35 +1,80 @@
 import {
   CircleUserRound,
-  Search,
-  SearchCheck,
   ShoppingCart,
   X,
 } from "lucide-react";
-import { FaHeart } from "react-icons/fa";
 import { assets } from "../../../public/assets/asset";
 import { FaCircleArrowLeft } from "react-icons/fa6";
 import { useContext, useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { IoBusiness, IoSearch } from "react-icons/io5";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { IoBusiness } from "react-icons/io5";
 import { CartContext } from "../../Context/UseCartContext";
 import { GoHeart } from "react-icons/go";
 import { WishlistContext } from "../../Context/UseWishListContext";
 
 const Navbar = () => {
-  // const [productOpen, setProductOpen] = useState(false); // dropdown
   const { cart } = useContext(CartContext);
   const { wishlist } = useContext(WishlistContext);
-  const [showCard, setShowCard] = useState(false); // profile card
-  const [menuOpen, setMenuOpen] = useState(false); // side menu 
+  const [showCard, setShowCard] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const cardRef = useRef(null);
   const signRef = useRef(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
+  // ⭐ NEW: Track user login status and role
+  const [user, setUser] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // ⭐ NEW: Check login status on component mount and when location changes
   useEffect(() => {
-    setMenuOpen(false); // any navigation -> close menu
+    checkLoginStatus();
   }, [location.pathname]);
 
-  // Close profile card when clicking outside (mousemove -> mousedown for perf)
+  const checkLoginStatus = () => {
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    
+    if (token && userStr) {
+      try {
+        const userData = JSON.parse(userStr);
+        setUser(userData);
+        setIsLoggedIn(true);
+      } catch (err) {
+        console.error('Error parsing user data:', err);
+        setUser(null);
+        setIsLoggedIn(false);
+      }
+    } else {
+      setUser(null);
+      setIsLoggedIn(false);
+    }
+  };
+
+  // ⭐ NEW: Logout function
+  const handleLogout = () => {
+    // Clear all stored data
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    
+    // Update state
+    setUser(null);
+    setIsLoggedIn(false);
+    setShowCard(false);
+    setMenuOpen(false);
+    
+    // Redirect to home
+    navigate('/');
+    
+    // Optional: Show success message
+    // You can use your toast context here if you have one
+    console.log('Logged out successfully');
+  };
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
+
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (
@@ -44,7 +89,6 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Optional: ESC to close menu/profile
   useEffect(() => {
     const onKeyDown = (e) => {
       if (e.key === "Escape") {
@@ -56,8 +100,29 @@ const Navbar = () => {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  //responsive
-  const mobileView = window.innerWidth < 480
+  const mobileView = window.innerWidth < 480;
+
+  // ⭐ NEW: Admin menu items
+  const adminMenuItems = [
+    { path: '/admin/dashboard', label: 'Dashboard', icon: '📊' },
+    { path: '/product', label: 'View Products', icon: '📦' },
+    { path: '/admin/products/add', label: 'Add Product', icon: '➕' },
+    { path: '/admin/categories', label: 'Manage Categories', icon: '🏷️' },
+    { path: '/admin/import', label: 'Bulk Import', icon: '📥' },
+    { path: '/admin/orders', label: 'Order Management', icon: '🛒' },
+    { path: '/admin/customers', label: 'Customer Management', icon: '👥' },
+  ];
+
+  // ⭐ NEW: Regular user menu items
+  const userMenuItems = [
+    { path: '/', label: 'Home' },
+    { path: '/about', label: 'About Us' },
+    { path: '/product', label: 'Product' },
+    { path: '/wishlist', label: 'Wishlist' },
+    { path: '/profile', label: 'Profile' },
+    { path: '/faq', label: 'FAQ' },
+    { path: '/contact', label: 'Contact' },
+  ];
 
   return (
     <>
@@ -68,47 +133,60 @@ const Navbar = () => {
               src={assets.logo}
               alt="logo"
               className="w-[60px] md:w-[80px] cursor-pointer select-none"
-              onClick={() => setMenuOpen(true)} // Logo click -> open menu
+              onClick={() => setMenuOpen(true)}
             />
           </div>
 
           <div className="flex justify-center items-center gap-8 md:gap-16">
-            <Link to={"/wishlist"}>
-              <div className="relative">
-                <span>
-                  <GoHeart
-                    // onClick={() => setSearch((q) => !q)}
-                    size={mobileView ?16: 20}
-                    color="#955E30"
-                    className="nav-item"
-                  />
-                </span>
-                {/* 🔴 Notification Badge */}
-                {wishlist.length > 0 && (
-                  <span className="absolute -top-3 -right-3 md:-top-4 md:-right-4 bg-[#955E30] text-white text-[10px] md:text-[12px] font-semibold rounded-full w-4 h-4 md:w-5 md:h-5 flex justify-center items-center">
-                    {wishlist.length}
-                  </span>
-                )}
+            {/* ⭐ UPDATED: Hide wishlist and cart for admin */}
+            {user?.role !== 'admin' && (
+              <>
+                <Link to={"/wishlist"}>
+                  <div className="relative">
+                    <span>
+                      <GoHeart
+                        size={mobileView ? 16 : 20}
+                        color="#955E30"
+                        className="nav-item"
+                      />
+                    </span>
+                    {wishlist.length > 0 && (
+                      <span className="absolute -top-3 -right-3 md:-top-4 md:-right-4 bg-[#955E30] text-white text-[10px] md:text-[12px] font-semibold rounded-full w-4 h-4 md:w-5 md:h-5 flex justify-center items-center">
+                        {wishlist.length}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+                <Link to={"/cart"}>
+                  <div className="flex items-center relative gap-2">
+                    <span>
+                      <ShoppingCart
+                        size={mobileView ? 16 : 20}
+                        strokeWidth={1.5}
+                        color="#955E30"
+                        className="nav-item"
+                      />
+                    </span>
+                    {cart.length > 0 && (
+                      <span className="absolute -top-3 -right-3 md:-top-4 md:-right-4 bg-[#955E30] text-white text-[10px] md:text-[12px] font-semibold rounded-full w-4 h-4 md:w-5 md:h-5 flex justify-center items-center">
+                        {cart.length}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              </>
+            )}
+
+            {/* ⭐ UPDATED: Show admin badge for admin users */}
+            {user?.role === 'admin' && (
+              <div className="hidden md:flex items-center gap-2 bg-[#955E30] px-3 py-1 rounded-full">
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
+                </svg>
+                <span className="text-white text-xs font2">Admin</span>
               </div>
-            </Link>
-            <Link to={"/cart"}>
-              <div className="flex items-center relative gap-2">
-                <span>
-                  <ShoppingCart
-                    size={mobileView? 16: 20}
-                    strokeWidth={1.5}
-                    color="#955E30"
-                    className="nav-item"
-                  />
-                </span>
-                {/* 🔴 Notification Badge */}
-                {cart.length > 0 && (
-                  <span className="absolute -top-3 -right-3 md:-top-4 md:-right-4  bg-[#955E30] text-white text-[10px] md:text-[12px] font-semibold rounded-full w-4 h-4 md:w-5 md:h-5 flex justify-center items-center">
-                    {cart.length}
-                  </span>
-                )}
-              </div>
-            </Link>
+            )}
+
             <span
               ref={signRef}
               className="relative signin"
@@ -121,6 +199,8 @@ const Navbar = () => {
                 color="#955E30"
                 className="nav-item"
               />
+              
+              {/* ⭐ UPDATED: Profile dropdown */}
               <div
                 ref={cardRef}
                 className={`absolute top-[30px] z-[50] font-['Poppins'] right-[-3px] w-[160px] glass-card py-2 px-1 rounded-[14px] transition-all duration-300 ${
@@ -130,39 +210,54 @@ const Navbar = () => {
                 }`}
               >
                 <div className="flex flex-col justify-center items-center gap-1">
-                  {/* <Link
-                    to={"/wishlist"}
-                    className="w-full bg-black/50 px-5 py-1.5 rounded-[10px]"
-                  >
-                    <p className="text-white/60 hover:text-white transition-all duration-200 flex justify-center items-center gap-2 text-[14px]">
-                      <FaHeart className=" text-[14px]" /> Wishlist
-                    </p>
-                  </Link> */}
-                  <Link
-                    to={"/signin"}
-                    className="w-full bg-black/50 px-5 py-1.5 rounded-[10px]"
-                  >
-                    <p className="text-white/60 hover:text-white transition-all duration-200 flex justify-center items-center gap-2 text-[14px]">
-                      Sign In
-                    </p>
-                  </Link>
-                  <Link
-                    to={"/b2b-signin"}
-                    className="w-full bg-black/50 px-5 py-1.5 rounded-[10px]"
-                  >
-                    <p className="text-white/60 hover:text-white transition-all duration-200 flex justify-center items-center gap-2 text-[14px]">
-                      <IoBusiness className=" text-[12px]" /> B 2 B{" "}
-                    </p>
-                  </Link>
-                  <span className="bg-white/20 w-full h-[1px] my-1"></span>
-                  <Link
-                    to={"/"}
-                    className="w-full bg-black/50 text-white/60 hover:bg-[#bb5e00] hover:text-white transition-all duration-200  px-5 py-1.5 rounded-[10px]"
-                  >
-                    <p className=" flex justify-center items-center gap-2 text-[14px]">
-                      <FaCircleArrowLeft className=" text-[15px]" /> Sign Out
-                    </p>
-                  </Link>
+                  {/* ⭐ NEW: Show user info if logged in */}
+                  {isLoggedIn && user && (
+                    <div className="w-full px-3 py-2 mb-2">
+                      <p className="text-white text-xs font-semibold truncate">{user.name}</p>
+                      <p className="text-white/60 text-[10px] truncate">{user.email}</p>
+                      {user.role === 'admin' && (
+                        <span className="inline-block mt-1 bg-[#955E30] text-white text-[9px] px-2 py-0.5 rounded-full">
+                          Admin
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* ⭐ UPDATED: Show sign in/out based on login status */}
+                  {!isLoggedIn ? (
+                    <>
+                      <Link
+                        to={"/signin"}
+                        className="w-full bg-black/50 px-5 py-1.5 rounded-[10px]"
+                        onClick={() => setShowCard(false)}
+                      >
+                        <p className="text-white/60 hover:text-white transition-all duration-200 flex justify-center items-center gap-2 text-[14px]">
+                          Sign In
+                        </p>
+                      </Link>
+                      <Link
+                        to={"/b2b-signin"}
+                        className="w-full bg-black/50 px-5 py-1.5 rounded-[10px]"
+                        onClick={() => setShowCard(false)}
+                      >
+                        <p className="text-white/60 hover:text-white transition-all duration-200 flex justify-center items-center gap-2 text-[14px]">
+                          <IoBusiness className="text-[12px]" /> B2B
+                        </p>
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      <span className="bg-white/20 w-full h-[1px] mb-1"></span>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full bg-black/50 text-white/60 hover:bg-[#bb5e00] hover:text-white transition-all duration-200 px-5 py-1.5 rounded-[10px]"
+                      >
+                        <p className="flex justify-center items-center gap-2 text-[14px]">
+                          <FaCircleArrowLeft className="text-[15px]" /> Sign Out
+                        </p>
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </span>
@@ -170,7 +265,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Optional overlay: outside click -> close menu */}
+      {/* Overlay */}
       <div
         className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 ${
           menuOpen
@@ -180,7 +275,7 @@ const Navbar = () => {
         onClick={() => setMenuOpen(false)}
       />
 
-      {/* Side Menu (slides from left) */}
+      {/* ⭐ UPDATED: Side Menu with role-based items */}
       <div
         className={`fixed z-50 left-0 top-[80px] md:top-[100px] w-[200px] md:w-[330px] h-auto px-4 md:px-8 py-4 md:py-8 rounded-r-[20px] bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-white/5 justify-center overflow-hidden transform transition-transform duration-300 ease-in-out ${
           menuOpen ? "translate-x-0" : "-translate-x-full"
@@ -191,7 +286,7 @@ const Navbar = () => {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="font2-medium text-[12px] md:text-[16px] tracking-wide uppercase text-white">
-                Menu
+                {user?.role === 'admin' ? 'Admin Menu' : 'Menu'}
               </h1>
             </div>
             <button
@@ -204,107 +299,56 @@ const Navbar = () => {
           </div>
 
           <div className="w-[100%] flex flex-col text-[12px] md:text-[16px] justify-center gap-8 md:gap-10">
-            <Link to={"/"}>
-              <p className=" tracking-wide uppercase text-white">
-                Home
-              </p>
-            </Link>
-            <Link to={"/about"}>
-              <p className="tracking-wide uppercase text-white">
-                About Us
-              </p>
-            </Link>
-
-            {/* Product + Dropdown  mb-[-15px]*/}
-            <div className="w-full">
-              <Link to={"/product"}>
-                <button
-                  type="button"
-                  // onClick={() => setProductOpen((o) => !o)}
-                  className="w-full flex justify-between items-center tracking-wide uppercase text-white cursor-pointer select-none"
-                  // aria-expanded={productOpen}
-                  // aria-controls="product-menu"
-                >
-                  Product
-                  {/* <svg
-                    className={`h-6 w-6 transition-transform duration-300 ${
-                      productOpen ? "rotate-180" : ""
-                    }`}
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
+            {/* ⭐ NEW: Conditional menu based on role */}
+            {user?.role === 'admin' ? (
+              // Admin Menu
+              <>
+                {adminMenuItems.map((item, index) => (
+                  <Link 
+                    key={index} 
+                    to={item.path}
+                    onClick={() => setMenuOpen(false)}
                   >
-                    <path
-                      fillRule="evenodd"
-                      d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
-                      clipRule="evenodd"
-                    />
-                  </svg> */}
+                    <p className="tracking-wide uppercase text-white hover:text-[#955E30] transition-colors flex items-center gap-2">
+                      <span>{item.icon}</span>
+                      {item.label}
+                    </p>
+                  </Link>
+                ))}
+              </>
+            ) : (
+              // Regular User Menu
+              <>
+                {userMenuItems.map((item, index) => (
+                  <Link 
+                    key={index} 
+                    to={item.path}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    <p className="tracking-wide uppercase text-white hover:text-[#955E30] transition-colors">
+                      {item.label}
+                    </p>
+                  </Link>
+                ))}
+              </>
+            )}
+
+            {/* ⭐ NEW: Sign out button at bottom of menu (only if logged in) */}
+            {isLoggedIn && (
+              <>
+                <span className="bg-white/20 w-full h-[1px]"></span>
+                <button
+                  onClick={handleLogout}
+                  className="tracking-wide uppercase text-white hover:text-red-500 transition-colors flex items-center gap-2"
+                >
+                  <FaCircleArrowLeft className="text-[15px]" />
+                  Sign Out
                 </button>
-              </Link>
-
-              {/* <div
-                id="product-menu"
-                className={`pl-4 mt-3 overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
-                  productOpen ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
-                }`}
-              >
-                <ul className="flex flex-col gap-3">
-                  <li className="border-b-[1px] pb-3 px-2 border-white/20">
-                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
-                      Sarees
-                    </a>
-                  </li>
-                  <li className="border-b-[1px] pb-3 px-2 border-white/20">
-                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
-                      Half sarees
-                    </a>
-                  </li>
-                  <li className="border-b-[1px] pb-3 px-2 border-white/20">
-                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
-                      Chudidhars
-                    </a>
-                  </li>
-                  <li className="border-b-[1px] pb-3 px-2 border-white/20">
-                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
-                      Dhotis & Shirts for Mens
-                    </a>
-                  </li>
-                  <li className="border-b-[1px] pb-4 px-2 border-white/20">
-                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
-                      Dhotis & Shirts for Kids
-                    </a>
-                  </li>
-                </ul>
-              </div> */}
-            </div>
-
-            <Link to={"/wishlist"}>
-              <p className=" tracking-wide uppercase text-white">
-                Wishlist
-              </p>
-            </Link>
-            <Link to={"/profile"}>
-              <p className=" tracking-wide uppercase text-white">
-                profile
-              </p>
-            </Link>
-            <Link to={"/faq"}>
-              <p className=" tracking-wide uppercase text-white">
-                FAQ
-              </p>
-            </Link>
-            <Link to={"/contact"}>
-              <p className=" tracking-wide uppercase text-white">
-                Contact
-              </p>
-            </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
-
-
-
-
     </>
   );
 };
