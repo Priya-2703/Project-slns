@@ -31,14 +31,17 @@ const categories = [
 const Product = () => {
   const { data,loading } = UseFetchData();
   const [search, setSearch] = useState("");
-
-  //dropdown
-  const [products, setProducts] = useState(data);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  
+  // 🔄 CHANGED: Fetch from database with category and search filters
+  const { data, loading, error } = UseFetchData(selectedCategory, null);
+  
+  const [products, setProducts] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState("Sort By");
   const dropdownRef = useRef(null);
-  const [selectedCategory, setSeletedCategory] = useState(null);
 
+  // 🔄 CHANGED: Filter products locally for search
   const displayProducts = products.filter((item) => {
     const matchCategory = selectedCategory
       ? item.category_name === selectedCategory
@@ -46,22 +49,27 @@ const Product = () => {
     const matchSearch = search
       ? item.product_name.toLowerCase().includes(search.toLowerCase())
       : true;
-    return matchCategory && matchSearch;
+    return matchSearch;
   });
 
   const handleSearch = (e) => {
     e.preventDefault();
     setProducts(data);
+    // Search is handled by displayProducts filter
   };
 
   const clearSearch = () => {
     setSearch("");
   };
 
+  // 🆕 NEW: Update products when data changes
   useEffect(() => {
-    setProducts(data);
+    if (data && data.length > 0) {
+      setProducts(data);
+    }
   }, [data]);
 
+  // Close dropdown if clicked outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -286,13 +294,46 @@ const Product = () => {
               }`}
             >
               <div
-                className={`md:w-[70px] w-[50px] h-[50px] md:h-[70px] rounded-full border-2 border-white/5 overflow-hidden transition-transform duration-300 ${
+                className={`md:w-[70px] w-[50px] h-[50px] md:h-[70px] rounded-full border-2 border-white/5 overflow-hidden transition-transform duration-300 flex items-center justify-center bg-[#955E30]/20 ${
+                  selectedCategory === null
+                    ? "drop-shadow-[0px_0px_20px] drop-shadow-[#955E30]"
+                    : "drop-shadow-[0px_0px_0px] drop-shadow-[#955E30]"
+                }`}
+              >
+                <span className="text-white text-xl font-bold">All</span>
+              </div>
+              <h1 className="text-[8px] md:text-[10px] text-center font-['Poppins']">
+                All Products
+              </h1>
+            </div>
+
+            {categories.map((item, index) => (
+              <div
+                key={index}
+                onClick={() => setSelectedCategory(item.name)}
+                className={`flex flex-col justify-center items-center cursor-pointer transition-all duration-300 ${
                   selectedCategory === item.name
                     ? "drop-shadow-[0px_0px_20px] drop-shadow-accet"
                     : "drop-shadow-[0px_0px_0px] drop-shadow-accet"
                 }`}
               >
-                <img src={item.img} alt="category" loading="lazy" className="object-cover" />
+                <div
+                  className={`md:w-[70px] w-[50px] h-[50px] md:h-[70px] rounded-full border-2 border-white/5 overflow-hidden transition-transform duration-300 ${
+                    selectedCategory === item.name
+                      ? "drop-shadow-[0px_0px_20px] drop-shadow-[#955E30]"
+                      : "drop-shadow-[0px_0px_0px] drop-shadow-[#955E30]"
+                  }`}
+                >
+                  <img
+                    src={item.img}
+                    alt="category"
+                    loading="lazy"
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+                <h1 className="text-[8px] md:text-[10px] text-center font-['Poppins']">
+                  {item.name}
+                </h1>
               </div>
               <h1 className="text-[8px] md:text-[10px] text-center font-['Poppins']">
                 {item.name}

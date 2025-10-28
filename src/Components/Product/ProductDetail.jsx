@@ -81,8 +81,9 @@ const images = [
 ];
 
 const ProductDetail = () => {
-  const { data } = UseFetchData();
   const [product, setProduct] = useState({});
+//   const [productImages, setProductImages] = useState([]); // 🆕 Multiple images
+  const [loading, setLoading] = useState(true);
   const { cart, addToCart } = useContext(CartContext);
   const { id } = useParams();
   const { showToast } = useContext(ToastContext);
@@ -144,13 +145,14 @@ const ProductDetail = () => {
     }
   };
 
+  // 🆕 Fetch product and its images from database
   useEffect(() => {
     if (data && data.length > 0) {
       const productId = parseInt(id);
       const foundProduct = data.find((item) => item.product_id === productId);
       setProduct(foundProduct);
     }
-  }, [data, id]);
+  };
 
   // Use useMemo to compute isInCart safely
   const isInCart = useMemo(() => {
@@ -214,8 +216,41 @@ const ProductDetail = () => {
   const toggle = (index) => {
     setOpenIndex(openIndex === index ? null : index);
   };
-  const prev = () => setCur((cur) => (cur === 0 ? img.length - 1 : cur - 1));
-  const next = () => setCur((cur) => (cur === img.length - 1 ? 0 : cur + 1));
+
+  const prev = () => setCur((cur) => (cur === 0 ? productImages.length - 1 : cur - 1));
+  const next = () => setCur((cur) => (cur === productImages.length - 1 ? 0 : cur + 1));
+
+  if (loading) {
+    return (
+      <div className="w-full bg-black min-h-screen flex items-center justify-center mt-28">
+        <div className="text-white text-2xl font2">Loading product...</div>
+      </div>
+    );
+  }
+
+  if (!product || !product.product_id) {
+    return (
+      <div className="w-full bg-black min-h-screen flex items-center justify-center mt-28">
+        <div className="text-white text-2xl font2">Product not found</div>
+      </div>
+    );
+  }
+
+  const getImageUrl = (imagePath) => {
+  if (!imagePath) return '/placeholder-image.png'; // Fallback image
+  
+  // If already a full URL, return as is
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    return imagePath;
+  }
+  
+  // If relative path, prepend backend URL
+  if (imagePath.startsWith('/static/')) {
+    return `http://localhost:5000${imagePath}`;
+  }
+  
+  return imagePath;
+};
 
   const backButtonVariants = {
     hidden: {
@@ -384,43 +419,77 @@ const ProductDetail = () => {
                     }) translate(${isZoomed ? position.x : 0}px, ${
                       isZoomed ? position.y : 0
                     }px)`,
-                  }}
-                  onClick={handleImageClick}
-                  onMouseDown={handleMouseDown}
-                  onMouseMove={handleMouseMove}
-                  onMouseUp={handleMouseUp}
-                  onMouseLeave={handleMouseUp}
-                  draggable={false}
-                />
-              ))}
+                    }}
+                    onClick={handleImageClick}
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                    draggable={false}
+                  />
+                ))}
 
-              {!isZoomed && (
-                <>
-                  <div className="absolute inset-0 flex justify-between items-center px-5">
-                    <button
-                      onClick={prev}
-                      className="bg-black/80 p-2 rounded-full flex justify-center cursor-pointer items-center"
+                {!isZoomed && productImages.length > 1 && (
+                  <>
+                    <div className="absolute inset-0 flex justify-between items-center px-5">
+                      <button
+                        onClick={prev}
+                        className="bg-black/80 p-2 rounded-full flex justify-center cursor-pointer items-center hover:bg-black/90 transition-colors"
+                      >
+                        <MdKeyboardArrowLeft className="text-white text-[22px]" />
+                      </button>
+                      <button
+                        onClick={next}
+                        className="bg-black/80 p-2 rounded-full flex justify-center cursor-pointer items-center hover:bg-black/90 transition-colors"
+                      >
+                        <MdKeyboardArrowRight className="text-white text-[22px]" />
+                      </button>
+                    </div>
+                    
+                    {/* Image Type Badge */}
+                    <div className="absolute top-4 left-4 bg-[#955E30] text-white px-3 py-1 rounded-full text-xs font2">
+                      {productImages[cur]?.image_type === 'primary' ? 'Base Image' : 'Detail Shot'}
+                    </div>
+                    
+                    <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-2">
+                      {productImages.map((img, index) => (
+                        <div
+                          key={index}
+                          className={`w-1.5 h-1.5 bg-white rounded-full transition-all cursor-pointer ${
+                            cur === index ? "p-2" : "bg-opacity-50"
+                          }`}
+                          onClick={() => setCur(index)}
+                        ></div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Thumbnail Gallery - 🆕 NEW */}
+              {productImages.length > 1 && (
+                <div className="grid grid-cols-4 gap-3">
+                  {productImages.map((imageObj, index) => (
+                    <div
+                      key={index}
+                      onClick={() => setCur(index)}
+                      className={`relative rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
+                        cur === index ? 'border-[#955E30]' : 'border-white/20 hover:border-white/40'
+                      }`}
                     >
-                      <MdKeyboardArrowLeft className="text-white text-[22px]" />
-                    </button>
-                    <button
-                      onClick={next}
-                      className="bg-black/80 p-2 rounded-full flex justify-center cursor-pointer items-center"
-                    >
-                      <MdKeyboardArrowRight className="text-white text-[22px]" />
-                    </button>
-                  </div>
-                  <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-2">
-                    {img.map((s, index) => (
-                      <div
-                        key={index}
-                        className={`w-1.5 h-1.5 bg-white rounded-full transition-all ${
-                          cur === index ? "p-2" : "bg-opacity-50"
-                        }`}
-                      ></div>
-                    ))}
-                  </div>
-                </>
+                      <img
+                        src={imageObj.image_url}
+                        alt={`Thumbnail ${index + 1}`}
+                        className="w-full h-24 object-cover"
+                      />
+                      {imageObj.image_type === 'primary' && (
+                        <div className="absolute top-1 left-1 bg-[#955E30] text-white text-[8px] px-1.5 py-0.5 rounded font2">
+                          Base
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </div>
@@ -448,11 +517,9 @@ const ProductDetail = () => {
               </p>
               <div className="flex justify-center items-center gap-3">
                 <p className="font-['Poppins'] line-through text-white/30 text-[14px]">
-                  ₹{product.actualPrice}
+                  ₹{(product.price * 1.2).toFixed(2)}
                 </p>
-                <p className="font-['Poppins']  text-[14px]">
-                  {product.discount}%
-                </p>
+                <p className="font-['Poppins'] text-[14px]">20% OFF</p>
               </div>
             </div>
             <div className="flex flex-col gap-2">
@@ -545,7 +612,7 @@ const ProductDetail = () => {
                   className="w-full flex justify-between items-center font-body text-[16px] text-white cursor-pointer select-none"
                   aria-expanded={openIndex === 0}
                 >
-                  Product Discription
+                  Product Description
                   <svg
                     className={`h-6 w-6 transition-transform duration-300 ${
                       openIndex === 0 ? "rotate-180" : ""
@@ -561,9 +628,8 @@ const ProductDetail = () => {
                   </svg>
                 </button>
                 <div
-                  id="product-menu"
                   className={`mt-3 overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
-                    openIndex === 0 ? "opacity-100" : "max-h-0 opacity-0"
+                    openIndex === 0 ? "opacity-100 max-h-96" : "max-h-0 opacity-0"
                   }`}
                 >
                   <div className="mt-2 pb-5">
@@ -607,9 +673,8 @@ const ProductDetail = () => {
                   </svg>
                 </button>
                 <div
-                  id="product-menu"
                   className={`mt-3 overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
-                    openIndex === 1 ? "opacity-100" : "max-h-0 opacity-0"
+                    openIndex === 1 ? "opacity-100 max-h-96" : "max-h-0 opacity-0"
                   }`}
                 >
                   <div className="mt-2 pb-5">
@@ -617,14 +682,13 @@ const ProductDetail = () => {
                       <li className="pl-2">
                         Material - {product?.details?.Material}
                       </li>
-                      <li className="pl-2">
-                        Colour - {product?.details?.Colour}
+                      <li className="pl-2 flex items-center gap-2">
+                        <span className="text-white/60">Category:</span>
+                        <span>{product.category_name}</span>
                       </li>
-                      <li className="pl-2">
-                        Pattern - {product?.details?.Pattern}
-                      </li>
-                      <li className="pl-2">
-                        Occasion - {product?.details?.Occasion}
+                      <li className="pl-2 flex items-center gap-2">
+                        <span className="text-white/60">Product ID:</span>
+                        <span>#{product.product_id}</span>
                       </li>
                     </ul>
                   </div>
@@ -653,9 +717,8 @@ const ProductDetail = () => {
                   </svg>
                 </button>
                 <div
-                  id="product-menu"
                   className={`pl-4 mt-3 overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
-                    openIndex === 2 ? " opacity-100" : "max-h-0 opacity-0"
+                    openIndex === 2 ? "opacity-100 max-h-[500px]" : "max-h-0 opacity-0"
                   }`}
                 >
                   <div className="mt-2">

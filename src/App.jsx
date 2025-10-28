@@ -106,6 +106,19 @@ function AppContent() {
           <Route path="/signin" element={<SignIn />} />
           <Route path="/b2b-signin" element={<B2bSignIn />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+              //admin new
+            <Route path="/signin" element={<RedirectIfAdmin ><SignIn /></RedirectIfAdmin >} />
+                <Route path="/signup" element={<RedirectIfAdmin ><SignUp /></RedirectIfAdmin >} />
+                <Route path="/b2b-signup" element={<B2bSignUp />} />
+                <Route path="/b2b-signin" element={<B2bSignIn />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+
+                 {/* ========================================
+                      ADMIN ROUTES (Protected - Admin Only)
+                    ======================================== */}
+                <Route path="/admin/dashboard" element={ <ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute> }  />
+                <Route path="/admin/products/add" element={<ProtectedAdminRoute><AddProduct /></ProtectedAdminRoute>  } />
+                <Route path="/admin/import" element={ <ProtectedAdminRoute><BulkImport /></ProtectedAdminRoute> } />
 
           {/* 404 Error Page - Must be last */}
           <Route path="*" element={<ErrorPage />} />
