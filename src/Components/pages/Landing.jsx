@@ -333,7 +333,7 @@ const Landing = () => {
                     className="w-[850px] box31"
                   />
                 </div>
-                <h1 className="font-spectral text-center text-[30px] uppercase text-white leading-[40px] py-3">
+                <h1 className="font-spectral text-center text-[30px] uppercase text-white leading-10 py-3">
                   Kanchipuram Silk sarees
                 </h1>
                 <p className="font-body text-[12px] tracking-wide text-white/65 text-center py-4">

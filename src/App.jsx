@@ -18,6 +18,10 @@ import ButterflyLottieFollower from "./Components/ButterflyLottieFollower";
 import { assets } from "../public/assets/asset";
 import BackToTopButton from "./Components/BacktoTopButton";
 import LoaderAni from "./Components/LoaderAni";
+import AdminDashboard from "./Components/Admin/AdminDashboard"
+import AddProduct from "./Components/Admin/AddProduct"
+import BulkImport from "./Components/Admin/BulkImport"
+import ProtectedAdminRoute, { RedirectIfAdmin } from "./Components/Auth/ProtectedAdminRoute";
 
 const About = lazy(() => import("./Components/About/About"));
 const Faq = lazy(() => import("./Components/FAQ/Faq"));
