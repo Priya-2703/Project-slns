@@ -1,8 +1,4 @@
-import {
-  CircleUserRound,
-  ShoppingCart,
-  X,
-} from "lucide-react";
+import { CircleUserRound, ShoppingCart, X } from "lucide-react";
 import { assets } from "../../../public/assets/asset";
 import { FaCircleArrowLeft } from "react-icons/fa6";
 import { useContext, useEffect, useRef, useState } from "react";
@@ -32,16 +28,16 @@ const Navbar = () => {
   }, [location.pathname]);
 
   const checkLoginStatus = () => {
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
-    
+    const token = localStorage.getItem("token");
+    const userStr = localStorage.getItem("user");
+
     if (token && userStr) {
       try {
         const userData = JSON.parse(userStr);
         setUser(userData);
         setIsLoggedIn(true);
       } catch (err) {
-        console.error('Error parsing user data:', err);
+        console.error("Error parsing user data:", err);
         setUser(null);
         setIsLoggedIn(false);
       }
@@ -54,21 +50,21 @@ const Navbar = () => {
   // ⭐ NEW: Logout function
   const handleLogout = () => {
     // Clear all stored data
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
     // Update state
     setUser(null);
     setIsLoggedIn(false);
     setShowCard(false);
     setMenuOpen(false);
-    
+
     // Redirect to home
-    navigate('/');
-    
+    navigate("/");
+
     // Optional: Show success message
     // You can use your toast context here if you have one
-    console.log('Logged out successfully');
+    console.log("Logged out successfully");
   };
 
   useEffect(() => {
@@ -104,24 +100,24 @@ const Navbar = () => {
 
   // ⭐ NEW: Admin menu items
   const adminMenuItems = [
-    { path: '/admin/dashboard', label: 'Dashboard', icon: '📊' },
-    { path: '/product', label: 'View Products', icon: '📦' },
-    { path: '/admin/products/add', label: 'Add Product', icon: '➕' },
-    { path: '/admin/categories', label: 'Manage Categories', icon: '🏷️' },
-    { path: '/admin/import', label: 'Bulk Import', icon: '📥' },
-    { path: '/admin/orders', label: 'Order Management', icon: '🛒' },
-    { path: '/admin/customers', label: 'Customer Management', icon: '👥' },
+    { path: "/admin/dashboard", label: "Dashboard", icon: "📊" },
+    { path: "/product", label: "View Products", icon: "📦" },
+    { path: "/admin/products/add", label: "Add Product", icon: "➕" },
+    { path: "/admin/categories", label: "Manage Categories", icon: "🏷️" },
+    { path: "/admin/import", label: "Bulk Import", icon: "📥" },
+    { path: "/admin/orders", label: "Order Management", icon: "🛒" },
+    { path: "/admin/customers", label: "Customer Management", icon: "👥" },
   ];
 
   // ⭐ NEW: Regular user menu items
   const userMenuItems = [
-    { path: '/', label: 'Home' },
-    { path: '/about', label: 'About Us' },
-    { path: '/product', label: 'Product' },
-    { path: '/wishlist', label: 'Wishlist' },
-    { path: '/profile', label: 'Profile' },
-    { path: '/faq', label: 'FAQ' },
-    { path: '/contact', label: 'Contact' },
+    { path: "/", label: "Home" },
+    { path: "/about", label: "About Us" },
+    { path: "/product", label: "Product" },
+    { path: "/wishlist", label: "Wishlist" },
+    { path: "/profile", label: "Profile" },
+    { path: "/faq", label: "FAQ" },
+    { path: "/contact", label: "Contact" },
   ];
 
   return (
@@ -141,7 +137,7 @@ const Navbar = () => {
 
           <div className="flex justify-center items-center gap-8 md:gap-16">
             {/* ⭐ UPDATED: Hide wishlist and cart for admin */}
-            {user?.role !== 'admin' && (
+            {user?.role !== "admin" && (
               <>
                 <Link to={"/wishlist"}>
                   <div className="relative">
@@ -170,7 +166,7 @@ const Navbar = () => {
                       />
                     </span>
                     {cart.length > 0 && (
-                      <span className="absolute -top-3 -right-3 md:-top-4 md:-right-4 bg-[#955E30] text-white text-[10px] md:text-[12px] font-semibold rounded-full w-4 h-4 md:w-5 md:h-5 flex justify-center items-center">
+                      <span className="absolute -top-3 -right-3 md:-top-4 md:-right-4  bg-accet text-white text-[10px] md:text-[12px] font-semibold rounded-full w-4 h-4 md:w-5 md:h-5 flex justify-center items-center">
                         {cart.length}
                       </span>
                     )}
@@ -180,10 +176,14 @@ const Navbar = () => {
             )}
 
             {/* ⭐ UPDATED: Show admin badge for admin users */}
-            {user?.role === 'admin' && (
+            {user?.role === "admin" && (
               <div className="hidden md:flex items-center gap-2 bg-[#955E30] px-3 py-1 rounded-full">
-                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
+                <svg
+                  className="w-4 h-4 text-white"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
                 </svg>
                 <span className="text-white text-xs font2">Admin</span>
               </div>
@@ -201,7 +201,7 @@ const Navbar = () => {
                 color="#955E30"
                 className="nav-item"
               />
-              
+
               {/* ⭐ UPDATED: Profile dropdown */}
               <div
                 ref={cardRef}
@@ -215,9 +215,13 @@ const Navbar = () => {
                   {/* ⭐ NEW: Show user info if logged in */}
                   {isLoggedIn && user && (
                     <div className="w-full px-3 py-2 mb-2">
-                      <p className="text-white text-xs font-semibold truncate">{user.name}</p>
-                      <p className="text-white/60 text-[10px] truncate">{user.email}</p>
-                      {user.role === 'admin' && (
+                      <p className="text-white text-xs font-semibold truncate">
+                        {user.name}
+                      </p>
+                      <p className="text-white/60 text-[10px] truncate">
+                        {user.email}
+                      </p>
+                      {user.role === "admin" && (
                         <span className="inline-block mt-1 bg-[#955E30] text-white text-[9px] px-2 py-0.5 rounded-full">
                           Admin
                         </span>
@@ -233,7 +237,7 @@ const Navbar = () => {
                         className="w-full bg-black/50 px-5 py-1.5 rounded-[10px]"
                         onClick={() => setShowCard(false)}
                       >
-                        <p className="text-white/60 hover:text-white transition-all duration-200 flex justify-center items-center gap-2 text-[14px]">
+                        <p className="text-white/60 hover:text-white transition-all duration-200 flex justify-center items-center gap-2 text-[12px] md:text-[14px]">
                           Sign In
                         </p>
                       </Link>
@@ -242,14 +246,15 @@ const Navbar = () => {
                         className="w-full bg-black/50 px-5 py-1.5 rounded-[10px]"
                         onClick={() => setShowCard(false)}
                       >
-                        <p className="text-white/60 hover:text-white transition-all duration-200 flex justify-center items-center gap-2 text-[14px]">
-                          <IoBusiness className="text-[12px]" /> B2B
+                        <p className="ext-white/60 hover:text-white transition-all duration-200 flex justify-center items-center gap-2 text-[12px] md:text-[14px]">
+                          <IoBusiness className="text-[11px] md:text-[12px]" />{" "}
+                          B 2 B
                         </p>
                       </Link>
                     </>
                   ) : (
                     <>
-                      <span className="bg-white/20 w-full h-[1px] mb-1"></span>
+                      <span className="bg-white/20 w-full h-px mb-1"></span>
                       <button
                         onClick={handleLogout}
                         className="w-full bg-black/50 text-white/60 hover:bg-[#bb5e00] hover:text-white transition-all duration-200 px-5 py-1.5 rounded-[10px]"
@@ -301,20 +306,20 @@ const Navbar = () => {
           </div>
 
           <div className="w-full flex flex-col text-[12px] md:text-[16px] justify-center gap-8 md:gap-10 mb-4">
-            <Link to={"/"}>
+            {/* <Link to={"/"}>
               <p className=" tracking-wide uppercase text-white">Home</p>
             </Link>
             <Link to={"/about"}>
               <p className="tracking-wide uppercase text-white">About Us</p>
-            </Link>
-          <div className="w-[100%] flex flex-col text-[12px] md:text-[16px] justify-center gap-8 md:gap-10">
+            </Link> */}
+
             {/* ⭐ NEW: Conditional menu based on role */}
-            {user?.role === 'admin' ? (
+            {user?.role === "admin" ? (
               // Admin Menu
               <>
                 {adminMenuItems.map((item, index) => (
-                  <Link 
-                    key={index} 
+                  <Link
+                    key={index}
                     to={item.path}
                     onClick={() => setMenuOpen(false)}
                   >
@@ -329,8 +334,8 @@ const Navbar = () => {
               // Regular User Menu
               <>
                 {userMenuItems.map((item, index) => (
-                  <Link 
-                    key={index} 
+                  <Link
+                    key={index}
                     to={item.path}
                     onClick={() => setMenuOpen(false)}
                   >
@@ -345,53 +350,68 @@ const Navbar = () => {
             {/* ⭐ NEW: Sign out button at bottom of menu (only if logged in) */}
             {isLoggedIn && (
               <>
-                <span className="bg-white/20 w-full h-[1px]"></span>
+                <span className="bg-white/20 w-full h-px"></span>
                 <button
                   onClick={handleLogout}
                   className="tracking-wide uppercase text-white hover:text-red-500 transition-colors flex items-center gap-2"
                 >
                   <FaCircleArrowLeft className="text-[15px]" />
                   Sign Out
+                </button>{" "}
+              </>
+            )}
+
+            {/* Product + Dropdown  mb-[-15px]*/}
+            {/* <div className="w-full">
+              <Link to={"/product"}>
+                <button
+                  type="button"
+                  // onClick={() => setProductOpen((o) => !o)}
+                  className="w-full flex justify-between items-center tracking-wide uppercase text-white cursor-pointer select-none"
+                  // aria-expanded={productOpen}
+                  // aria-controls="product-menu"
+                >
+                  Product
                 </button>
-              </Link>
+              </Link> */}
 
               {/* <div
-                id="product-menu"
-                className={`pl-4 mt-3 overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
-                  productOpen ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
-                }`}
-              >
-                <ul className="flex flex-col gap-3">
-                  <li className="border-b-[1px] pb-3 px-2 border-white/20">
-                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
-                      Sarees
-                    </a>
-                  </li>
-                  <li className="border-b-[1px] pb-3 px-2 border-white/20">
-                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
-                      Half sarees
-                    </a>
-                  </li>
-                  <li className="border-b-[1px] pb-3 px-2 border-white/20">
-                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
-                      Chudidhars
-                    </a>
-                  </li>
-                  <li className="border-b-[1px] pb-3 px-2 border-white/20">
-                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
-                      Dhotis & Shirts for Mens
-                    </a>
-                  </li>
-                  <li className="border-b-[1px] pb-4 px-2 border-white/20">
-                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
-                      Dhotis & Shirts for Kids
-                    </a>
-                  </li>
-                </ul>
-              </div> */}
-            </div>
+                                id="product-menu"
+                                className={`pl-4 mt-3 overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
+                                  productOpen ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
+                                }`}
+                              >
+                                <ul className="flex flex-col gap-3">
+                                  <li className="border-b-[1px] pb-3 px-2 border-white/20">
+                                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
+                                      Sarees
+                                    </a>
+                                  </li>
+                                  <li className="border-b-[1px] pb-3 px-2 border-white/20">
+                                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
+                                      Half sarees
+                                    </a>
+                                  </li>
+                                  <li className="border-b-[1px] pb-3 px-2 border-white/20">
+                                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
+                                      Chudidhars
+                                    </a>
+                                  </li>
+                                  <li className="border-b-[1px] pb-3 px-2 border-white/20">
+                                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
+                                      Dhotis & Shirts for Mens
+                                    </a>
+                                  </li>
+                                  <li className="border-b-[1px] pb-4 px-2 border-white/20">
+                                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
+                                      Dhotis & Shirts for Kids
+                                    </a>
+                                  </li>
+                                </ul>
+                              </div> */}
+            {/* </div> */}
 
-            <Link to={"/wishlist"}>
+            {/* <Link to={"/wishlist"}>
               <p className=" tracking-wide uppercase text-white">Wishlist</p>
             </Link>
             <Link to={"/profile"}>
@@ -402,7 +422,7 @@ const Navbar = () => {
             </Link>
             <Link to={"/contact"}>
               <p className=" tracking-wide uppercase text-white">Contact</p>
-            </Link>
+            </Link> */}
           </div>
         </div>
       </div>

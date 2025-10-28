@@ -152,7 +152,7 @@ const ProductDetail = () => {
       const foundProduct = data.find((item) => item.product_id === productId);
       setProduct(foundProduct);
     }
-  };
+  },[]);
 
   // Use useMemo to compute isInCart safely
   const isInCart = useMemo(() => {
@@ -491,8 +491,8 @@ const ProductDetail = () => {
                   ))}
                 </div>
               )}
-            </div>
           </div>
+        </div>
 
           {/* content */}
           <div className="flex flex-col justify-start h-auto items-start px-3 lg:px-20 py-3">
@@ -595,12 +595,13 @@ const ProductDetail = () => {
                 className="relative text-[16px] text-white px-3 py-4 font-body rounded-[8px] w-full overflow-hidden group"
               >
                 {/* Animated gradient background */}
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 bg-[length:200%_100%] animate-gradient" />
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 bg-[length:200%_100%] animate-gradient">
                 <span className="relative flex items-center justify-center gap-2">
                   <span className="text-lg">✨</span>
                   Virtual Try-On
                   <span className="text-lg">👗</span>
                 </span>
+                </div>
               </motion.button>
             </div>
 
@@ -794,7 +795,7 @@ const ProductDetail = () => {
               </div>
             </div>
           </div>
-        </div>
+      </div>
 
         {/* review */}
         <div className="w-[90%] mx-auto lg:px-10 py-7 md:mt-5">
@@ -984,7 +985,7 @@ const ProductDetail = () => {
           </div>
           <ProductSwiper />
         </div>
-      </div>
+
 
       {/* Virtual Try-On Modal - Complete Frontend Only */}
       {showTryOn && (
