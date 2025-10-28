@@ -14,14 +14,14 @@ const WishlistProvider = ({ children }) => {
 
   const addToWishlist = (product) => {
     setWishlist((prev) => {
-      const exists = prev.find((item) => item.id === product.id);
+      const exists = prev.find((item) => item.product_id === product.product_id);
       if (exists) return prev; // avoid duplicates
       return [...prev, product];
     });
   };
 
   const removeFromWishlist = (id) => {
-    setWishlist((prev) => prev.filter((item) => item.id !== id));
+    setWishlist((prev) => prev.filter((item) => item.product_id !== id));
   };
 
   return (

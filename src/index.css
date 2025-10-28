@@ -1,46 +1,33 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 @import url("https://fonts.cdnfonts.com/css/brasika-display-trial");
+@import url(https://db.onlinewebfonts.com/c/bb018e64d01355748d8ddc53553850b9?family=Cerebri+Sans+Regular); 
+@import url(https://db.onlinewebfonts.com/c/af9dbbacda3360d434dcce8ab8b6c38f?family=Hello+Paris+Serif+Regular); 
+@import url(https://db.onlinewebfonts.com/c/ad025b22dc334bf7a82d60f676413d30?family=Gordita-Medium); 
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 @import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap");
 
 @import "tailwindcss";
 
-:root {
-  --font-heading: "Brasika Display - Trial", sans-serif;
-  --font-body: 'Roboto', sans-serif;
-
-  --color-primary: #FF6347;
-  --color-secondary: #4CAF50;
-  --color-neutral: #F5F5F5;
-}
 
 @font-face {
-  font-family: "KOLAK";
-  src: url("/public/fonts/Sangi\ Serif\ Font.ttf") format("truetype");
-}
-@font-face {
-  font-family: "Spectral-regular";
-  src: url("/public/fonts/spectral/Spectral-Regular.ttf") format("truetype");
-}
-@font-face {
-  font-family: "Spectral-medium";
-  src: url("/public/fonts/spectral/Spectral-Medium.ttf") format("truetype");
-}
-@font-face {
-  font-family: "Spectral-bold";
+  font-family: "Spectral";
   src: url("/public/fonts/spectral/Spectral-Bold.ttf") format("truetype");
 }
+@font-face {
+  font-family: "Serenity";
+  src: url("/public/fonts/Lastica.ttf") format("truetype");
+}
 
-.font1 {
-  font-family: var(--font-heading);
+@theme{
+  --font-heading :  "Hello Paris Serif Regular";
+  --font-body :  "Cerebri Sans Regular";
+  --font-spectral: "Spectral";
+  --color-accet : #955E30; /*rgba(149, 94, 48, 1)*/
 }
-.font2 {
-  font-family: "Lato", sans-serif;
-}
-.font2-bold {
-  font-family: "Spectral-bold";
-}
-.font2-medium {
-  font-family: "Spectral-medium";
+
+
+*{
+  cursor: none !important;
 }
 
 body {

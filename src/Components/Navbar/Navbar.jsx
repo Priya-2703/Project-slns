@@ -15,8 +15,8 @@ import { WishlistContext } from "../../Context/UseWishListContext";
 const Navbar = () => {
   const { cart } = useContext(CartContext);
   const { wishlist } = useContext(WishlistContext);
-  const [showCard, setShowCard] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [showCard, setShowCard] = useState(false); // profile card
+  const [menuOpen, setMenuOpen] = useState(false); // side menu
   const cardRef = useRef(null);
   const signRef = useRef(null);
   const location = useLocation();
@@ -132,6 +132,8 @@ const Navbar = () => {
             <img
               src={assets.logo}
               alt="logo"
+              loading="lazy"
+              data-cursor-scale
               className="w-[60px] md:w-[80px] cursor-pointer select-none"
               onClick={() => setMenuOpen(true)}
             />
@@ -203,7 +205,7 @@ const Navbar = () => {
               {/* ⭐ UPDATED: Profile dropdown */}
               <div
                 ref={cardRef}
-                className={`absolute top-[30px] z-[50] font-['Poppins'] right-[-3px] w-[160px] glass-card py-2 px-1 rounded-[14px] transition-all duration-300 ${
+                className={`absolute top-[30px] z-50 font-['Poppins'] right-[-3px] w-[120px] md:w-[160px] glass-card py-2 px-1 rounded-[14px] transition-all duration-300 ${
                   showCard
                     ? "opacity-100 scale-100 pointer-events-auto"
                     : "opacity-0 scale-95 pointer-events-none"
@@ -282,13 +284,13 @@ const Navbar = () => {
         }`}
         aria-hidden={!menuOpen}
       >
-        <div className="flex flex-col gap-8 md:gap-16 font-['Poppins']">
-          <div className="flex justify-between items-center">
-            <div>
+        <div className="flex flex-col  font-body">
+          <div className="flex justify-end items-center">
+            {/* <div>
               <h1 className="font2-medium text-[12px] md:text-[16px] tracking-wide uppercase text-white">
                 {user?.role === 'admin' ? 'Admin Menu' : 'Menu'}
               </h1>
-            </div>
+            </div> */}
             <button
               onClick={() => setMenuOpen(false)}
               aria-label="Close menu"
@@ -298,6 +300,13 @@ const Navbar = () => {
             </button>
           </div>
 
+          <div className="w-full flex flex-col text-[12px] md:text-[16px] justify-center gap-8 md:gap-10 mb-4">
+            <Link to={"/"}>
+              <p className=" tracking-wide uppercase text-white">Home</p>
+            </Link>
+            <Link to={"/about"}>
+              <p className="tracking-wide uppercase text-white">About Us</p>
+            </Link>
           <div className="w-[100%] flex flex-col text-[12px] md:text-[16px] justify-center gap-8 md:gap-10">
             {/* ⭐ NEW: Conditional menu based on role */}
             {user?.role === 'admin' ? (
@@ -344,8 +353,56 @@ const Navbar = () => {
                   <FaCircleArrowLeft className="text-[15px]" />
                   Sign Out
                 </button>
-              </>
-            )}
+              </Link>
+
+              {/* <div
+                id="product-menu"
+                className={`pl-4 mt-3 overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
+                  productOpen ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
+                }`}
+              >
+                <ul className="flex flex-col gap-3">
+                  <li className="border-b-[1px] pb-3 px-2 border-white/20">
+                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
+                      Sarees
+                    </a>
+                  </li>
+                  <li className="border-b-[1px] pb-3 px-2 border-white/20">
+                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
+                      Half sarees
+                    </a>
+                  </li>
+                  <li className="border-b-[1px] pb-3 px-2 border-white/20">
+                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
+                      Chudidhars
+                    </a>
+                  </li>
+                  <li className="border-b-[1px] pb-3 px-2 border-white/20">
+                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
+                      Dhotis & Shirts for Mens
+                    </a>
+                  </li>
+                  <li className="border-b-[1px] pb-4 px-2 border-white/20">
+                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
+                      Dhotis & Shirts for Kids
+                    </a>
+                  </li>
+                </ul>
+              </div> */}
+            </div>
+
+            <Link to={"/wishlist"}>
+              <p className=" tracking-wide uppercase text-white">Wishlist</p>
+            </Link>
+            <Link to={"/profile"}>
+              <p className=" tracking-wide uppercase text-white">profile</p>
+            </Link>
+            <Link to={"/faq"}>
+              <p className=" tracking-wide uppercase text-white">FAQ</p>
+            </Link>
+            <Link to={"/contact"}>
+              <p className=" tracking-wide uppercase text-white">Contact</p>
+            </Link>
           </div>
         </div>
       </div>

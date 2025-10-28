@@ -31,6 +31,7 @@ export default function B2bSignUp() {
         <video
           autoPlay
           muted
+          preload="auto"
           loop
           className="absolute inset-0 w-full h-full object-cover"
         >
@@ -38,23 +39,23 @@ export default function B2bSignUp() {
         </video>
 
         {/* Background Overlay */}
-        <div className="absolute top-0 w-full h-[30vh] bg-gradient-to-b from-black to-transparent" />
-        <div className="absolute bottom-0 w-full h-[30vh] bg-gradient-to-t from-black to-transparent" />
+        <div className="absolute top-0 w-full h-[30vh] bg-linear-to-b from-black to-transparent" />
+        <div className="absolute bottom-0 w-full h-[30vh] bg-linear-to-t from-black to-transparent" />
       </div>
 
       {/* Content */}
       <div className="relative z-10 w-full max-w-2xl px-6">
         {/* Heading */}
-        <h1 className="text-[25px] font-['Poppins'] capitalize font-semibold text-center text-black py-2">
-          WELCOME TO SLNS <br /> B2B LOGIN
+        <h1 className="text-[16px] md:text-[25px] font-['Poppins'] capitalize font-semibold text-center text-black py-2">
+          WELCOME TO SLNS <br className="hidden md:block"/> B2B LOGIN
         </h1>
-        <div className="bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-black/15 justify-center overflow-hidden rounded-[25px] px-10 py-4">
+        <div className="bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-black/15 justify-center overflow-hidden rounded-[25px] px-5 md:px-10 py-4">
           {/* Form */}
-          <div className="w-[95%] mx-auto space-y-3">
+          <div className="w-full mx-auto space-y-1 md:space-y-3">
             {/* Name Input */}
-            <div className="flex justify-center items-center gap-2">
+            <div className="flex md:flex-row flex-col justify-center md:items-center gap-1 md:gap-2">
               <div>
-                <label className="block text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
+                <label className="block text-[11px] md:text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
                   Full Name
                 </label>
                 <input
@@ -63,12 +64,12 @@ export default function B2bSignUp() {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Das"
-                  className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                  className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[11px] md:text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
                 />
               </div>
 
               <div>
-                <label className="block text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
+                <label className="block text-[11px] md:text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
                   Business Name
                 </label>
                 <input
@@ -77,14 +78,14 @@ export default function B2bSignUp() {
                   value={formData.bname}
                   onChange={handleChange}
                   placeholder="Das & Co"
-                  className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                  className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[11px] md:text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
                 />
               </div>
             </div>
-            <div className="flex justify-center items-center gap-2">
+            <div className="flex md:flex-row flex-col justify-center md:items-center gap-1 md:gap-2">
               {/* Email Input */}
               <div>
-                <label className="block text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
+                <label className="block text-[11px] md:text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
                   Email
                 </label>
                 <input
@@ -93,13 +94,13 @@ export default function B2bSignUp() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="das@gamil.com"
-                  className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                  className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[11px] md:text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
                 />
               </div>
 
               {/* Password Input */}
               <div>
-                <label className="block text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
+                <label className="block text-[11px] md:text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
                   Password
                 </label>
                 <div className="relative">
@@ -109,7 +110,7 @@ export default function B2bSignUp() {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Das@123456"
-                    className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                    className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[11px] md:text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
                   />
                   <button
                     type="button"
@@ -122,10 +123,10 @@ export default function B2bSignUp() {
               </div>
             </div>
 
-            <div className="flex justify-center items-center gap-2">
+            <div className="flex md:flex-row flex-col justify-center md:items-center gap-1 md:gap-2">
               {/* Mobile no Input */}
               <div>
-                <label className="block text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
+                <label className="block text-[11px] md:text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
                   Phone No
                 </label>
                 <input
@@ -134,13 +135,13 @@ export default function B2bSignUp() {
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="+91 98765 43210"
-                  className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                  className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[11px] md:text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
                 />
               </div>
   
               {/* Name Input */}
               <div>
-                <label className="block text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
+                <label className="block text-[11px] md:text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
                   GST Number
                 </label>
                 <input
@@ -149,7 +150,7 @@ export default function B2bSignUp() {
                   value={formData.gst}
                   onChange={handleChange}
                   placeholder="25DAS482LEO2117"
-                  className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                  className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[11px] md:text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
                 />
               </div>
             </div>
@@ -157,14 +158,14 @@ export default function B2bSignUp() {
             {/* Sign Up Button */}
             <button
               onClick={handleSubmit}
-              className="w-full bg-[#8E6740] text-[14px] font-['Poppins'] hover:bg-[#8e6740cc] text-white font-semibold py-2 rounded-lg transition duration-200 transform mt-2"
+              className="w-full bg-[#8E6740] text-[12px] md:text-[14px] font-['Poppins'] hover:bg-[#8e6740cc] text-white font-semibold py-2 rounded-lg transition duration-200 transform mt-2"
             >
               Sign Up
             </button>
           </div>
 
           {/* Sign In Link */}
-          <p className="text-center text-[16px] font-['Poppins'] text-gray-900 mt-6">
+          <p className="text-center text-[13px] md:text-[16px] font-['Poppins'] text-gray-900 mt-3 md:mt-6">
             Already have an account?{" "}
             <Link to={"/b2b-signin"}
               className="font-semibold text-black hover:underline"
@@ -174,11 +175,11 @@ export default function B2bSignUp() {
           </p>
 
           {/* Password Requirements */}
-          <div className="mt-6 font-['Poppins'] bg-gray-900 bg-opacity-50 rounded-lg p-4">
-            <h3 className="font-semibold text-[12px] text-white mb-2">
+          <div className="mt-6 font-['Poppins'] bg-gray-900 bg-opacity-50 rounded-lg p-3 md:p-4">
+            <h3 className="font-semibold text-[10px] md:text-[12px] text-white mb-2">
               Password Requirements
             </h3>
-            <p className="text-[10px] text-gray-200">
+            <p className="text-[8px] md:text-[10px] text-gray-200">
               8 characters, 1 uppercase letter, 1 lowercase letter, at least one
               digit, at least one special character.
             </p>
