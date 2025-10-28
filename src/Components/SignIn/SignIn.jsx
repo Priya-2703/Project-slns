@@ -9,8 +9,6 @@ export default function SignIn() {
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
-  
-  // ⭐ NEW: State for loading and error handling
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -21,14 +19,12 @@ export default function SignIn() {
       ...prev,
       [name]: value,
     }));
-    // Clear error when user starts typing
     if (error) setError('');
   };
 
-  // ⭐ NEW: Backend connection function
+  // ⭐ UPDATED: Role-based redirect
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
     setLoading(true);
     setError('');
     setSuccess('');
@@ -50,18 +46,22 @@ export default function SignIn() {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         
-        setSuccess('Login successful! Redirecting...');
-        
-        // Redirect to dashboard or home page after 1 second
-        setTimeout(() => {
-          window.location.href = '/'; // Change to your desired route
-        }, 1000);
+        // ⭐ NEW: Check user role and redirect accordingly
+        if (data.user.role === 'admin') {
+          setSuccess('Admin login successful! Redirecting to dashboard...');
+          setTimeout(() => {
+            window.location.href = '/admin/dashboard';
+          }, 1000);
+        } else {
+          setSuccess('Login successful! Redirecting...');
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1000);
+        }
       } else {
-        // ❌ Error from backend
         setError(data.error || 'Login failed. Please try again.');
       }
     } catch (err) {
-      // ❌ Network or other error
       console.error('Login error:', err);
       setError('Unable to connect to server. Please check your connection and try again.');
     } finally {
@@ -96,110 +96,111 @@ export default function SignIn() {
 
         <div className="bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-black/15 justify-center overflow-hidden rounded-[25px] px-10 py-4">
           {/* Form */}
-        <div className="w-[80%] mx-auto space-y-3">
-      
-          
-          {/* ⭐ NEW: Error Alert */}
-          {error && (
-            <div className="mb-6 p-4 bg-red-500 bg-opacity-90 text-white rounded-lg font-medium animate-pulse">
-              {error}
-            </div>
-          )}
-
-          {/* ⭐ NEW: Success Alert */}
-          {success && (
-            <div className="mb-6 p-4 bg-green-500 bg-opacity-90 text-white rounded-lg font-medium">
-              {success}
-            </div>
-          )}
-
-          {/* Form - ⭐ UPDATED: Added onSubmit handler */}
-          <form onSubmit={handleSubmit} className="space-y-2">
-            {/* Email Input */}
-            <div className="py-2">
-              <label className="block text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
-                Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="jane@framer.com"
-                className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
-              />
-            </div>
-
-            {/* Password Input */}
-            <div className="pb-1">
-              <label className="block font-['Poppins'] text-[12px] font-semibold text-gray-900 py-1">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="jane@123456"
-                  className="w-full px-4 py-2 rounded-lg font-['Poppins'] bg-white/60 text-[13px] bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  disabled={loading}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800 disabled:opacity-50"
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
+          <div className="w-[80%] mx-auto space-y-3">
+            {/* Error Alert */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-500 bg-opacity-90 text-white rounded-lg font-medium animate-pulse">
+                {error}
               </div>
+            )}
+
+            {/* Success Alert */}
+            {success && (
+              <div className="mb-6 p-4 bg-green-500 bg-opacity-90 text-white rounded-lg font-medium">
+                {success}
+              </div>
+            )}
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-2">
+              {/* Email Input */}
+              <div className="py-2">
+                <label className="block text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="jane@framer.com"
+                  required
+                  className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                />
+              </div>
+
+              {/* Password Input */}
+              <div className="pb-1">
+                <label className="block font-['Poppins'] text-[12px] font-semibold text-gray-900 py-1">
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="jane@123456"
+                    required
+                    className="w-full px-4 py-2 rounded-lg font-['Poppins'] bg-white/60 text-[13px] bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    disabled={loading}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800 disabled:opacity-50"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Sign In Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-[#8E6740] text-[14px] font-['Poppins'] hover:bg-[#8e6740cc] text-white font-semibold py-2 rounded-lg transition duration-200 transform mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Signing In...
+                  </span>
+                ) : (
+                  'Sign In'
+                )}
+              </button>
+            </form>
+
+            {/* Links */}
+            <div className="mt-10 space-y-2 py-4">
+              {/* Forgot Password */}
+              <p className="text-center">
+                <Link
+                  to={"/forgot-password"}
+                  className="font-semibold text-gray-900 font-['Poppins'] hover:underline"
+                >
+                  Forgot Password?
+                </Link>
+              </p>
+
+              {/* Sign Up Link */}
+              <p className="text-center font-['Poppins'] text-gray-900">
+                Don't have an Account?{" "}
+                <Link
+                  to={"/signup"}
+                  className="font-semibold text-white hover:underline"
+                >
+                  Sign up
+                </Link>
+              </p>
             </div>
-
-            {/* Sign In Button - ⭐ UPDATED: Changed to submit button with loading state */}
-            <button
-              onClick={handleSubmit}
-              className="w-full bg-[#8E6740] text-[14px] font-['Poppins'] hover:bg-[#8e6740cc] text-white font-semibold py-2 rounded-lg transition duration-200 transform mt-2"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Signing In...
-                </span>
-              ) : (
-                'Sign In'
-              )}
-            </button>
-          </form>
-
-          {/* Links */}
-          <div className="mt-10 space-y-2 py-4">
-            {/* Forgot Password */}
-            <p className="text-center">
-              <Link
-                to={"/forgot-password"}
-                className="font-semibold text-gray-900 font-['Poppins'] hover:underline"
-              >
-                Forgot Password?
-              </Link>
-            </p>
-
-            {/* Sign Up Link */}
-            <p className="text-center font-['Poppins'] text-gray-900">
-              Don't have an Account?{" "}
-              <Link
-                to={"/signup"}
-                className="font-semibold text-white hover:underline"
-              >
-                Sign up
-              </Link>
-            </p>
           </div>
+        </div>
       </div>
-    </div>
-    </div>
     </div>
   );
 }
