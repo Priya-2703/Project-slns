@@ -23,28 +23,29 @@ const About = () => {
     <>
       <div ref={container} className="w-full mx-auto bg-black mt-20 md:mt-28 py-5">
         <div className="flex justify-center items-center">
-          <h1 className="about-reveal text-[28px] md:text-[45px] md:py-3 font1 font-[200] uppercase text-white">
+          <h1 className="about-reveal text-[28px] md:text-[65px] md:py-3 font-heading font-[800] capitalize text-white">
             About us
           </h1>
         </div>
 
-        <div className="flex flex-col lg:flex-row justify-center items-center gap-8 lg:gap-20 md:mt-4 py-3 lg:py-10">
-          <div className="about-reveal flex justify-center items-center flex-col gap-2 md:gap-4 order-2 lg:order-1">
+        <div className="flex flex-col lg:flex-row justify-center items-center lg:items-start gap-8 lg:gap-20 md:mt-4 py-3 lg:py-10">
+          <div className="about-reveal flex justify-center items-center flex-col order-2 lg:order-1">
             <img
               src={assets.owner}
               alt="owner img"
+              loading="lazy"
               className="md:w-[450px] md:h-[500px] w-[300px] h-[350px] object-cover rounded-[10px]"
             />
-            <p className="text-[25px] md:text-[45px] py-1 font1 font-[200] uppercase text-white">
+            <p className="text-[25px] md:text-[45px] font-heading font-extrabold capitalize text-white">
               Ashok
             </p>
           </div>
 
           <div className="about-reveal w-[90%] lg:w-[32%] flex flex-col justify-center items-center gap-5 py-2 md:py-7 order-1 lg:order-2">
-            <h1 className="text-[24px] md:text-[45px] py-3 font1 text-center font-[200] uppercase leading-snug text-white">
-              Sri Lakshmi <br className="hidden lg:block"/> Narayana <br className="hidden md:block"/> Sarees
+            <h1 className="text-[24px] md:text-[65px] py-3 font-heading text-center font-[800] capitalize leading-none text-accet">
+              Sri Lakshmi Narayana <br className="hidden md:block"/> Sarees
             </h1>
-            <p className="text-[14px] leading-snug tracking-wide font2 text-justify font-[700] text-white">
+            <p className="text-[16px] leading-normal tracking-normal capitalize font-body text-justify font-[400] text-white/90">
               Sri Lakshmi Narayana Sarees has been a prominent and trusted name
               in the saree business for over 40 years. Based in Elampillai,
               Salem, the company is recognized as the leading wholesaler in the
@@ -58,7 +59,7 @@ const About = () => {
         </div>
 
         <div className="flex justify-center items-center py-5">
-          <p className="about-reveal w-[90%] lg:w-[70%] text-[12px] md:text-[14px] leading-normal tracking-wide font2 text-justify  font-[700] text-white">
+          <p className="about-reveal w-[90%] lg:w-[70%] text-[12px] md:text-[16px] leading-normal tracking-normal font-body text-justify  font-[300] text-white/90">
             Preserving Tradition: Sri Lakshmi Narayana Sarees is dedicated to
             safeguarding the rich heritage of Elampillai Silk and producing
             sarees of unmatched elegance. Purest Quality: The company takes
@@ -78,18 +79,18 @@ const About = () => {
           </p>
         </div>
 
-        <div className="flex justify-center items-center py-10 lg:py-20">
-          <div className="about-reveal w-[90%] lg:w-[30%] flex flex-col justify-center items-center px-3 py-3">
-            <p className="text-[16px] md:text-[26px] leading-snug font2  text-center font-[400] text-white">
+        <div className="flex justify-center items-center">
+          <div className="about-reveal w-[90%] lg:w-[30%] flex flex-col uppercase justify-center items-center gap-2 px-3 py-3">
+            {/* <p className="text-[16px] md:text-[26px] leading-snug font-body  text-center font-[400] text-white">
               We'd love to hear from you. Send us a message.
-            </p>
-            <p className="text-[16px] md:text-[26px] leading-snug font2 text-center font-[400] text-white mt-3 md:mt-10">
+            </p> */}
+            <p className="text-[16px] md:text-[20px] leading-snug font-body text-center font-[400] text-white mt-3 md:mt-10">
               J256+6M4, Salem Main Rd, Elumathanoor, Elampillai, Tamil Nadu 637502
             </p>
-            <p className="text-[16px] md:text-[26px] leading-snug font2 font-[400] text-white">
+            <p className="text-[16px] md:text-[20px] leading-snug font-body font-[400] text-white">
               +91 97862 87848
             </p>
-            <p className="text-[16px] md:text-[26px] leading-snug font2 font-[400] text-[#955E30]">
+            <p className="text-[16px] md:text-[20px] leading-snug font-body font-[400] text-[#955E30]">
               slns@email.com
             </p>
           </div>

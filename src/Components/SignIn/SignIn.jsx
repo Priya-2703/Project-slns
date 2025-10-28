@@ -77,26 +77,27 @@ export default function SignIn() {
           autoPlay
           muted
           loop
+          preload="auto"
           className="absolute inset-0 w-full h-full object-cover"
         >
           <source src={assets.signup} type="video/mp4" />
         </video>
 
         {/* Background Overlay */}
-        <div className="absolute top-0 w-full h-[30vh] bg-gradient-to-b from-black to-transparent" />
-        <div className="absolute bottom-0 w-full h-[30vh] bg-gradient-to-t from-black to-transparent" />
+        <div className="absolute top-0 w-full h-[30vh] bg-linear-to-b from-black to-transparent" />
+        <div className="absolute bottom-0 w-full h-[30vh] bg-linear-to-t from-black to-transparent" />
       </div>
 
       {/* Content */}
       <div className="relative z-10 w-full max-w-2xl px-6">
         {/* Heading */}
-        <h1 className="text-[25px] font-['Poppins'] capitalize font-semibold text-center text-black py-2">
+        <h1 className="text-[16px] md:text-[25px] font-['Poppins'] capitalize font-semibold text-center text-black py-2">
           Sign in your account
         </h1>
 
-        <div className="bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-black/15 justify-center overflow-hidden rounded-[25px] px-10 py-4">
+        <div className="bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-black/15 justify-center overflow-hidden rounded-[25px] px-4 md:px-10 py-4">
           {/* Form */}
-        <div className="w-[80%] mx-auto space-y-3">
+        <div className="w-[90%] md:w-[80%] mx-auto space-y-3">
       
           
           {/* ⭐ NEW: Error Alert */}
@@ -108,7 +109,7 @@ export default function SignIn() {
 
           {/* ⭐ NEW: Success Alert */}
           {success && (
-            <div className="mb-6 p-4 bg-green-500 bg-opacity-90 text-white rounded-lg font-medium">
+            <div className="mb-6 p-2 md:p-4 bg-green-500 bg-opacity-90 text-white rounded-lg font-medium">
               {success}
             </div>
           )}
@@ -116,8 +117,8 @@ export default function SignIn() {
           {/* Form - ⭐ UPDATED: Added onSubmit handler */}
           <form onSubmit={handleSubmit} className="space-y-2">
             {/* Email Input */}
-            <div className="py-2">
-              <label className="block text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
+            <div className="md:py-2">
+              <label className="block text-[11px] md:text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
                 Email
               </label>
               <input
@@ -126,13 +127,13 @@ export default function SignIn() {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="jane@framer.com"
-                className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[11px] md:text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
               />
             </div>
 
             {/* Password Input */}
-            <div className="pb-1">
-              <label className="block font-['Poppins'] text-[12px] font-semibold text-gray-900 py-1">
+            <div className="md:pb-1">
+              <label className="block font-['Poppins'] text-[11px] md:text-[12px] font-semibold text-gray-900 py-1">
                 Password
               </label>
               <div className="relative">
@@ -142,7 +143,7 @@ export default function SignIn() {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="jane@123456"
-                  className="w-full px-4 py-2 rounded-lg font-['Poppins'] bg-white/60 text-[13px] bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                  className="w-full px-4 py-2 rounded-lg font-['Poppins'] bg-white/60 text-[11px] md:text-[13px] bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
                 />
                 <button
                   type="button"
@@ -158,7 +159,7 @@ export default function SignIn() {
             {/* Sign In Button - ⭐ UPDATED: Changed to submit button with loading state */}
             <button
               onClick={handleSubmit}
-              className="w-full bg-[#8E6740] text-[14px] font-['Poppins'] hover:bg-[#8e6740cc] text-white font-semibold py-2 rounded-lg transition duration-200 transform mt-2"
+              className="w-full bg-[#8E6740] text-[12px] md:text-[14px] font-['Poppins'] hover:bg-[#8e6740cc] text-white font-semibold py-2 rounded-lg transition duration-200 transform mt-2"
             >
               {loading ? (
                 <span className="flex items-center justify-center">
@@ -175,19 +176,19 @@ export default function SignIn() {
           </form>
 
           {/* Links */}
-          <div className="mt-10 space-y-2 py-4">
+          <div className="md:mt-10 space-y-2 py-2 md:py-4">
             {/* Forgot Password */}
             <p className="text-center">
               <Link
                 to={"/forgot-password"}
-                className="font-semibold text-gray-900 font-['Poppins'] hover:underline"
+                className="font-semibold text-[14px] md:text-[16px] text-gray-900 font-['Poppins'] hover:underline"
               >
                 Forgot Password?
               </Link>
             </p>
 
             {/* Sign Up Link */}
-            <p className="text-center font-['Poppins'] text-gray-900">
+            <p className="text-center text-[12px] md:text-[16px] font-['Poppins'] text-gray-900">
               Don't have an Account?{" "}
               <Link
                 to={"/signup"}

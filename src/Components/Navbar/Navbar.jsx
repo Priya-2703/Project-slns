@@ -1,16 +1,13 @@
 import {
   CircleUserRound,
-  Search,
-  SearchCheck,
   ShoppingCart,
   X,
 } from "lucide-react";
-import { FaHeart } from "react-icons/fa";
 import { assets } from "../../../public/assets/asset";
 import { FaCircleArrowLeft } from "react-icons/fa6";
 import { useContext, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { IoBusiness, IoSearch } from "react-icons/io5";
+import { IoBusiness } from "react-icons/io5";
 import { CartContext } from "../../Context/UseCartContext";
 import { GoHeart } from "react-icons/go";
 import { WishlistContext } from "../../Context/UseWishListContext";
@@ -20,7 +17,7 @@ const Navbar = () => {
   const { cart } = useContext(CartContext);
   const { wishlist } = useContext(WishlistContext);
   const [showCard, setShowCard] = useState(false); // profile card
-  const [menuOpen, setMenuOpen] = useState(false); // side menu 
+  const [menuOpen, setMenuOpen] = useState(false); // side menu
   const cardRef = useRef(null);
   const signRef = useRef(null);
   const location = useLocation();
@@ -57,7 +54,7 @@ const Navbar = () => {
   }, []);
 
   //responsive
-  const mobileView = window.innerWidth < 480
+  const mobileView = window.innerWidth < 480;
 
   return (
     <>
@@ -67,6 +64,8 @@ const Navbar = () => {
             <img
               src={assets.logo}
               alt="logo"
+              loading="lazy"
+              data-cursor-scale
               className="w-[60px] md:w-[80px] cursor-pointer select-none"
               onClick={() => setMenuOpen(true)} // Logo click -> open menu
             />
@@ -78,14 +77,14 @@ const Navbar = () => {
                 <span>
                   <GoHeart
                     // onClick={() => setSearch((q) => !q)}
-                    size={mobileView ?16: 20}
+                    size={mobileView ? 16 : 20}
                     color="#955E30"
                     className="nav-item"
                   />
                 </span>
                 {/* 🔴 Notification Badge */}
                 {wishlist.length > 0 && (
-                  <span className="absolute -top-3 -right-3 md:-top-4 md:-right-4 bg-[#955E30] text-white text-[10px] md:text-[12px] font-semibold rounded-full w-4 h-4 md:w-5 md:h-5 flex justify-center items-center">
+                  <span className="absolute -top-3 -right-3 md:-top-4 md:-right-4 bg-accet text-white text-[10px] md:text-[12px] font-semibold rounded-full w-4 h-4 md:w-5 md:h-5 flex justify-center items-center">
                     {wishlist.length}
                   </span>
                 )}
@@ -95,7 +94,7 @@ const Navbar = () => {
               <div className="flex items-center relative gap-2">
                 <span>
                   <ShoppingCart
-                    size={mobileView? 16: 20}
+                    size={mobileView ? 16 : 20}
                     strokeWidth={1.5}
                     color="#955E30"
                     className="nav-item"
@@ -103,7 +102,7 @@ const Navbar = () => {
                 </span>
                 {/* 🔴 Notification Badge */}
                 {cart.length > 0 && (
-                  <span className="absolute -top-3 -right-3 md:-top-4 md:-right-4  bg-[#955E30] text-white text-[10px] md:text-[12px] font-semibold rounded-full w-4 h-4 md:w-5 md:h-5 flex justify-center items-center">
+                  <span className="absolute -top-3 -right-3 md:-top-4 md:-right-4  bg-accet text-white text-[10px] md:text-[12px] font-semibold rounded-full w-4 h-4 md:w-5 md:h-5 flex justify-center items-center">
                     {cart.length}
                   </span>
                 )}
@@ -123,7 +122,7 @@ const Navbar = () => {
               />
               <div
                 ref={cardRef}
-                className={`absolute top-[30px] z-[50] font-['Poppins'] right-[-3px] w-[160px] glass-card py-2 px-1 rounded-[14px] transition-all duration-300 ${
+                className={`absolute top-[30px] z-50 font-['Poppins'] right-[-3px] w-[120px] md:w-[160px] glass-card py-2 px-1 rounded-[14px] transition-all duration-300 ${
                   showCard
                     ? "opacity-100 scale-100 pointer-events-auto"
                     : "opacity-0 scale-95 pointer-events-none"
@@ -142,7 +141,7 @@ const Navbar = () => {
                     to={"/signin"}
                     className="w-full bg-black/50 px-5 py-1.5 rounded-[10px]"
                   >
-                    <p className="text-white/60 hover:text-white transition-all duration-200 flex justify-center items-center gap-2 text-[14px]">
+                    <p className="text-white/60 hover:text-white transition-all duration-200 flex justify-center items-center gap-2 text-[12px] md:text-[14px]">
                       Sign In
                     </p>
                   </Link>
@@ -150,17 +149,17 @@ const Navbar = () => {
                     to={"/b2b-signin"}
                     className="w-full bg-black/50 px-5 py-1.5 rounded-[10px]"
                   >
-                    <p className="text-white/60 hover:text-white transition-all duration-200 flex justify-center items-center gap-2 text-[14px]">
-                      <IoBusiness className=" text-[12px]" /> B 2 B{" "}
+                    <p className="text-white/60 hover:text-white transition-all duration-200 flex justify-center items-center gap-2 text-[12px] md:text-[14px]">
+                      <IoBusiness className=" text-[11px] md:text-[12px]" /> B 2 B{" "}
                     </p>
                   </Link>
-                  <span className="bg-white/20 w-full h-[1px] my-1"></span>
+                  <span className="bg-white/20 w-full h-px my-1"></span>
                   <Link
                     to={"/"}
-                    className="w-full bg-black/50 text-white/60 hover:bg-[#bb5e00] hover:text-white transition-all duration-200  px-5 py-1.5 rounded-[10px]"
+                    className="w-full bg-black/50 text-white/60 hover:bg-[#bb5e00] hover:text-white transition-all duration-200 px-1  md:px-5 py-1.5 rounded-[10px]"
                   >
-                    <p className=" flex justify-center items-center gap-2 text-[14px]">
-                      <FaCircleArrowLeft className=" text-[15px]" /> Sign Out
+                    <p className=" flex justify-center items-center gap-2 text-[12px] md:text-[14px]">
+                      <FaCircleArrowLeft className=" text-[13px] md:text-[15px]" /> Sign Out
                     </p>
                   </Link>
                 </div>
@@ -187,13 +186,13 @@ const Navbar = () => {
         }`}
         aria-hidden={!menuOpen}
       >
-        <div className="flex flex-col gap-8 md:gap-16 font-['Poppins']">
-          <div className="flex justify-between items-center">
-            <div>
+        <div className="flex flex-col  font-body">
+          <div className="flex justify-end items-center">
+            {/* <div>
               <h1 className="font2-medium text-[12px] md:text-[16px] tracking-wide uppercase text-white">
                 Menu
               </h1>
-            </div>
+            </div> */}
             <button
               onClick={() => setMenuOpen(false)}
               aria-label="Close menu"
@@ -203,16 +202,12 @@ const Navbar = () => {
             </button>
           </div>
 
-          <div className="w-[100%] flex flex-col text-[12px] md:text-[16px] justify-center gap-8 md:gap-10">
+          <div className="w-full flex flex-col text-[12px] md:text-[16px] justify-center gap-8 md:gap-10 mb-4">
             <Link to={"/"}>
-              <p className=" tracking-wide uppercase text-white">
-                Home
-              </p>
+              <p className=" tracking-wide uppercase text-white">Home</p>
             </Link>
             <Link to={"/about"}>
-              <p className="tracking-wide uppercase text-white">
-                About Us
-              </p>
+              <p className="tracking-wide uppercase text-white">About Us</p>
             </Link>
 
             {/* Product + Dropdown  mb-[-15px]*/}
@@ -279,32 +274,20 @@ const Navbar = () => {
             </div>
 
             <Link to={"/wishlist"}>
-              <p className=" tracking-wide uppercase text-white">
-                Wishlist
-              </p>
+              <p className=" tracking-wide uppercase text-white">Wishlist</p>
             </Link>
             <Link to={"/profile"}>
-              <p className=" tracking-wide uppercase text-white">
-                profile
-              </p>
+              <p className=" tracking-wide uppercase text-white">profile</p>
             </Link>
             <Link to={"/faq"}>
-              <p className=" tracking-wide uppercase text-white">
-                FAQ
-              </p>
+              <p className=" tracking-wide uppercase text-white">FAQ</p>
             </Link>
             <Link to={"/contact"}>
-              <p className=" tracking-wide uppercase text-white">
-                Contact
-              </p>
+              <p className=" tracking-wide uppercase text-white">Contact</p>
             </Link>
           </div>
         </div>
       </div>
-
-
-
-
     </>
   );
 };

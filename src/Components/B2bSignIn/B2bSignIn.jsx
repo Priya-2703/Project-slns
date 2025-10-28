@@ -31,29 +31,30 @@ export default function B2bSignIn() {
           autoPlay
           muted
           loop
+          preload="auto"
           className="absolute inset-0 w-full h-full object-cover"
         >
           <source src={assets.bgvideo} type="video/mp4" />
         </video>
 
         {/* Background Overlay */}
-       <div className="absolute top-0 w-full h-[30vh] bg-gradient-to-b from-black to-transparent" />
-        <div className="absolute bottom-0 w-full h-[30vh] bg-gradient-to-t from-black to-transparent" />
+       <div className="absolute top-0 w-full h-[30vh] bg-linear-to-b from-black to-transparent" />
+        <div className="absolute bottom-0 w-full h-[30vh] bg-linear-to-t from-black to-transparent" />
       </div>
 
       {/* Content */}
       <div className="relative z-10 w-full max-w-2xl px-6">
         {/* Heading */}
-        <h1 className="text-[25px] font-['Poppins'] capitalize font-semibold text-center text-black py-2">
+        <h1 className="text-[16px] md:text-[25px] font-['Poppins'] capitalize font-semibold text-center text-black py-2">
           Welcome Back
         </h1>
 
         {/* Form */}
-        <div className="bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-black/15 justify-center overflow-hidden rounded-[25px] px-10 py-4">
-          <div className="w-[80%] mx-auto space-y-3">
+        <div className="bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-black/15 justify-center overflow-hidden rounded-[25px] px-4 md:px-10 py-4">
+          <div className="w-[90%] md:w-[80%] mx-auto space-y-1 md:space-y-3">
             {/* Email Input */}
-            <div className="py-2">
-              <label className="block text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
+            <div className="md:py-2">
+              <label className="block text-[11px] md:text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
                 Business Name
               </label>
               <input
@@ -62,13 +63,13 @@ export default function B2bSignIn() {
                 value={formData.bname}
                 onChange={handleChange}
                 placeholder="Das & Co"
-                className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[11px] md:text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
               />
             </div>
 
             {/* Password Input */}
             <div>
-              <label className="block text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
+              <label className="block text-[11px] md:text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
                 Password
               </label>
               <div className="relative">
@@ -78,7 +79,7 @@ export default function B2bSignIn() {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Das@123456"
-                  className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                  className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[11px] md:text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
                 />
                 <button
                   type="button"
@@ -95,7 +96,7 @@ export default function B2bSignIn() {
               <button
                 onClick={handleSubmit}
                 type="submit"
-                className="w-full bg-[#8E6740] text-[14px] font-['Poppins'] hover:bg-[#8e6740cc] text-white font-semibold py-2 rounded-lg transition duration-200 transform mt-2"
+                className="w-full bg-[#8E6740] text-[12px] md:text-[14px] font-['Poppins'] hover:bg-[#8e6740cc] text-white font-semibold py-2 rounded-lg transition duration-200 transform mt-2"
               >
                 Sign In
               </button>
@@ -103,9 +104,9 @@ export default function B2bSignIn() {
           </div>
 
           {/* Links */}
-          <div className="mt-8 space-y-4 py-3">
+          <div className="md:mt-8 space-y-2 md:space-y-4 py-3">
             {/* Forgot Password */}
-            <p className="text-center font-['Poppins'] text-gray-900">
+            <p className="text-center font-['Poppins'] text-[14px] md:text-[16px] text-gray-900">
               <Link
                 to={"/forgot-password"}
                 className="font-semibold hover:underline"
@@ -115,7 +116,7 @@ export default function B2bSignIn() {
             </p>
 
             {/* Sign Up Link */}
-            <p className="text-center font-['Poppins'] text-gray-900 mt-6">
+            <p className="text-center font-['Poppins'] text-[12px] md:text-[16px] text-gray-900 md:mt-6">
               Don't have an Account?{" "}
               <Link
                 to={"/b2b-signup"}

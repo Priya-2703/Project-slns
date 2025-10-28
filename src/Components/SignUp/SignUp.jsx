@@ -78,25 +78,26 @@ export default function SignUp() {
           autoPlay
           muted
           loop
+          preload="auto"
           className="absolute inset-0 w-full h-full object-cover"
         >
           <source src={assets.signup} type="video/mp4" />
         </video>
 
         {/* Background Overlay */}
-        <div className="absolute top-0 w-full h-[30vh] bg-gradient-to-b from-black to-transparent" />
-        <div className="absolute bottom-0 w-full h-[30vh] bg-gradient-to-t from-black to-transparent" />
+        <div className="absolute top-0 w-full h-[30vh] bg-linear-to-b from-black to-transparent" />
+        <div className="absolute bottom-0 w-full h-[30vh] bg-linear-to-t from-black to-transparent" />
       </div>
 
       {/* Content */}
       <div className="relative z-10 w-full max-w-2xl px-6">
         {/* Heading */}
-        <h1 className="text-[25px] font-['Poppins'] capitalize font-semibold text-center text-black py-2">
+        <h1 className="text-[16px] md:text-[25px] font-['Poppins'] capitalize font-semibold text-center text-black py-2">
           Create a new account
         </h1>
-        <div className="bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-black/15 justify-center overflow-hidden rounded-[25px] px-10 py-4">
+        <div className="bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-black/15 justify-center overflow-hidden rounded-[25px] px-4 md:px-10 py-4">
           {/* Form */}
-          <div className="w-[80%] mx-auto space-y-2">
+          <div className="w-[90%] md:w-[80%] mx-auto space-y-2">
             {/* ⭐ NEW: Error Alert */}
             {error && (
               <div className="mb-4 p-3 bg-red-500 bg-opacity-80 text-white rounded-lg">
@@ -114,8 +115,8 @@ export default function SignUp() {
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-2">
               {/* Name Input */}
-              <div className="py-2">
-                <label className="block text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
+              <div className="md:py-2">
+                <label className="block text-[11px] md:text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
                   Name
                 </label>
                 <input
@@ -124,13 +125,13 @@ export default function SignUp() {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Jane Smith"
-                  className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                  className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[11px] md:text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
                 />
               </div>
 
               {/* Email Input */}
-              <div className="pb-1">
-                <label className="block font-['Poppins'] text-[12px] font-semibold text-gray-900 py-1">
+              <div className="md:pb-1">
+                <label className="block font-['Poppins'] text-[11px] md:text-[12px] font-semibold text-gray-900 py-1">
                   Email
                 </label>
                 <input
@@ -139,13 +140,13 @@ export default function SignUp() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="jane@framer.com"
-                  className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                  className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[11px] md:text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
                 />
               </div>
 
               {/* Password Input */}
-              <div className="pb-1">
-                <label className="block font-['Poppins'] text-[12px] font-semibold text-gray-900 py-1">
+              <div className="md:pb-1">
+                <label className="block font-['Poppins'] text-[11px] md:text-[12px] font-semibold text-gray-900 py-1">
                   Password
                 </label>
                 <div className="relative">
@@ -155,7 +156,7 @@ export default function SignUp() {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="jane@123456"
-                    className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
+                    className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[11px] md:text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
                   />
                   <button
                     type="button"
@@ -172,14 +173,14 @@ export default function SignUp() {
                 onClick={handleSubmit}
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#8E6740] text-[14px] font-['Poppins'] hover:bg-[#8e6740cc] text-white font-semibold py-2 rounded-lg transition duration-200 transform mt-2"
+                className="w-full bg-[#8E6740] text-[12px] md:text-[14px] font-['Poppins'] hover:bg-[#8e6740cc] text-white font-semibold py-2 rounded-lg transition duration-200 transform mt-2"
               >
                 {loading ? "Creating Account..." : "Sign Up"}
               </button>
             </form>
 
             {/* Sign In Link */}
-            <p className="text-center font-['Poppins'] text-gray-900 mt-6">
+            <p className="text-center font-['Poppins'] text-[12px] md:text-[16px] text-gray-900 mt-3 md:mt-6">
               Already have an account?{" "}
               <Link
                 to={"/signin"}
@@ -190,11 +191,11 @@ export default function SignUp() {
             </p>
 
             {/* Password Requirements */}
-            <div className="mt-6 font-['Poppins'] bg-gray-900 bg-opacity-50 rounded-lg p-4">
-              <h3 className="font-semibold text-[12px] text-white mb-2">
+            <div className="mt-6 font-['Poppins'] bg-gray-900 bg-opacity-50 rounded-lg p-3 md:p-4">
+              <h3 className="font-semibold text-[10px] md:text-[12px] text-white mb-2">
                 Password Requirements
               </h3>
-              <p className="text-[10px] text-gray-200">
+              <p className="text-[8px] md:text-[10px] text-gray-200">
                 8 characters, 1 uppercase letter, 1 lowercase letter, at least
                 one digit, at least one special character.
               </p>

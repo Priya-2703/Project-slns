@@ -21,10 +21,8 @@
 
 .contact-title {
   color: #ffffff;
-  font-size: 45px;
   text-align: center;
   margin-bottom: 2rem;
-  font-weight: 400;
 }
 
 .contact-form {
@@ -41,10 +39,9 @@
 .form-label {
   color: #ffffff;
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 500;
+  font-family: var(--font-body);
   margin-bottom: 0.75rem;
-  letter-spacing: 0.05em;
-  font-family: Arial, sans-serif;
 }
 
 .form-input,
@@ -59,7 +56,8 @@
   font-size: 1rem;
   outline: none;
   transition: border-color 0.2s ease;
-  font-family: Arial, sans-serif;
+  font-weight: 500;
+  font-family: var(--font-body);
 }
 
 .form-input:focus,
@@ -82,6 +80,8 @@
 
 .form-select option {
   background-color: #000000;
+  font-weight: 500;
+  font-family: var(--font-body);
   color: #ffffff;
 }
 
@@ -102,6 +102,7 @@
 
 .form-textarea {
   resize: none;
+  color: white;
   min-height: 120px;
 }
 
@@ -114,7 +115,6 @@
     rgba(148, 88, 42, 1) 100%
   );
   color: #000000;
-  font-weight: 500;
   padding: 1rem;
   border-radius: 0.5rem;
   border: none;
@@ -122,7 +122,8 @@
   transition: background-color 0.2s ease;
   font-size: 1rem;
   letter-spacing: 0.025em;
-  font-family: Arial, sans-serif;
+  font-weight: 500;
+  font-family: var(--font-body);
 }
 
 .submit-button:hover {

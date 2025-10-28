@@ -24,14 +24,17 @@ const BackToTopButton = () => {
     });
   };
 
+    //responsive
+  const mobileView = window.innerWidth < 480;
+
   return (
     <button
       onClick={scrollToTop}
-      className={`fixed bottom-6 right-6 z-50 p-3 rounded-full border-2 border-white/50 text-[#955E30] shadow-lg transition-all duration-300 hover:bg-gray-700 ${
+      className={`fixed bottom-6 right-6 z-50 p-3 rounded-full border-2 border-white/50 text-accet shadow-lg transition-all duration-300 hover:bg-accet hover:border-accet hover:text-white ${
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
       }`}
     >
-      <ArrowUp size={20} />
+      <ArrowUp size={mobileView? 16 : 20} />
     </button>
   );
 };
