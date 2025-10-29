@@ -81,9 +81,9 @@ const images = [
 ];
 
 const ProductDetail = () => {
+  const { data } = UseFetchData();
   const [product, setProduct] = useState({});
-//   const [productImages, setProductImages] = useState([]); // 🆕 Multiple images
-  const [loading, setLoading] = useState(true);
+  //   const [productImages, setProductImages] = useState([]); // 🆕 Multiple images
   const { cart, addToCart } = useContext(CartContext);
   const { id } = useParams();
   const { showToast } = useContext(ToastContext);
@@ -152,7 +152,7 @@ const ProductDetail = () => {
       const foundProduct = data.find((item) => item.product_id === productId);
       setProduct(foundProduct);
     }
-  },[]);
+  }, [data, id]);
 
   // Use useMemo to compute isInCart safely
   const isInCart = useMemo(() => {
@@ -217,40 +217,26 @@ const ProductDetail = () => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
-  const prev = () => setCur((cur) => (cur === 0 ? productImages.length - 1 : cur - 1));
-  const next = () => setCur((cur) => (cur === productImages.length - 1 ? 0 : cur + 1));
-
-  if (loading) {
-    return (
-      <div className="w-full bg-black min-h-screen flex items-center justify-center mt-28">
-        <div className="text-white text-2xl font2">Loading product...</div>
-      </div>
-    );
-  }
-
-  if (!product || !product.product_id) {
-    return (
-      <div className="w-full bg-black min-h-screen flex items-center justify-center mt-28">
-        <div className="text-white text-2xl font2">Product not found</div>
-      </div>
-    );
-  }
+  const prev = () =>
+    setCur((cur) => (cur === 0 ? productImages.length - 1 : cur - 1));
+  const next = () =>
+    setCur((cur) => (cur === productImages.length - 1 ? 0 : cur + 1));
 
   const getImageUrl = (imagePath) => {
-  if (!imagePath) return '/placeholder-image.png'; // Fallback image
-  
-  // If already a full URL, return as is
-  if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+    if (!imagePath) return "/placeholder-image.png"; // Fallback image
+
+    // If already a full URL, return as is
+    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+      return imagePath;
+    }
+
+    // If relative path, prepend backend URL
+    if (imagePath.startsWith("/static/")) {
+      return `http://localhost:5000${imagePath}`;
+    }
+
     return imagePath;
-  }
-  
-  // If relative path, prepend backend URL
-  if (imagePath.startsWith('/static/')) {
-    return `http://localhost:5000${imagePath}`;
-  }
-  
-  return imagePath;
-};
+  };
 
   const backButtonVariants = {
     hidden: {
@@ -377,6 +363,14 @@ const ProductDetail = () => {
     showToast("Image Downloaded! Check your downloads folder 📥", "success");
   };
 
+  if (!product || !product.product_id) {
+    return (
+      <div className="w-full bg-black min-h-screen flex items-center justify-center mt-28">
+        <div className="text-white text-2xl font2">Product not found</div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="w-full bg-black mx-auto mt-14 md:mt-28 py-20 overflow-x-hidden">
@@ -419,80 +413,46 @@ const ProductDetail = () => {
                     }) translate(${isZoomed ? position.x : 0}px, ${
                       isZoomed ? position.y : 0
                     }px)`,
-                    }}
-                    onClick={handleImageClick}
-                    onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                    draggable={false}
-                  />
-                ))}
+                  }}
+                  onClick={handleImageClick}
+                  onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  draggable={false}
+                />
+              ))}
 
-                {!isZoomed && productImages.length > 1 && (
-                  <>
-                    <div className="absolute inset-0 flex justify-between items-center px-5">
-                      <button
-                        onClick={prev}
-                        className="bg-black/80 p-2 rounded-full flex justify-center cursor-pointer items-center hover:bg-black/90 transition-colors"
-                      >
-                        <MdKeyboardArrowLeft className="text-white text-[22px]" />
-                      </button>
-                      <button
-                        onClick={next}
-                        className="bg-black/80 p-2 rounded-full flex justify-center cursor-pointer items-center hover:bg-black/90 transition-colors"
-                      >
-                        <MdKeyboardArrowRight className="text-white text-[22px]" />
-                      </button>
-                    </div>
-                    
-                    {/* Image Type Badge */}
-                    <div className="absolute top-4 left-4 bg-[#955E30] text-white px-3 py-1 rounded-full text-xs font2">
-                      {productImages[cur]?.image_type === 'primary' ? 'Base Image' : 'Detail Shot'}
-                    </div>
-                    
-                    <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-2">
-                      {productImages.map((img, index) => (
-                        <div
-                          key={index}
-                          className={`w-1.5 h-1.5 bg-white rounded-full transition-all cursor-pointer ${
-                            cur === index ? "p-2" : "bg-opacity-50"
-                          }`}
-                          onClick={() => setCur(index)}
-                        ></div>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Thumbnail Gallery - 🆕 NEW */}
-              {productImages.length > 1 && (
-                <div className="grid grid-cols-4 gap-3">
-                  {productImages.map((imageObj, index) => (
-                    <div
-                      key={index}
-                      onClick={() => setCur(index)}
-                      className={`relative rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
-                        cur === index ? 'border-[#955E30]' : 'border-white/20 hover:border-white/40'
-                      }`}
+              {!isZoomed && (
+                <>
+                  <div className="absolute inset-0 flex justify-between items-center px-5">
+                    <button
+                      onClick={prev}
+                      className="bg-black/80 p-2 rounded-full flex justify-center cursor-pointer items-center"
                     >
-                      <img
-                        src={imageObj.image_url}
-                        alt={`Thumbnail ${index + 1}`}
-                        className="w-full h-24 object-cover"
-                      />
-                      {imageObj.image_type === 'primary' && (
-                        <div className="absolute top-1 left-1 bg-[#955E30] text-white text-[8px] px-1.5 py-0.5 rounded font2">
-                          Base
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                      <MdKeyboardArrowLeft className="text-white text-[22px]" />
+                    </button>
+                    <button
+                      onClick={next}
+                      className="bg-black/80 p-2 rounded-full flex justify-center cursor-pointer items-center"
+                    >
+                      <MdKeyboardArrowRight className="text-white text-[22px]" />
+                    </button>
+                  </div>
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-2">
+                    {img.map((s, index) => (
+                      <div
+                        key={index}
+                        className={`w-1.5 h-1.5 bg-white rounded-full transition-all ${
+                          cur === index ? "p-2" : "bg-opacity-50"
+                        }`}
+                      ></div>
+                    ))}
+                  </div>
+                </>
               )}
+            </div>
           </div>
-        </div>
 
           {/* content */}
           <div className="flex flex-col justify-start h-auto items-start px-3 lg:px-20 py-3">
@@ -596,11 +556,11 @@ const ProductDetail = () => {
               >
                 {/* Animated gradient background */}
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 bg-[length:200%_100%] animate-gradient">
-                <span className="relative flex items-center justify-center gap-2">
-                  <span className="text-lg">✨</span>
-                  Virtual Try-On
-                  <span className="text-lg">👗</span>
-                </span>
+                  <span className="relative flex items-center justify-center gap-2">
+                    <span className="text-lg">✨</span>
+                    Virtual Try-On
+                    <span className="text-lg">👗</span>
+                  </span>
                 </div>
               </motion.button>
             </div>
@@ -630,7 +590,9 @@ const ProductDetail = () => {
                 </button>
                 <div
                   className={`mt-3 overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
-                    openIndex === 0 ? "opacity-100 max-h-96" : "max-h-0 opacity-0"
+                    openIndex === 0
+                      ? "opacity-100 max-h-96"
+                      : "max-h-0 opacity-0"
                   }`}
                 >
                   <div className="mt-2 pb-5">
@@ -675,7 +637,9 @@ const ProductDetail = () => {
                 </button>
                 <div
                   className={`mt-3 overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
-                    openIndex === 1 ? "opacity-100 max-h-96" : "max-h-0 opacity-0"
+                    openIndex === 1
+                      ? "opacity-100 max-h-96"
+                      : "max-h-0 opacity-0"
                   }`}
                 >
                   <div className="mt-2 pb-5">
@@ -719,7 +683,9 @@ const ProductDetail = () => {
                 </button>
                 <div
                   className={`pl-4 mt-3 overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
-                    openIndex === 2 ? "opacity-100 max-h-[500px]" : "max-h-0 opacity-0"
+                    openIndex === 2
+                      ? "opacity-100 max-h-[500px]"
+                      : "max-h-0 opacity-0"
                   }`}
                 >
                   <div className="mt-2">
@@ -795,7 +761,7 @@ const ProductDetail = () => {
               </div>
             </div>
           </div>
-      </div>
+        </div>
 
         {/* review */}
         <div className="w-[90%] mx-auto lg:px-10 py-7 md:mt-5">
@@ -986,55 +952,55 @@ const ProductDetail = () => {
           <ProductSwiper />
         </div>
 
-
-      {/* Virtual Try-On Modal - Complete Frontend Only */}
-      {showTryOn && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="fixed inset-0 bg-black/95 z-50 flex font-body items-center justify-center p-4"
-          onClick={closeTryOnModal}
-        >
+        {/* Virtual Try-On Modal - Complete Frontend Only */}
+        {showTryOn && (
           <motion.div
-            initial={{ scale: 0.9, y: 20 }}
-            animate={{ scale: 1, y: 0 }}
-            transition={{ type: "spring", damping: 25 }}
-            className="bg-linear-to-b from-gray-900 to-black rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-white/10"
-            onClick={(e) => e.stopPropagation()}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 bg-black/95 z-50 flex font-body items-center justify-center p-4"
+            onClick={closeTryOnModal}
           >
-            {/* Header */}
-            <div className="sticky top-0 bg-gray-900/95 backdrop-blur p-5 border-b border-white/10 z-50">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h2 className="text-[18px] md:text-2xl font-heading font-bold text-white">
-                    Virtual Try-On
-                  </h2>
-                  <p className="text-white/50 text-[10px] md:text-sm font-body">
-                    See how it looks on you!
-                  </p>
-                </div>
-                <motion.button
-                  whileHover={{ rotate: 90 }}
-                  onClick={closeTryOnModal}
-                  className="text-white/60 hover:text-white text-2xl"
-                >
-                  <X />
-                </motion.button>
-              </div>
-            </div>
-
-            <div
-              style={{ width: "100%", height: "400px", position: "relative" }}
-              className="w-[90%] mx-auto h-[50vh] text-white text-[30px] font-body flex justify-center items-center"
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              transition={{ type: "spring", damping: 25 }}
+              className="bg-linear-to-b from-gray-900 to-black rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-white/10"
+              onClick={(e) => e.stopPropagation()}
             >
-              <DarkVeil />
-              <p className="absolute">Coming Soon</p>
-            </div>
+              {/* Header */}
+              <div className="sticky top-0 bg-gray-900/95 backdrop-blur p-5 border-b border-white/10 z-50">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-[18px] md:text-2xl font-heading font-bold text-white">
+                      Virtual Try-On
+                    </h2>
+                    <p className="text-white/50 text-[10px] md:text-sm font-body">
+                      See how it looks on you!
+                    </p>
+                  </div>
+                  <motion.button
+                    whileHover={{ rotate: 90 }}
+                    onClick={closeTryOnModal}
+                    className="text-white/60 hover:text-white text-2xl"
+                  >
+                    <X />
+                  </motion.button>
+                </div>
+              </div>
 
-            {/* place here the below tryon content code */}
+              <div
+                style={{ width: "100%", height: "400px", position: "relative" }}
+                className="w-[90%] mx-auto h-[50vh] text-white text-[30px] font-body flex justify-center items-center"
+              >
+                <DarkVeil />
+                <p className="absolute">Coming Soon</p>
+              </div>
+
+              {/* place here the below tryon content code */}
+            </motion.div>
           </motion.div>
-        </motion.div>
-      )}
+        )}
+      </div>
     </>
   );
 };
