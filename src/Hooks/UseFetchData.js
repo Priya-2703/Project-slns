@@ -15,7 +15,7 @@ const UseFetchData = () => {
       setError(null);
 
       const res = await fetch(
-        "https://db6042e21025.ngrok-free.app/api/products",
+        "https://5b1a1ca66a6b.ngrok-free.app/api/products",
         {
           // ⭐ ngrok bypass header - IMPORTANT!
           headers: {

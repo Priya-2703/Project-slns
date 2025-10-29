@@ -14,7 +14,7 @@
     "@react-spring/web": "^10.0.3",
     "@tailwindcss/vite": "^4.1.14",
     "axios": "^1.12.2",
-    "canvas-confetti": "^1.9.3",
+    "canvas-confetti": "^1.9.4",
     "framer-motion": "^12.23.24",
     "gsap": "^3.13.0",
     "lottie-react": "^2.4.1",
