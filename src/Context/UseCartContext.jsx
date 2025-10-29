@@ -15,10 +15,11 @@ const CartProvider = ({ children }) => {
   // 1. add
   const addToCart = (product) => {
     setCart((cart) => {
-      const existingCart = cart.find((item) => item.product_id === product.product_id);
+      const existingCart = cart.find((item) => item.id === product.id);
       if (existingCart) {
+        console.log("have exist");
         return cart.map((item) =>
-          item.product_id === product.product_id
+          item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
@@ -31,13 +32,13 @@ const CartProvider = ({ children }) => {
 
   // 2. remove
   const removeFromCart = (itemId) => {
-    setCart(cart.filter((item) => item.product_id !== itemId));
+    setCart(cart.filter((item) => item.id !== itemId));
   };
 
   // 3. update
   const updateCartItemQuantity = (id, amount) => {
     const updatedCart = cart.map((item) =>
-      item.product_id === id ? { ...item, quantity: item.quantity + amount } : item
+      item.id === id ? { ...item, quantity: item.quantity + amount } : item
     );
     const filteredCart = updatedCart.filter((item) => item.quantity > 0);
     setCart(filteredCart);
