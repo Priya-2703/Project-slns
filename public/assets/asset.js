@@ -7,7 +7,6 @@ import ipay from "./ipay.avif"
 import gpay from "./gpay.avif"
 import paypal from "./paypal.avif"
 import stripe from "./stripe.png"
-import b2b from "./b2b.png"
 import dhosti1 from "./dhosti1.png"
 import dhosti2 from "./dhosti2.jpg"
 import dhosti3 from "./dhosti3.jpg"
@@ -22,16 +21,10 @@ import trending from "./trending.mp4"
 import arrival from "./arrival.mp4"
 import review from "./review.mp4"
 import signup from "./signup.mp4"
-import bgvideo from "./bgvideo.mp4"
-import forpassbg from "./forpassbg.mp4"
-import banner from "./banner.jpg"
-import butterflyAnim from "./butterfly.json"
 
 export const assets={
     logo,
     owner,
-    banner,
-    butterflyAnim,
     visa,
     mastercard,
     ipay,
@@ -52,8 +45,5 @@ export const assets={
     box5,
     poc1,
     signup,
-    bgvideo,
-    forpassbg,
-    b2b,
 
 }

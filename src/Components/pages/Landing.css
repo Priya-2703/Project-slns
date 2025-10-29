@@ -85,8 +85,8 @@
   transition: all 0.4s ease-in-out;
 }
 
-.card:hover {
-  background: linear-gradient(
+.card:hover{
+    background: linear-gradient(
     41deg,
     rgba(53, 53, 53, 0.2) 0%,
     rgba(111, 111, 111, 0.3) 70%,
@@ -94,37 +94,37 @@
   );
   transition: all 0.2s ease;
 }
-.card:hover h1 {
-  transform: translateY(-15px);
-  transition: all 0.2s ease-in-out;
+.card:hover h1{
+    transform: translateY(-15px);
+    transition: all 0.2s ease-in-out;
 }
-.card:hover p {
-  transform: translateY(-25px);
-  transition: all 0.2s ease-in-out;
+.card:hover p{
+    transform: translateY(-25px);
+    transition: all 0.2s ease-in-out;
 }
-.box1:hover img {
-  transform: translateY(-35px) scale(1.5);
-  transition: all 0.2s ease-in-out;
+.box1:hover img{
+    transform: translateY(-35px) scale(1.5);
+    transition: all 0.2s ease-in-out;
 }
-.box2:hover img {
-  transform: translateY(-35px) scale(1.5);
-  transition: all 0.2s ease-in-out;
+.box2:hover img{
+    transform: translateY(-35px) scale(1.5);
+    transition: all 0.2s ease-in-out;
 }
-.box3:hover .box31 {
-  transform: translateY(7px) scale(1.2);
-  transition: all 0.2s ease-in-out;
+.box3:hover .box31{
+    transform: translateY(7px) scale(1.2);
+    transition: all 0.2s ease-in-out;
 }
-.box3:hover .box32 {
-  transform: translateY(-160px) scale(1.2);
-  transition: all 0.2s ease-in-out;
+.box3:hover .box32{
+    transform: translateY(-160px) scale(1.2);
+    transition: all 0.2s ease-in-out;
 }
-.box5:hover img {
-  transform: translateY(-55px) scale(1.2);
-  transition: all 0.2s ease-in-out;
+.box5:hover img{
+    transform: translateY(-55px) scale(1.2);
+    transition: all 0.2s ease-in-out;
 }
-.box4:hover img {
-  transform: translateX(-100px) scale(1.5);
-  transition: all 0.2s ease-in-out;
+.box4:hover img{
+    transform: translateX(-100px) scale(1.5);
+    transition: all 0.2s ease-in-out;
 }
 
 .review-wrapper {
@@ -169,69 +169,4 @@
 }
 .review-4 {
   animation-delay: calc(20s / 4 * (4 - 4) * -1);
-}
-
-@media only screen and (max-width: 460px) {
-  .card-wrapper {
-    width: 90%;
-    height: 250px;
-  }
-  .saree {
-    width: 180px;
-    height: 250px;
-    left: max(calc(65px * 10));
-    animation-duration: 12s;
-  }
-  @keyframes scroll-left {
-    to {
-      left: -50px;
-    }
-  }
-  .review-wrapper {
-    width: 90%;
-    height: 200px;
-  }
-  .review {
-    left: max(calc(240px * 4));
-  }
-  @keyframes scroll-left {
-    to {
-      left: -500px;
-    }
-  }
-}
-
-@media only screen and (max-width: 800px) {
-  .card-wrapper {
-    width: 95%;
-    height: 350px;
-  }
-  .saree {
-    width: 200px;
-    height: 350px;
-    left: max(calc(96px * 10));
-
-    animation-duration: 12s;
-  }
-  @keyframes scroll-left {
-    to {
-      left: -50px;
-    }
-  }
-  .card {
-  padding: 20px 60px;
-}
-  
-  .review-wrapper {
-    width: 90%;
-    height: 200px;
-  }
-  .review {
-    left: max(calc(240px * 4));
-  }
-  @keyframes scroll-left {
-    to {
-      left: -500px;
-    }
-  }
 }

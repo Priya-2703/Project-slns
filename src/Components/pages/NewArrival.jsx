@@ -122,13 +122,11 @@ const NewArrival = () => {
     };
   }, [swiperReady]);
 
-    const mobileView =  window.innerWidth < 800;
-
   return (
     <>
-      <div className="w-full mx-auto py-3 md:py-4 md:px-6 lg:px-8 bg-black">
-        <div className="flex flex-col justify-center relative items-center text-white md:mb-8 pb-3">
-          <h1 className="text-[40px] md:text-[65px] font-heading font-[950] capitalized leading-14 z-20">
+      <div className="mx-auto py-8 px-6 bg-black">
+        <div className="flex flex-col justify-center relative items-center text-white mb-8 py-6">
+          <h1 className="text-[42px] py-3 font1 font-[200] uppercase leading-14 z-10">
             New Arrivals
           </h1>
           <video
@@ -138,71 +136,64 @@ const NewArrival = () => {
             muted
             playsInline
             preload="auto"
-            className="absolute h-[100px] md:h-[200px] w-[700px] object-cover"
+            className="absolute h-[200px] w-[700px] object-cover"
           />
         </div>
 
-        <div className="w-[95%] h-auto md:w-[90%] lg:w-full mx-auto relative overflow-visible py-6 lg:py-4">
+        <div className="max-w-[1400px] mx-auto relative overflow-visible py-8">
           <Swiper
             modules={[Navigation]}
-            className=" w-[90%] lg-[95%] py-10 md:py-16 lg:gap-5"
+            className="trending-swiper"
             onSwiper={(swiper) => {
               swiperRef.current = swiper;
               setSwiperReady(true);
             }}
-            spaceBetween={5}
+            spaceBetween={48}
             speed={600}
-            slidesPerView={3}
-            slidesPerGroup={mobileView ? 3 : 5} // 1 click = 4 slides
-            allowTouchMove={true} // swipe off
+            slidesPerView={4}
+            slidesPerGroup={4} // 1 click = 4 slides
+            allowTouchMove={false} // swipe off
             loop={false}
             watchOverflow={true} // lock when no overflow
             breakpoints={{
-              460: { slidesPerView: 3, spaceBetween: 5 },
-              640: { slidesPerView: 3, spaceBetween: 5 },
-              768: { slidesPerView: 3, spaceBetween: 5 },
-              1024: { slidesPerView: 5, spaceBetween: 45 },
-              1440: { slidesPerView: 5, spaceBetween: 45 },
+              320: { slidesPerView: 1, spaceBetween: 20 },
+              640: { slidesPerView: 2, spaceBetween: 30 },
+              768: { slidesPerView: 3, spaceBetween: 40 },
+              1024: { slidesPerView: 4, spaceBetween: 48 },
             }}
           >
             {products.map((item, index) => (
-              <SwiperSlide
-                key={index}
-                className="flex justify-center items-start h-auto"
-              >
-                <Link to={"/product/:id"} className="w-full">
-                  <div className="max-w-[100px] md:max-w-[180px] lg:max-w-[250px] mx-auto flex flex-col gap-2 cursor-pointer group pt-2 pb-5">
+              <SwiperSlide key={index}>
+                <Link to={"/product/:id"}>
+                  <div className="w-[300px] flex flex-col gap-4 cursor-pointer group">
                     <div className="relative overflow-hidden rounded-[12px]">
                       <img
                         src={item.img}
                         alt={item.name}
-                        className="w-full h-[150px] md:h-[280px] lg:h-[360px] object-cover transition-transform duration-500 group-hover:scale-110"
+                        className="w-full h-[400px] object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                     </div>
-
-                    <div className="w-full flex flex-col md:flex-row justify-between items-start text-white gap-2">
-                      <div className="w-full flex flex-col  items-start gap-1 lg:gap-2">
-                        <h1 className="w-full lg:w-[90%] text-[10px] md:text-[14px] lg:text-[17px] font-body capitalize font-medium md:leading-4.5 leading-3 lg:leading-5.5">
+  
+                    <div className="flex justify-between items-start text-white">
+                      <div className="flex flex-col justify-center items-start gap-3">
+                        <h1 className="w-[90%] text-[20px] font2-bold capitalize leading-7">
                           {item.name}
                         </h1>
-                        <p className="w-full font-body flex justify-between text-[10px] md:text-[14px] lg:text-[15px] leading-none">
+                        <p className="font2 text-[16px] leading-none">
                           ₹{item.price}
-                          <span className="px-2 block md:hidden lg:py-1 lg:border-2 border-white text-[10px] md:text-[14px] lg:text-[15px] font-body">
-                             {item.discount}%
-                          </span>
                         </p>
                       </div>
-                      <div className=" hidden md:flex flex-row md:flex-col justify-between md:justify-center md:items-end gap-1 lg:gap-2">
-                        <p className="lg:px-2 p-1 lg:py-1 border-2 border-white text-[12px] lg:text-[15px] font-body order-2 md:order-1">
+                      <div className="flex flex-col justify-center items-start gap-3">
+                        <p className="px-2 py-1 border-2 border-white text-[16px] font2">
                           {item.discount}%
                         </p>
-                        <p className="text-gray-500 line-through font-body text-[12px] lg:text-[15px] order-1 md:order-2">
+                        <p className="text-gray-500 line-through font2 text-[16px]">
                           ₹{item.actualPrice}
                         </p>
                       </div>
                     </div>
-                    <div className="hidden md:flex justify-start">
-                      <p className="text-white/65 tracking-wide font-body capitalize text-[8px] lg:text-[10px] leading-0">
+                    <div className="flex justify-start">
+                      <p className="text-white/65 tracking-wide font2 capitalize text-[12px] leading-0">
                         {index + 2} styling Available
                       </p>
                     </div>
@@ -217,16 +208,16 @@ const NewArrival = () => {
             ref={prevRef}
             aria-label="Previous"
             aria-disabled={atStart || locked}
-            className={`absolute top-1/2 -translate-y-1/2 -left-[15px] md:-left-[20px] lg:-left-[5px] z-20 p-3 rounded-full transition-all 
+            className={`absolute top-1/2 -translate-y-1/2 -left-[60px] z-20 p-3 rounded-full transition-all backdrop-blur-sm
             ${
               atStart || locked
                 ? "opacity-0 invisible pointer-events-none scale-95"
                 : "opacity-100 visible pointer-events-auto scale-100"
             }
-             text-white lg:hover:bg-white/30 focus:outline-none focus:ring-0`}
+             text-white hover:bg-white/30 focus:outline-none focus:ring-0`}
           >
             <svg
-              className="w-4 h-4 md:w-6 md:h-6"
+              className="w-6 h-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -244,16 +235,16 @@ const NewArrival = () => {
             ref={nextRef}
             aria-label="Next"
             aria-disabled={atEnd || locked}
-            className={`absolute top-1/2 -translate-y-1/2 -right-[15px] md:-right-[20px] lg:-right-[5px] z-20 p-3 rounded-full transition-all 
+            className={`absolute top-1/2 -translate-y-1/2 -right-[60px] z-20 p-3 rounded-full transition-all backdrop-blur-sm
             ${
               atEnd || locked
                 ? "opacity-0 invisible pointer-events-none scale-95"
                 : "opacity-100 visible pointer-events-auto scale-100"
             }
-             text-white lg:hover:bg-white/30 focus:outline-none focus:ring-0`}
+             text-white hover:bg-white/30 focus:outline-none focus:ring-0`}
           >
             <svg
-              className="w-4 h-4 md:w-6 md:h-6"
+              className="w-6 h-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -268,6 +259,12 @@ const NewArrival = () => {
           </button>
         </div>
       </div>
+
+      <style jsx>{`
+        .trending-swiper {
+          padding: 20px 0 50px 0;
+        }
+      `}</style>
     </>
   );
 };

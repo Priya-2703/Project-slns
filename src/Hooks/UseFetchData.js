@@ -1,49 +1,25 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react'
 
 const UseFetchData = () => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [data,setData] =useState([])
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(()=>{
+    fetchData()
+  },[])
 
   const fetchData = async () => {
     try {
-      setLoading(true);
-      setError(null);
-
       const res = await fetch(
-        "https://5b1a1ca66a6b.ngrok-free.app/api/products",
-        {
-          // ⭐ ngrok bypass header - IMPORTANT!
-          headers: {
-            "ngrok-skip-browser-warning": "true",
-            // or alternative:
-            // "User-Agent": "MyApp"
-          },
-        }
+        "https://raw.githubusercontent.com/saransk03/cloth-json/main/db.json"
       );
-
-      // Response check pannunga
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-
       const ans = await res.json();
-      console.log("✅ Data received:", ans.products.image);
-
-      setData(ans.products || []);
-      setLoading(false);
+      setData(ans.products)
     } catch (error) {
-      console.error("❌ Fetch error:", error);
-      setError(error.message);
-      setLoading(false);
+      console.log(error)
     }
   };
 
-  return { data, loading, error, refetch: fetchData };
-};
+  return {data}
+}
 
-export default UseFetchData;
+export default UseFetchData
