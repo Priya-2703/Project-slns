@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useEffect } from "react";
 import {
   BrowserRouter as Router,
   useLocation,
@@ -18,10 +18,15 @@ import ButterflyLottieFollower from "./Components/ButterflyLottieFollower";
 import { assets } from "../public/assets/asset";
 import BackToTopButton from "./Components/BacktoTopButton";
 import LoaderAni from "./Components/LoaderAni";
-import AdminDashboard from "./Components/Admin/AdminDashboard"
-import AddProduct from "./Components/Admin/AddProduct"
-import BulkImport from "./Components/Admin/BulkImport"
-import ProtectedAdminRoute, { RedirectIfAdmin } from "./Components/Auth/ProtectedAdminRoute";
+import AdminDashboard from "./Components/Admin/AdminDashboard";
+import AddProduct from "./Components/Admin/AddProduct";
+import BulkImport from "./Components/Admin/BulkImport";
+import ProtectedAdminRoute, {
+  RedirectIfAdmin,
+} from "./Components/Auth/ProtectedAdminRoute";
+import ManageProducts from "./Components/Admin/ManageProduct";
+import ManageCategories from "./Components/Admin/Categories/ManageCategories";
+import ManageOrders from "./Components/Admin/ManageOrders";
 
 const About = lazy(() => import("./Components/About/About"));
 const Faq = lazy(() => import("./Components/FAQ/Faq"));
@@ -48,6 +53,31 @@ const Landing = lazy(() => import("./Components/pages/Landing"));
 // 🎯 Create wrapper component to check route
 function AppContent() {
   const location = useLocation();
+
+  // Check if current route is admin route
+  const isAdminRoute = location.pathname.startsWith("/admin");
+
+  // Add/remove admin-route class and force normal cursor
+  useEffect(() => {
+    if (isAdminRoute) {
+      document.body.classList.add("admin-route");
+      document.body.style.cursor = "auto";
+      // Reset any inline cursor styles
+      document.querySelectorAll("*").forEach((el) => {
+        if (el.style.cursor) {
+          el.style.cursor = "auto";
+        }
+      });
+    } else {
+      document.body.classList.remove("admin-route");
+      document.body.style.cursor = "";
+    }
+
+    return () => {
+      document.body.classList.remove("admin-route");
+      document.body.style.cursor = "";
+    };
+  }, [isAdminRoute]);
 
   // Define exact valid routes (including dynamic routes)
   const validRoutes = [
@@ -80,14 +110,24 @@ function AppContent() {
     <>
       <ScrollToTop behavior="smooth" />
 
+      {/* Show Butterfly and Yellow Cursor only for NON-admin routes */}
+      {!isAdminRoute && (
+        <>
+          <YellowCursor size={18} hideNative />
+          <ButterflyLottieFollower
+            hideCursor={false}
+            animationData={assets.butterflyAnim}
+            size={80}
+            faceOffsetDeg={90}
+            wingSpeed={3}
+          />
+        </>
+      )}
+
       {/* Show Navbar only if valid route */}
       {isValidRoute && <Navbar />}
 
-      <Suspense
-        fallback={
-          <LoaderAni/>
-        }
-      >
+      <Suspense fallback={<LoaderAni />}>
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/about" element={<About />} />
@@ -110,20 +150,77 @@ function AppContent() {
           <Route path="/signin" element={<SignIn />} />
           <Route path="/b2b-signin" element={<B2bSignIn />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-              //admin new
-            <Route path="/signin" element={<RedirectIfAdmin ><SignIn /></RedirectIfAdmin >} />
-                <Route path="/signup" element={<RedirectIfAdmin ><SignUp /></RedirectIfAdmin >} />
-                <Route path="/b2b-signup" element={<B2bSignUp />} />
-                <Route path="/b2b-signin" element={<B2bSignIn />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-
-                 {/* ========================================
+          //admin new
+          <Route
+            path="/signin"
+            element={
+              <RedirectIfAdmin>
+                <SignIn />
+              </RedirectIfAdmin>
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              <RedirectIfAdmin>
+                <SignUp />
+              </RedirectIfAdmin>
+            }
+          />
+          <Route path="/b2b-signup" element={<B2bSignUp />} />
+          <Route path="/b2b-signin" element={<B2bSignIn />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          {/* ========================================
                       ADMIN ROUTES (Protected - Admin Only)
                     ======================================== */}
-                <Route path="/admin/dashboard" element={ <ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute> }  />
-                <Route path="/admin/products/add" element={<ProtectedAdminRoute><AddProduct /></ProtectedAdminRoute>  } />
-                <Route path="/admin/import" element={ <ProtectedAdminRoute><BulkImport /></ProtectedAdminRoute> } />
-
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedAdminRoute>
+                <AdminDashboard />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
+            path="/admin/products/add"
+            element={
+              <ProtectedAdminRoute>
+                <AddProduct />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
+            path="/admin/products"
+            element={
+              <ProtectedAdminRoute>
+                <ManageProducts />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
+            path="/admin/categories"
+            element={
+              <ProtectedAdminRoute>
+                <ManageCategories />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
+            path="/admin/orders"
+            element={
+              <ProtectedAdminRoute>
+                <ManageOrders />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
+            path="/admin/import"
+            element={
+              <ProtectedAdminRoute>
+                <BulkImport />
+              </ProtectedAdminRoute>
+            }
+          />
           {/* 404 Error Page - Must be last */}
           <Route path="*" element={<ErrorPage />} />
         </Routes>
@@ -143,14 +240,6 @@ const App = () => {
           <WishlistProvider>
             <CartProvider>
               <Router>
-                <YellowCursor size={18} hideNative />
-                <ButterflyLottieFollower
-                  hideCursor={false}
-                  animationData={assets.butterflyAnim}
-                  size={80}
-                  faceOffsetDeg={90}
-                  wingSpeed={3}
-                />
                 <AppContent />
                 <BackToTopButton />
               </Router>

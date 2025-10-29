@@ -323,7 +323,7 @@ const Navbar = () => {
                     to={item.path}
                     onClick={() => setMenuOpen(false)}
                   >
-                    <p className="tracking-wide uppercase text-white hover:text-[#955E30] transition-colors flex items-center gap-2">
+                    <p className="tracking-wide uppercase text-white hover:text-ac transition-colors flex items-center gap-2">
                       <span>{item.icon}</span>
                       {item.label}
                     </p>
@@ -375,7 +375,7 @@ const Navbar = () => {
                 </button>
               </Link> */}
 
-              {/* <div
+            {/* <div
                                 id="product-menu"
                                 className={`pl-4 mt-3 overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
                                   productOpen ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
