@@ -218,9 +218,9 @@ const ProductDetail = () => {
   };
 
   const prev = () =>
-    setCur((cur) => (cur === 0 ? productImages.length - 1 : cur - 1));
+    setCur((cur) => (cur === 0 ? img.length - 1 : cur - 1));
   const next = () =>
-    setCur((cur) => (cur === productImages.length - 1 ? 0 : cur + 1));
+    setCur((cur) => (cur === img.length - 1 ? 0 : cur + 1));
 
   const getImageUrl = (imagePath) => {
     if (!imagePath) return "/placeholder-image.png"; // Fallback image
