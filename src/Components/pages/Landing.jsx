@@ -122,7 +122,7 @@ const Landing = () => {
 
   return (
     <>
-      <div className="relative min-h-screen overflow-x-hidden">
+      <div className="relative min-h-screen overflow-hidden">
         {/* 🔹 Fixed background video with parallax */}
         <motion.div 
           className="h-screen relative"
@@ -147,7 +147,7 @@ const Landing = () => {
         </motion.div>
       </div>
 
-      <div className="bg-black h-auto relative overflow-x-hidden">
+      <div className="bg-black h-auto relative overflow-hidden">
         {/* next section - Welcome */}
         <motion.div
           className="w-full mx-auto flex justify-center items-center py-12"
@@ -289,7 +289,6 @@ const Landing = () => {
                     <img
                       src={assets.box1}
                       alt="Banarasi saree"
-                      loading="lazy"
                       className="w-52"
                     />
                   </div>
@@ -308,7 +307,6 @@ const Landing = () => {
                     <img
                       src={assets.box2}
                       alt="Mysore saree"
-                      loading="lazy"
                       className="w-52"
                     />
                   </div>
@@ -328,7 +326,6 @@ const Landing = () => {
                 <div className="absolute top-[-180px] left-0">
                   <img
                     src={assets.box31}
-                    loading="lazy"
                     alt="Kanchipuram saree"
                     className="w-[850px] box31"
                   />
@@ -344,7 +341,6 @@ const Landing = () => {
                 <div className="absolute bottom-[-180px] flex justify-center w-full">
                   <img
                     src={assets.box32}
-                    loading="lazy"
                     alt="Kanchipuram saree"
                     className="w-[340px] box32"
                   />
@@ -369,7 +365,6 @@ const Landing = () => {
                   <div className="absolute bottom-[-170px] right-0 md:right-10 lg:right-0">
                     <img
                       src={assets.box4}
-                      loading="lazy"
                       alt="Pochampally saree"
                       className="w-64"
                     />
@@ -394,7 +389,6 @@ const Landing = () => {
                   <div className="absolute lg:bottom-[-180px] md:bottom-[-220px] bottom-[-180px] flex justify-center w-full">
                     <img
                       src={assets.box5}
-                      loading="lazy"
                       alt="Cotton saree"
                       className="w-96"
                     />

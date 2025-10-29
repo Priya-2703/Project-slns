@@ -92,3 +92,16 @@ body {
     rgba(25, 25, 25, 0.436)
   );
 }
+
+
+/* Normal cursor for admin routes */
+body.admin-route,
+body.admin-route * {
+  cursor: auto !important;
+}
+
+/* Hide custom cursor on admin routes */
+body.admin-route .yellow-cursor,
+body.admin-route .butterfly-follower {
+  display: none !important;
+}
