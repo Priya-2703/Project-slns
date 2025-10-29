@@ -1,35 +1,323 @@
 import React, { useEffect, useRef } from "react";
-import "./Footer.css"
+import "./Footer.css";
 import { assets } from "../../../public/assets/asset";
 import gsap from "gsap";
 import _ScrollTrigger from "gsap/ScrollTrigger";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { useIsMobile } from "../../Hooks/useIsMobile";
 
 gsap.registerPlugin(_ScrollTrigger);
 
 const Footer = () => {
- const logoRef = useRef(null);
+  const logoRef = useRef(null);
+  const socialIconsRef = useRef(null);
+  const footerTextRef = useRef(null);
+  const footerLinksRef = useRef(null);
+  const footerBottomRef = useRef(null);
 
- useEffect(()=>{
-  //logo animation
-  gsap.fromTo(
-      logoRef.current,
-      { scale: 0.1 },
-      {
-        scale: 1,
-        ease: "power2.out",
-        scrollTrigger: {
-          trigger: logoRef.current,
-          start: "top 80%",
-          end: "bottom 40%",
-          scrub: true,
-        },
+  const location = useLocation();
+  const isMobile = useIsMobile();
+
+  useEffect(() => {
+    // Cleanup previous triggers
+    _ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+
+    // Small delay for DOM to settle after route change
+    const timer = setTimeout(() => {
+      // Refresh ScrollTrigger
+      _ScrollTrigger.refresh();
+
+      //logo animation
+      if (logoRef.current) {
+        gsap.fromTo(
+          logoRef.current,
+          { scale: 0.1 },
+          {
+            scale: 1,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: logoRef.current,
+              start: "top 80%",
+              end: "bottom 40%",
+              scrub: true,
+            },
+          }
+        );
       }
-    );
 
- },[])
+      // Social icons stagger animation
+      if (socialIconsRef.current) {
+        const icons = socialIconsRef.current.querySelectorAll(".social-icon");
+        gsap.fromTo(
+          icons,
+          {
+            opacity: 0,
+            y: 50,
+            scale: 0.5,
+          },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.8,
+            ease: "back.out(1.7)",
+            stagger: 0.15,
+            immediateRender: false,
+            scrollTrigger: {
+              trigger: socialIconsRef.current,
+              start: "top 90%",
+              end: "bottom 20%",
+              toggleActions: "play none none reset",
+            },
+          }
+        );
 
+        // Hover effect for social icons
+        icons.forEach((icon) => {
+          const handleMouseEnter = () => {
+            gsap.to(icon, {
+              scale: 1.2,
+              rotation: 360,
+              duration: 0.4,
+              ease: "back.out(1.5)",
+            });
+          };
+          const handleMouseLeave = () => {
+            gsap.to(icon, {
+              scale: 1,
+              rotation: 0,
+              duration: 0.3,
+            });
+          };
 
+          icon.addEventListener("mouseenter", handleMouseEnter);
+          icon.addEventListener("mouseleave", handleMouseLeave);
+
+          // Store listeners for cleanup
+          icon._mouseenter = handleMouseEnter;
+          icon._mouseleave = handleMouseLeave;
+        });
+      }
+
+      // Footer text animation
+      if (footerTextRef.current) {
+        gsap.fromTo(
+          footerTextRef.current,
+          {
+            opacity: 0,
+            x: -100,
+          },
+          {
+            opacity: 1,
+            x: 0,
+            duration: 1,
+            ease: "power3.out",
+            immediateRender: false,
+            scrollTrigger: {
+              trigger: footerTextRef.current,
+              start: "top 90%",
+              end: "bottom 20%",
+              toggleActions: "play none none reset",
+            },
+          }
+        );
+      }
+
+      // Footer columns animation
+      if (footerLinksRef.current) {
+        const columns =
+          footerLinksRef.current.querySelectorAll(".footer-column");
+
+        gsap.fromTo(
+          columns,
+          {
+            opacity: 0,
+            y: 80,
+          },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 1,
+            ease: "power3.out",
+            stagger: 0.2,
+            immediateRender: false,
+            scrollTrigger: {
+              trigger: footerLinksRef.current,
+              start: "top 90%",
+              end: "bottom 20%",
+              toggleActions: "play none none reset",
+            },
+          }
+        );
+
+        // Animate each column's content
+        columns.forEach((column) => {
+          const heading = column.querySelector("h4");
+          const links = column.querySelectorAll("a");
+
+          if (heading) {
+            gsap.fromTo(
+              heading,
+              { opacity: 0, x: -30 },
+              {
+                opacity: 1,
+                x: 0,
+                duration: 0.6,
+                immediateRender: false,
+                scrollTrigger: {
+                  trigger: column,
+                  start: "top 90%",
+                  end: "bottom 20%",
+                  toggleActions: "play none none reset",
+                },
+              }
+            );
+          }
+
+          if (links.length > 0) {
+            gsap.fromTo(
+              links,
+              { opacity: 0, x: -20 },
+              {
+                opacity: 1,
+                x: 0,
+                duration: 0.6,
+                stagger: 0.1,
+                immediateRender: false,
+                scrollTrigger: {
+                  trigger: column,
+                  start: "top 90%",
+                  end: "bottom 20%",
+                  toggleActions: "play none none reset",
+                },
+              }
+            );
+          }
+        });
+      }
+
+      // Footer Bottom Section (Copyright + Payment)
+      if (footerBottomRef.current) {
+        const copyrightEl = footerBottomRef.current.querySelector(".copyright");
+        const paymentContainer =
+          footerBottomRef.current.querySelector(".payment-methods");
+
+        // Copyright animation
+        if (copyrightEl) {
+          gsap.fromTo(
+            copyrightEl,
+            {
+              opacity: 0,
+              y: 20,
+            },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.8,
+              ease: "power3.out",
+              immediateRender: false,
+              scrollTrigger: {
+                trigger: footerBottomRef.current,
+                start: "top 100%",
+                end: "bottom top",
+                toggleActions: "play none none reset",
+              },
+            }
+          );
+        }
+
+        // Payment icons animation
+        if (paymentContainer) {
+          const paymentIcons =
+            paymentContainer.querySelectorAll(".payment-icon");
+
+          gsap.fromTo(
+            paymentIcons,
+            {
+              opacity: 0,
+              y: 30,
+              scale: 0.6,
+            },
+            {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              duration: 0.8,
+              ease: "back.out(1.5)",
+              stagger: 0.1,
+              immediateRender: false,
+              scrollTrigger: {
+                trigger: footerBottomRef.current,
+                start: "top 100%",
+                end: "bottom top",
+                toggleActions: "play none none reset",
+              },
+            }
+          );
+
+          // Hover effect for payment icons
+          paymentIcons.forEach((icon) => {
+            const handleMouseEnter = () => {
+              gsap.to(icon, {
+                scale: 1.15,
+                y: -5,
+                duration: 0.3,
+              });
+            };
+            const handleMouseLeave = () => {
+              gsap.to(icon, {
+                scale: 1,
+                y: 0,
+                duration: 0.3,
+              });
+            };
+
+            icon.addEventListener("mouseenter", handleMouseEnter);
+            icon.addEventListener("mouseleave", handleMouseLeave);
+
+            // Store listeners for cleanup
+            icon._mouseenter = handleMouseEnter;
+            icon._mouseleave = handleMouseLeave;
+          });
+        }
+      }
+    }, 100);
+
+    // Cleanup on unmount or route change
+    return () => {
+      clearTimeout(timer);
+
+      // Remove event listeners
+      if (socialIconsRef.current) {
+        const icons = socialIconsRef.current.querySelectorAll(".social-icon");
+        icons.forEach((icon) => {
+          if (icon._mouseenter) {
+            icon.removeEventListener("mouseenter", icon._mouseenter);
+            icon.removeEventListener("mouseleave", icon._mouseleave);
+          }
+        });
+      }
+
+      if (footerBottomRef.current) {
+        const paymentIcons =
+          footerBottomRef.current.querySelectorAll(".payment-icon");
+        paymentIcons.forEach((icon) => {
+          if (icon._mouseenter) {
+            icon.removeEventListener("mouseenter", icon._mouseenter);
+            icon.removeEventListener("mouseleave", icon._mouseleave);
+          }
+        });
+      }
+
+      // Kill all ScrollTriggers
+      _ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+    };
+  }, [location.pathname]);
+
+  // mobile & cart page
+  if (isMobile && location.pathname === "/cart") {
+    return null; // hide footer
+  }
 
   return (
     <>
@@ -37,14 +325,21 @@ const Footer = () => {
         {/* Footer */}
         <footer className="footer bg-black">
           <div className="w-full flex justify-center items-center pb-20">
-              <img ref={logoRef} src={assets.logo} alt="logo" className="w-40"/>
+            <img
+              ref={logoRef}
+              src={assets.logo}
+              alt="logo"
+              loading="lazy"
+              className="w-20 md:w-40"
+            />
           </div>
           <div className="footer-content">
             <div className="footer-brand">
-              <div className="social-icons">
+              <div className="social-icons" ref={socialIconsRef}>
                 <a
                   href="https://www.instagram.com/sri_lakshmi_narayana_silk"
                   target="_blank"
+                  rel="noopener noreferrer"
                   className="social-icon"
                 >
                   <svg viewBox="0 0 24 24" fill="#fff">
@@ -54,6 +349,7 @@ const Footer = () => {
                 <a
                   href="https://wa.me/"
                   target="_blank"
+                  rel="noopener noreferrer"
                   className="social-icon"
                 >
                   <svg viewBox="0 0 20 20" fill="#fff">
@@ -63,6 +359,7 @@ const Footer = () => {
                 <a
                   href="https://www.facebook.com/"
                   target="_blank"
+                  rel="noopener noreferrer"
                   className="social-icon"
                 >
                   <svg width={18} height={18} viewBox="0 0 18 18" fill="#fff">
@@ -72,6 +369,7 @@ const Footer = () => {
                 <a
                   href="https://www.youtube.com/@srilakshminarayanasilk"
                   target="_blank"
+                  rel="noopener noreferrer"
                   className="social-icon"
                 >
                   <svg viewBox="0 0 24 24" fill="#fff">
@@ -79,52 +377,60 @@ const Footer = () => {
                   </svg>
                 </a>
               </div>
-              <p className="footer-text">
+              <p className="footer-text" ref={footerTextRef}>
                 Timeless traditions, modern elegance. Discover our collection of
                 hand-picked sarees and find the perfect piece to tell your
                 story.
               </p>
             </div>
-            <div className="footer-links">
+            <div className="footer-links" ref={footerLinksRef}>
               <div className="footer-column">
                 <h4>Product</h4>
-                <Link to={"/"}><a >Home</a></Link>
+                <Link to={"/"}>
+                  <a>Home</a>
+                </Link>
                 <a href="./sort-by/all-products">Advisable</a>
                 <a href="./sort-by/churidars">Promotions</a>
               </div>
               <div className="footer-column">
                 <h4>Company</h4>
-                <Link to={"/contact"}><a>Contact</a></Link>
-                <Link to={"/faq"}><a >FAQ</a></Link>
+                <Link to={"/contact"}>
+                  <a>Contact</a>
+                </Link>
+                <Link to={"/faq"}>
+                  <a>FAQ</a>
+                </Link>
               </div>
               <div className="footer-column">
                 <h4>Legal</h4>
-                <a href="./privacy-policy">Privacy</a>
-                <a href="./terms-and-conditions">Terms</a>
-                <a href="./404">404</a>
+                <Link to={"/privacy-policy"}>Privacy</Link>
+                <Link to={"/terms-and-conditions"}>Terms</Link>
+                <Link to={"*"}>404</Link>
               </div>
             </div>
           </div>
-          <div className="footer-bottom">
-            <p className="copyright">© 2025 lunai. All rights reserved.</p>
-            <div className="payment-methods">
-              <div className="payment-icon" >
-                <img src={assets.visa} alt="visa" />
+          <div className="footer-bottom" ref={footerBottomRef}>
+            <p className="copyright order-2 md:order-1">
+              © 2025 lunai. All rights reserved.
+            </p>
+            <div className="payment-methods order-1 md:order-2">
+              <div className="payment-icon">
+                <img src={assets.visa} loading="lazy" alt="visa" />
               </div>
-              <div className="payment-icon" >
-                <img src={assets.mastercard} alt="mastercard" />
+              <div className="payment-icon">
+                <img src={assets.mastercard} loading="lazy" alt="mastercard" />
               </div>
-              <div className="payment-icon" >
-                <img src={assets.ipay} alt="ipay" />
+              <div className="payment-icon">
+                <img src={assets.ipay} loading="lazy" alt="ipay" />
               </div>
-              <div className="payment-icon" >
-                <img src={assets.gpay} alt="gpay" />
+              <div className="payment-icon">
+                <img src={assets.gpay} loading="lazy" alt="gpay" />
               </div>
-              <div className="payment-icon" >
-                <img src={assets.paypal} alt="paypal" />
+              <div className="payment-icon">
+                <img src={assets.paypal} loading="lazy" alt="paypal" />
               </div>
-              <div className="payment-icon" >
-                <img src={assets.stripe} alt="stripe" />
+              <div className="payment-icon">
+                <img src={assets.stripe} loading="lazy" alt="stripe" />
               </div>
             </div>
           </div>

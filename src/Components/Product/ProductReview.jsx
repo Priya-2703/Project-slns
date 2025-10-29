@@ -1,122 +1,165 @@
-// Review.jsx
-import { useState } from "react";
+// components/ProductReview/ProductReviewForm.jsx
+import React, { useState, useContext } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { ReviewContext } from "../../Context/UseReviewContext";
+import { ToastContext } from "../../Context/UseToastContext";
 import { FaArrowLeft } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
-function ProductReview() {
-  const [name, setName] = useState("");
-  const [message, setMessage] = useState("");
-  const [rating, setRating] = useState("");
+const ProductReviewForm = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { addReview, totalReviews } = useContext(ReviewContext);
+  const { showToast } = useContext(ToastContext);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    rating: 0,
+    review: "",
+    quality: "",
+  });
+
+  const handleRatingClick = (rating) => {
+    setFormData({ ...formData, rating });
+  };
+
+  const handleQualitySelect = (quality) => {
+    setFormData({ ...formData, quality });
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!name || !message || !rating) return;
-    // Backend/API ku anuppa ready payload
-    const payload = { name, message, rating: Number(rating) };
-    console.log("Review submitted:", payload);
-    alert("Thanks for your review!");
-    setName("");
-    setMessage("");
-    setRating("");
+
+    // Validation
+    if (!formData.name || !formData.rating || !formData.review) {
+      showToast("Please fill all required fields", "error");
+      return;
+    }
+
+    // Add review
+    addReview(id, formData);
+    showToast("Review submitted successfully!", "success");
+
+    // Navigate back to product page
+    navigate(`/product/${id}`, {
+      state: {
+        showCelebration: true,
+      },
+    });
   };
 
   return (
-    <div className="min-h-screen bg-black text-gray-100 py-16 px-4 mt-16">
-      {/* Top-left Icon -> Product Detail */}
+    <div className="w-full bg-black min-h-screen pt-28 pb-20">
       <Link
-        to={'/product'}
-        aria-label="Go to product"
-        title="Go to Product"
-        className="group absolute top-[150px] left-[100px] z-20 inline-flex items-center justify-center rounded-full border border-neutral-700 bg-neutral-900/70 p-2 text-gray-300 hover:text-white hover:border-gray-500 focus:outline-none backdrop-blur"
+        to={`/product/${id}`}
+        className="group absolute top-[90px] left-[30px] lg:top-[150px] lg:left-[50px] z-20 inline-flex items-center justify-center rounded-full border border-neutral-700 bg-black p-2 text-gray-300 hover:text-white hover:border-gray-500 focus:outline-none backdrop-blur"
       >
-        {/* Package/Box icon (SVG) */}
-        <FaArrowLeft className="transition-transform group-hover:-translate-y-0.5 text-white text-[20px]" />
+        <FaArrowLeft className="transition-transform group-hover:-translate-y-0.5 text-white text-[10px] md:text-[18px]" />
       </Link>
-      <h1 className="text-center text-4xl md:text-[30px] font-semibold tracking-wide py-5">
-        RATINGS & REVIEWS
-      </h1>
 
-      <div className="mx-auto max-w-[600px] border border-neutral-800 bg-black/60 shadow-lg">
-        <form
-          onSubmit={handleSubmit}
-          className="px-4 py-4 space-y-3 font-['Poppins'] font-[400]"
-        >
-          {/* Name */}
+      <div className="w-[90%] lg:w-[60%] mx-auto">
+        <h1 className="text-white font-heading text-[32px] md:text-[48px] font-[950] mb-8">
+          Write a Review
+        </h1>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Name Input */}
           <div>
-            <label className="block text-[12px] text-gray-400 mb-2">Name</label>
+            <label className="text-white font-body text-[14px] mb-2 block">
+              Your Name *
+            </label>
             <input
               type="text"
-              placeholder="Jane Smith"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="w-full text-[13px] rounded-[12px] bg-neutral-900 px-4 py-3 text-gray-100 placeholder:text-gray-400 outline-none"
-            />
-          </div>
-
-          {/* Review */}
-          <div>
-            <label className="block text-[12px] text-gray-400 mb-2">
-              Write a review
-            </label>
-            <textarea
-              rows={6}
-              placeholder="Review Description"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              required
-              className="w-full text-[13px] resize-y rounded-[12px] bg-neutral-900 px-4 py-3 text-gray-100 placeholder:text-gray-400 outline-none"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white font-body focus:outline-none focus:border-white/50"
+              placeholder="Enter your name"
             />
           </div>
 
           {/* Rating */}
           <div>
-            <label className="block text-[12px] text-gray-400 mb-2">
-              Rating
+            <label className="text-white font-body text-[14px] mb-2 block">
+              Rating *
             </label>
-            <div className="relative">
-              <select
-                value={rating}
-                onChange={(e) => setRating(e.target.value)}
-                required
-                className="w-full text-[13px] appearance-none rounded-[12px] bg-neutral-900 px-4 py-3 pr-10 text-gray-100 outline-none"
-              >
-                <option value="" disabled>
-                  Select...
-                </option>
-                <option value="1">1 - Poor</option>
-                <option value="2">2 - Fair</option>
-                <option value="3">3 - Good</option>
-                <option value="4">4 - Very Good</option>
-                <option value="5">5 - Excellent</option>
-              </select>
-              {/* dropdown chevron */}
-              <svg
-                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M5.23 7.21a.75.75 0 011.06.02L10 10.17l3.71-2.94a.75.75 0 111.04 1.08l-4.24 3.36a.75.75 0 01-.94 0L5.21 8.31a.75.75 0 01.02-1.1z"
-                  clipRule="evenodd"
-                />
-              </svg>
+            <div className="flex gap-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => handleRatingClick(star)}
+                  className={`text-[30px] ${
+                    star <= formData.rating
+                      ? "text-yellow-500"
+                      : "text-gray-500"
+                  } hover:text-yellow-400 transition-colors`}
+                >
+                  ★
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Submit */}
-          <button
-            type="submit"
-            className="w-full text-[13px] rounded-[12px] bg-[#8f673f] py-3 font-semibold tracking-wide text-white hover:bg-[#815a37] focus:outline-none focus:ring-2 focus:ring-amber-500/50"
-          >
-            SUBMIT
-          </button>
+          {/* Review Text */}
+          <div>
+            <label className="text-white font-body text-[14px] mb-2 block">
+              Your Review *
+            </label>
+            <textarea
+              value={formData.review}
+              onChange={(e) =>
+                setFormData({ ...formData, review: e.target.value })
+              }
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white font-body focus:outline-none focus:border-white/50 h-32 resize-none"
+              placeholder="Write your review here..."
+            />
+          </div>
+
+          {/* Quality Selection */}
+          <div>
+            <label className="text-white font-body text-[14px] mb-2 block">
+              Product Quality
+            </label>
+            <div className="flex gap-4">
+              {["Poor", "Good", "Awesome"].map((quality) => (
+                <button
+                  key={quality}
+                  type="button"
+                  onClick={() => handleQualitySelect(quality)}
+                  className={`text-white text-[12px] md:text-[14px] font-['Poppins'] border-b-2 px-4 py-2 ${
+                    formData.quality === quality
+                      ? "border-b-white bg-white/10"
+                      : "border-b-white/20"
+                  } hover:border-b-white/50 transition-all`}
+                >
+                  {quality}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="flex gap-4 mt-8">
+            <button
+              type="submit"
+              className="flex-1 py-3 bg-accet text-white font-body text-[16px] rounded-lg hover:bg-accet/80 transition-colors"
+            >
+              Submit Review
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate(`/product/${id}`)}
+              className="flex-1 py-3 bg-white/10 text-white font-body text-[16px] rounded-lg hover:bg-white/20 transition-colors border border-white/20"
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       </div>
     </div>
   );
-}
+};
 
-export default ProductReview;
+export default ProductReviewForm;
