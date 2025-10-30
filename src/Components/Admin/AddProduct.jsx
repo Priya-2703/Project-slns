@@ -138,6 +138,11 @@ export default function AddProduct() {
 
       // Append product details
       formDataToSend.append("product_name", formData.product_name);
+      formDataToSend.append("item_description", formData.item_description);
+      formDataToSend.append("actual_price", formData.actual_price);
+      formDataToSend.append("discount", formData.discount);
+      formDataToSend.append("special_case", formData.special_case);
+      formDataToSend.append("gender", formData.gender);
       formDataToSend.append("description", formData.description);
       formDataToSend.append("price", formData.price);
       formDataToSend.append("category_id", formData.category_id);

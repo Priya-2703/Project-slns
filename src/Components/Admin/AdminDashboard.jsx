@@ -9,13 +9,14 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchStats();
+    console.log(stats)
   }, []);
 
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        "https://5b1a1ca66a6b.ngrok-free.app/api/admin/stats",
+        "http://localhost:5000/api/admin/stats",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
