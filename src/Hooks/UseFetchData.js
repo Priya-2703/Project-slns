@@ -6,7 +6,7 @@ const UseFetchData = () => {
   const [error, setError] = useState(null);
 
   // Base URL for your API - UPDATE THIS TO YOUR BACKEND URL
-  const API_BASE_URL = "https://c8f6b21a078d.ngrok-free.app/";
+  const API_BASE_URL = "https://c8f6b21a078d.ngrok-free.app";
 
   useEffect(() => {
     fetchData();
@@ -17,12 +17,12 @@ const UseFetchData = () => {
       setLoading(true);
       setError(null);
 
-      const res = await fetch(`${API_BASE_URL}`,
-      //    {
-      //   headers: {
-      //     "ngrok-skip-browser-warning": "true",
-      //   },
-      // }
+    const res = await fetch(`${API_BASE_URL}/api/products`,
+      {
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+        },
+      }
     );
 
       if (!res.ok) {

@@ -45,7 +45,7 @@ export default function AdminDashboard() {
   const getImageUrl = (product) => {
     // For products with primary_image_id from database
     if (product.primary_image_id) {
-      return `https://5b1a1ca66a6b.ngrok-free.app/api/images/${product.primary_image_id}`;
+      return `http://localhost:5000/api/images/${product.primary_image_id}`;
     }
 
     // For products with primary_image URL (legacy)

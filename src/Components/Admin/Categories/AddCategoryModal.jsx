@@ -31,7 +31,7 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }) {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('https://5b1a1ca66a6b.ngrok-free.app/api/categories', {
+      const response = await fetch('http://localhost:5000/api/categories', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
