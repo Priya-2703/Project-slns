@@ -235,14 +235,15 @@ const Landing = () => {
 
         {/* 🔹 CAROUSEL BANNER - Auto-change every 3 seconds */}
         <div className="relative w-full h-[200px] lg:h-[400px] mx-auto flex justify-center items-start overflow-hidden my-20 lg:my-40">
-          <AnimatePresence mode="wait">
+          <AnimatePresence initial={false} custom={currentBanner}>
             <motion.div
               key={currentBanner}
+              custom={currentBanner}
               className="absolute w-full h-full shadow-2xl"
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ x: 600, opacity: 0 }}
               animate={{
+                x: 0,
                 opacity: 1,
-                scale: 1,
                 boxShadow: [
                   "0 0 20px #ff0080",
                   "0 0 20px #ff8c00",
@@ -250,8 +251,11 @@ const Landing = () => {
                   "0 0 20px #ffffff",
                 ],
               }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
+              exit={{ x: -600, opacity: 0 }}
+              transition={{
+                x: { type: "spring", stiffness: 300, damping: 30 },
+                opacity: { duration: 0.3 },
+              }}
               whileHover={{ scale: 1.02 }}
             >
               <img
