@@ -29,7 +29,7 @@ export default function ManageProducts() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        "https://c68340fe691e.ngrok-free.app/api/products",
+        "http://localhost:5000/api/products",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -50,7 +50,7 @@ export default function ManageProducts() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        "https://c68340fe691e.ngrok-free.app/api/categories",
+        "http://localhost:5000/api/categories",
         {
           headers: { Authorization: `Bearer ${token}` },
         }

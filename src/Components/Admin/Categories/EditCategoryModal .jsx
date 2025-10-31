@@ -23,7 +23,7 @@ export default function EditCategoryModal({ isOpen, onClose, onSuccess, category
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `https://5b1a1ca66a6b.ngrok-free.app/api/categories/${category.category_id}`,
+        `http://localhost:5000/api/categories/${category.category_id}`,
         {
           method: "PUT",
           headers: {

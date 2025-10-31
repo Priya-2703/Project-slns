@@ -30,7 +30,7 @@ export default function ManageOrders() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        "https://5b1a1ca66a6b.ngrok-free.app/api/admin/orders",
+        "http://localhost:5000/api/admin/orders",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -66,7 +66,7 @@ export default function ManageOrders() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `https://5b1a1ca66a6b.ngrok-free.app/api/admin/orders/${orderId}/status`,
+        `http://localhost:5000/api/admin/orders/${orderId}/status`,
         {
           method: "PUT",
           headers: {

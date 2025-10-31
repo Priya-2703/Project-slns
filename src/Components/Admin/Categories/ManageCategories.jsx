@@ -20,7 +20,7 @@ export default function ManageCategories() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        "https://5b1a1ca66a6b.ngrok-free.app/api/categories",
+        "http://localhost:5000/api/categories",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -45,7 +45,7 @@ export default function ManageCategories() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `https://5b1a1ca66a6b.ngrok-free.app/api/categories/${categoryId}`,
+        `http://localhost:5000/api/categories/${categoryId}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
