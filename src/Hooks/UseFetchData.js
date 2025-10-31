@@ -17,8 +17,8 @@ const UseFetchData = () => {
       setLoading(true);
       setError(null);
 
-    const res = await fetch(`${API_BASE_URL}/api/products`,
-      {
+      const res = await fetch(`${API_BASE_URL}/api/products`,
+         {
         headers: {
           "ngrok-skip-browser-warning": "true",
         },

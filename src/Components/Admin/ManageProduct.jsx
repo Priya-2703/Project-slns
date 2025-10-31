@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
+import { ToastContext } from "../../Context/UseToastContext";
 
 export default function ManageProducts() {
+  const { showToast } = useContext(ToastContext);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -23,21 +25,77 @@ export default function ManageProducts() {
   useEffect(() => {
     fetchProducts();
     fetchCategories();
-  }, []);
+  }, [stats]);
+
+  // Base URL for your API - UPDATE THIS TO YOUR BACKEND URL
+  const API_BASE_URL = "https://e6d7d36fc1c2.ngrok-free.app";
+
+  //priya
+  // const fetchProducts = async () => {
+  //   try {
+  //     const token = localStorage.getItem("token");
+  //     const response = await fetch(
+  //       `${API_BASE_URL}/api/products`,
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       }
+  //     );
+  //     const data = await response.json();
+  //     if (response.ok) {
+  //       setProducts(data);
+  //       calculateStats(data);
+  //     }
+  //   } catch (err) {
+  //     console.error("Failed to fetch products:", err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  //   const fetchCategories = async () => {
+  //   try {
+  //     const token = localStorage.getItem("token");
+  //     const response = await fetch(`${API_BASE_URL}/api/categories`, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
+  //     const data = await response.json();
+  //     if (response.ok) {
+  //       setCategories(data);
+  //     }
+  //   } catch (err) {
+  //     console.error("Failed to fetch categories:", err);
+  //   }
+  // };
+
+  //saran fetchProducts
+  
+  
+
 
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(
-        "https://c68340fe691e.ngrok-free.app/api/products",
-        {
-          headers: { Authorization: `Bearer ${token}` },
+      const response = await fetch(`${API_BASE_URL}/api/products`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      });
+      // Raw text edukurom
+      const responseText = await response.text();
+
+      // Parse panna try panrom
+      try {
+        const data = JSON.parse(responseText);
+        if (response.ok) {
+          setProducts(data.products);
+          calculateStats(data.products)
+          // console.log("✅ Success! Data:", data.products);
         }
-      );
-      const data = await response.json();
-      if (response.ok) {
-        setProducts(data);
-        calculateStats(data);
+      } catch (parseError) {
+        console.error("❌ JSON Parse Error:", parseError);
+        console.error("Full Response:", responseText);
+        alert("JSON parse aagala. Console-a paaru.");
       }
     } catch (err) {
       console.error("Failed to fetch products:", err);
@@ -49,15 +107,25 @@ export default function ManageProducts() {
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(
-        "https://c68340fe691e.ngrok-free.app/api/categories",
-        {
-          headers: { Authorization: `Bearer ${token}` },
+      const response = await fetch(`${API_BASE_URL}/api/categories`, {
+        headers: { Authorization: `Bearer ${token}`,
+         "ngrok-skip-browser-warning": "true",
+        },
+      });
+      // Raw text edukurom
+      const responseText = await response.text();
+
+      // Parse panna try panrom
+      try {
+        const data = JSON.parse(responseText);
+        if (response.ok) {
+          setCategories(data.categories);
+          // console.log("✅ Success! Data:", data.categories);
         }
-      );
-      const data = await response.json();
-      if (response.ok) {
-        setCategories(data);
+      } catch (parseError) {
+        console.error("❌ JSON Parse Error:", parseError);
+        console.error("Full Response:", responseText);
+        alert("JSON parse aagala. Console-a paaru.");
       }
     } catch (err) {
       console.error("Failed to fetch categories:", err);
@@ -78,7 +146,7 @@ export default function ManageProducts() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `https://c68340fe691e.ngrok-free.app/api/products/${productId}`,
+        `${API_BASE_URL}/api/products/${productId}`, //  change api
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -89,11 +157,11 @@ export default function ManageProducts() {
         setProducts(products.filter((p) => p.product_id !== productId));
         setShowDeleteConfirm(false);
         setProductToDelete(null);
-        alert("Product deleted successfully!");
+        showToast("Product deleted successfully!");
       }
     } catch (err) {
       console.error("Failed to delete product:", err);
-      alert("Failed to delete product");
+      showToast("Failed to delete product");
     }
   };
 
@@ -112,7 +180,8 @@ export default function ManageProducts() {
       const token = localStorage.getItem("token");
       await Promise.all(
         selectedProducts.map((id) =>
-          fetch(`https://c68340fe691e.ngrok-free.app/api/products/${id}`, {
+          fetch(`${API_BASE_URL}/api/products/${id}`, {
+            // change api
             method: "DELETE",
             headers: { Authorization: `Bearer ${token}` },
           })
@@ -148,7 +217,7 @@ export default function ManageProducts() {
 
   const getImageUrl = (product) => {
     if (product.primary_image_id) {
-      return `http://localhost:5000/api/images/${product.primary_image_id}`;
+      return `${API_BASE_URL}/api/images/${product.primary_image_id}`; //change api
     }
     if (product.primary_image) {
       if (
@@ -158,15 +227,14 @@ export default function ManageProducts() {
         return product.primary_image;
       }
       if (product.primary_image.startsWith("/api/images/")) {
-        return `http://localhost:5000${product.primary_image}`;
+        return `http://localhost:5000${product.primary_image}`; // change api
       }
     }
     return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23333" width="200" height="200"/%3E%3Ctext fill="%23666" font-family="sans-serif" font-size="14" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle"%3ENo Image%3C/text%3E%3C/svg%3E';
   };
 
   // Filter and sort products
-  const filteredProducts = products
-    .filter((product) => {
+  const filteredProducts = products.filter((product) => {
       const matchesSearch =
         product.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.product_id.toString().includes(searchTerm);
@@ -280,7 +348,7 @@ export default function ManageProducts() {
           <div className="bg-white/5 border border-white/10 rounded-xl p-4">
             <p className="text-white/60 text-xs font-body mb-1">In Stock</p>
             <p className="text-2xl font-bold text-green-500 font1">
-              {stats.inStock}
+              {stats.total}
             </p>
           </div>
           <div className="bg-white/5 border border-white/10 rounded-xl p-4">
@@ -346,7 +414,7 @@ export default function ManageProducts() {
                   All Categories
                 </option>
                 {categories.map((cat) => (
-                  <option key={cat.category_id} value={cat.category_id}>
+                  <option key={cat.category_id} className="text-black bg-transparent" value={cat.category_id}>
                     {cat.category_name}
                   </option>
                 ))}
