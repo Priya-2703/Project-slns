@@ -6,7 +6,7 @@ const UseFetchData = () => {
   const [error, setError] = useState(null);
 
   // Base URL for your API - UPDATE THIS TO YOUR BACKEND URL
-  const API_BASE_URL = "https://raw.githubusercontent.com/saransk03/cloth-json/main/db.json";
+  const API_BASE_URL = "https://c8f6b21a078d.ngrok-free.app/";
 
   useEffect(() => {
     fetchData();

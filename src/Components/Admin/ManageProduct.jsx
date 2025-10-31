@@ -29,7 +29,7 @@ export default function ManageProducts() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        "https://5b1a1ca66a6b.ngrok-free.app/api/products",
+        "https://c68340fe691e.ngrok-free.app/api/products",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -50,7 +50,7 @@ export default function ManageProducts() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        "https://5b1a1ca66a6b.ngrok-free.app/api/categories",
+        "https://c68340fe691e.ngrok-free.app/api/categories",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -78,7 +78,7 @@ export default function ManageProducts() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `https://5b1a1ca66a6b.ngrok-free.app/api/products/${productId}`,
+        `https://c68340fe691e.ngrok-free.app/api/products/${productId}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -112,7 +112,7 @@ export default function ManageProducts() {
       const token = localStorage.getItem("token");
       await Promise.all(
         selectedProducts.map((id) =>
-          fetch(`https://5b1a1ca66a6b.ngrok-free.app/api/products/${id}`, {
+          fetch(`https://c68340fe691e.ngrok-free.app/api/products/${id}`, {
             method: "DELETE",
             headers: { Authorization: `Bearer ${token}` },
           })
