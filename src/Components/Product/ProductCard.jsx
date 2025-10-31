@@ -23,6 +23,8 @@ const ProductCard = ({ product }) => {
     }
   };
 
+  console.log(product.image_url)
+
   // bubbles
   const bubbles = Array.from({ length: 6 });
 
@@ -90,7 +92,7 @@ const ProductCard = ({ product }) => {
           <img
             src={product.image_url}
             alt={product.product_name}
-            loading="lazy"
+            // loading="lazy"
             className="w-full h-[250px] md:h-[300px] lg:h-[400px] object-cover transition-transform duration-500 group-hover:scale-110"
           />
         </div>
