@@ -17,18 +17,20 @@ const UseFetchData = () => {
       setLoading(true);
       setError(null);
 
-      const res = await fetch(`${API_BASE_URL}/api/products`, {
-        headers: {
-          "ngrok-skip-browser-warning": "true",
-        },
-      });
+      const res = await fetch(`${API_BASE_URL}`,
+      //    {
+      //   headers: {
+      //     "ngrok-skip-browser-warning": "true",
+      //   },
+      // }
+    );
 
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
 
       const ans = await res.json();
-      console.log("✅ Raw API Response:", ans);
+      // console.log("✅ Raw API Response:", ans);
 
       // Process products to add full image URLs
       const processedProducts = ans.products.map((product) => {
@@ -59,7 +61,7 @@ const UseFetchData = () => {
         };
       });
 
-      console.log("✅ Processed Products with Images:", processedProducts);
+      console.log("✅ Processed Products with Images:", ans.products);
       setData(processedProducts || []);
       setLoading(false);
     } catch (error) {

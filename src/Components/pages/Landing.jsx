@@ -1,5 +1,10 @@
-import React, { lazy, Suspense } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import React, { lazy, Suspense, useState, useEffect } from "react";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  AnimatePresence,
+} from "framer-motion";
 import { assets } from "../../../public/assets/asset";
 import "./Landing.css";
 import LoaderAni from "../LoaderAni";
@@ -50,6 +55,24 @@ const Landing = () => {
       saree: "saree-10",
     },
   ];
+
+  // 🔹 Banner Carousel State
+  const banners = [
+    assets.banner,
+    assets.banner2, // Replace with assets.banner2
+    assets.banner3, // Replace with assets.banner3
+  ];
+
+  const [currentBanner, setCurrentBanner] = useState(0);
+
+  // 🔹 Auto-change banner every 3 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentBanner((prev) => (prev + 1) % banners.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [banners.length]);
 
   // Animation Variants - Mobile optimized
   const fadeInUp = {
@@ -124,7 +147,7 @@ const Landing = () => {
     <>
       <div className="relative min-h-screen overflow-hidden">
         {/* 🔹 Fixed background video with parallax */}
-        <motion.div 
+        <motion.div
           className="h-screen relative"
           style={{ scale: videoScale, opacity: videoOpacity }}
         >
@@ -210,30 +233,49 @@ const Landing = () => {
           <span className="bg-black w-full h-10 md:h-20 lg:h-32 rounded-[50%] md:bottom-[-40px] bottom-[35px] lg:bottom-[-75px] absolute z-30"></span>
         </motion.div>
 
-        {/* offer or festival banner with scale animation */}
-        <motion.div
-          className="relative w-full h-[200px] lg:h-[400px] mx-auto flex justify-center items-start overflow-hidden my-20 lg:my-40 shadow-2xl"
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: false, amount: 0.2 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          animate={{
-            boxShadow: [
-              "0 0 20px #ff0080",
-              "0 0 20px #ff8c00",
-              "0 0 20px #955E30",
-              "0 0 20px #fffff",
-            ],
-          }}
-          whileHover={{ scale: 1.02 }}
-        >
-          <img
-            src={assets.banner}
-            alt="banner"
-            loading="lazy"
-            className="object-cover w-full h-full object-top"
-          />
-        </motion.div>
+        {/* 🔹 CAROUSEL BANNER - Auto-change every 3 seconds */}
+        <div className="relative w-full h-[200px] lg:h-[400px] mx-auto flex justify-center items-start overflow-hidden my-20 lg:my-40">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentBanner}
+              className="absolute w-full h-full shadow-2xl"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+                boxShadow: [
+                  "0 0 20px #ff0080",
+                  "0 0 20px #ff8c00",
+                  "0 0 20px #955E30",
+                  "0 0 20px #ffffff",
+                ],
+              }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              whileHover={{ scale: 1.02 }}
+            >
+              <img
+                src={banners[currentBanner]}
+                alt={`banner-${currentBanner + 1}`}
+                loading="lazy"
+                className="object-cover w-full h-full object-top"
+              />
+            </motion.div>
+          </AnimatePresence>
+
+          {/* 🔹 Indicator Dots */}
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-10">
+            {banners.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentBanner(index)}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  currentBanner === index ? "bg-white w-6" : "bg-white/50"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
 
         {/* Elevating Your Style */}
         <motion.div
@@ -400,7 +442,7 @@ const Landing = () => {
         </motion.div>
 
         {/* TRENDING NOW */}
-        <Suspense fallback={<LoaderAni/>}>
+        <Suspense fallback={<LoaderAni />}>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -412,7 +454,7 @@ const Landing = () => {
         </Suspense>
 
         {/* NEW ARRIVALS*/}
-        <Suspense fallback={<LoaderAni/>}>
+        <Suspense fallback={<LoaderAni />}>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -424,7 +466,7 @@ const Landing = () => {
         </Suspense>
 
         {/* Review*/}
-        <Suspense fallback={<LoaderAni/>}>
+        <Suspense fallback={<LoaderAni />}>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
