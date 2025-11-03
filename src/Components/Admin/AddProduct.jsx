@@ -9,7 +9,7 @@ export default function AddProduct() {
   const [success, setSuccess] = useState("");
 
   // Base URL for your API - UPDATE THIS TO YOUR BACKEND URL
-  const API_BASE_URL = "https://e6d7d36fc1c2.ngrok-free.app";
+  const API_BASE_URL = "http://localhost:5000";
 
   const [formData, setFormData] = useState({
     product_name: "",
@@ -117,19 +117,34 @@ export default function AddProduct() {
   };
 
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
+    const newFiles = Array.from(e.target.files);
 
-    if (files.length > 4) {
-      setError("Maximum 4 images allowed");
+    // Check total images (existing + new)
+    const totalImages = images.length + newFiles.length;
+
+    if (totalImages > 4) {
+      const remaining = 4 - images.length;
+      setError(
+        remaining > 0
+          ? `Maximum 4 images allowed. You can add ${remaining} more image(s).`
+          : "Maximum 4 images reached. Please remove some images first."
+      );
       return;
     }
 
-    setImages(files);
+    // Append new images to existing ones
+    const updatedImages = [...images, ...newFiles];
+    setImages(updatedImages);
 
-    // Create previews
-    const previews = files.map((file) => URL.createObjectURL(file));
-    setImagePreviews(previews);
+    // Create previews for new files and append
+    const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
+    const updatedPreviews = [...imagePreviews, ...newPreviews];
+    setImagePreviews(updatedPreviews);
+
     setError("");
+
+    // Reset input to allow same file selection again
+    e.target.value = "";
   };
 
   const removeImage = (index) => {

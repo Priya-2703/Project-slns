@@ -214,15 +214,27 @@ const Navbar = () => {
                 <div className="flex flex-col justify-center items-center gap-1">
                   {/* ⭐ NEW: Show user info if logged in */}
                   {isLoggedIn && user && (
-                    <div className="w-full px-3 py-2 mb-2">
-                      <p className="text-white text-xs font-semibold truncate">
-                        {user.name}
-                      </p>
-                      <p className="text-white/60 text-[10px] truncate">
-                        {user.email}
-                      </p>
+                    <div className="w-full  px-3 py-2 mb-2">
+                      <Link to={"/profile"} className=" flex items-center gap-2 text-white hover:text-white/60 transition-all duration-200">
+                        <div>
+                          <CircleUserRound
+                            size={mobileView ? 16 : 24}
+                            strokeWidth={1.5}
+                            color="white"
+                            className="nav-item hover:text-white/60"
+                          />
+                        </div>
+                        <div className="flex flex-col justify-center items-start">
+                          <p className=" text-xs capitalize font-body font-semibold">
+                            {user.name}
+                          </p>
+                          <p className=" text-[10px] font-body">
+                            {user.email}
+                          </p>
+                        </div>
+                      </Link>
                       {user.role === "admin" && (
-                        <span className="inline-block mt-1 bg-[#955E30] text-white text-[9px] px-2 py-0.5 rounded-full">
+                        <span className="inline-block mt-1 bg-[#955E30] capitalize font-body text-white text-[9px] px-2 py-0.5 rounded-full">
                           Admin
                         </span>
                       )}

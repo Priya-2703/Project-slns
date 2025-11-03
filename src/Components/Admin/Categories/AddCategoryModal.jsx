@@ -10,7 +10,7 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }) {
   });
 
     // Base URL for your API - UPDATE THIS TO YOUR BACKEND URL
-  const API_BASE_URL = "https://e6d7d36fc1c2.ngrok-free.app";
+  const API_BASE_URL = "http://localhost:5000";
 
   const handleChange = (e) => {
     const { name, value } = e.target;

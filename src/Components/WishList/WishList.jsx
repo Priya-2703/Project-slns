@@ -1,4 +1,4 @@
-import React, { useContext, useRef } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import { FaArrowLeft, FaOpencart } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { WishlistContext } from "../../Context/UseWishListContext";
@@ -11,6 +11,10 @@ const WishList = () => {
   const { wishlist, removeFromWishlist } = useContext(WishlistContext);
   const { cart, addToCart } = useContext(CartContext);
   const { showToast } = useContext(ToastContext);
+
+  useEffect(() => {
+  document.title = `Wishlist (${wishlist.length}) - SLNS Sarees`;
+}, [wishlist.length]);
 
   const isInCart = cart.some((item) => item.product_id === wishlist.product_id);
 
@@ -300,7 +304,7 @@ const WishlistCardWrapper = ({
           className="flex justify-between items-start text-white"
         >
           <div className="flex flex-col justify-center items-start gap-2">
-            <h1 className="w-[90%] text-[12px] md:text-[14px] font-body font-semibold capitalize md:leading-5">
+            <h1 className="w-[90%] text-[12px] md:text-[14px] font-body font-semibold capitalize md:leading-5 line-clamp-2">
               {item.product_name}
             </h1>
             <p className="font-body text-[12px] md:text-[14px] leading-none">
@@ -315,7 +319,7 @@ const WishlistCardWrapper = ({
               {item.discount}%
             </motion.p>
             <p className="text-gray-500 line-through font-body text-[12px] md:text-[14px]">
-              ₹{item.actualPrice}
+              ₹{item.actual_price}
             </p>
           </div>
         </motion.div>

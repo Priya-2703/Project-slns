@@ -1,9 +1,14 @@
-import React, { useLayoutEffect, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useRef } from "react";
 import { assets } from "../../../public/assets/asset";
 import { gsap } from "gsap";
 
 const About = () => {
   const container = useRef(null); // <-- ref object
+
+    //dynamic title
+  useEffect(() => {
+  document.title = `About - SLNS Sarees`;
+}, []);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {

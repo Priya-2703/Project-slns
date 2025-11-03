@@ -17,6 +17,7 @@ import confetti from "canvas-confetti";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import DarkVeil from "../DarkVeil";
+import Trending from "../pages/Trending";
 
 const img = [`${assets.dhosti1}`, `${assets.dhosti2}`, `${assets.dhosti3}`];
 const images = [
@@ -81,14 +82,82 @@ const images = [
 ];
 
 const ProductDetail = () => {
-  const { data } = UseFetchData();
+  const BACKEND_URL = import.meta.env.VITE_API_URL;
   const [product, setProduct] = useState({});
-  //   const [productImages, setProductImages] = useState([]); // 🆕 Multiple images
+  const [loading, setLoading] = useState(true);
   const { cart, addToCart } = useContext(CartContext);
   const { id } = useParams();
   const { showToast } = useContext(ToastContext);
   const location = useLocation();
   const [reviewsToShow, setReviewsToShow] = useState(4);
+  // Add this state near the top with other useState declarations
+  const [similarProducts, setSimilarProducts] = useState([]);
+
+  // ✅ Dynamic title set pannu
+  useEffect(() => {
+    if (product.product_name) {
+      document.title = `${product.product_name} - Your Store Name`;
+    }
+    
+    // ✅ Component unmount aagum pothu reset
+    return () => {
+      document.title = "SLNS Sarees";
+    };
+  }, [product.product_name]);
+
+
+  // Replace the similar products useEffect with this:
+  useEffect(() => {
+    const fetchSimilarProducts = async () => {
+      // product.category_id or category_name irukka check pannu
+      if (!product.category_id && !product.category_name) return;
+
+      try {
+        // ✅ Ellaa products ah fetch pannu
+        const response = await fetch(`${BACKEND_URL}/api/products`);
+        const data = await response.json();
+
+        console.log("All Products:", data.products);
+        console.log(
+          "Current Product Category:",
+          product.category_id,
+          product.category_name
+        );
+
+        // ✅ Client-side la same category products ah filter pannu
+        const filtered = data.products
+          .filter((p) => {
+            // Current product ah exclude pannu
+            const isNotCurrentProduct = p.product_id !== product.product_id;
+
+            // Same category check pannu (category_id or category_name use pannu)
+            const isSameCategory =
+              (product.category_id && p.category_id === product.category_id) ||
+              (product.category_name &&
+                p.category_name === product.category_name) ||
+              (product.category && p.category === product.category);
+
+            return isNotCurrentProduct && isSameCategory;
+          })
+          .slice(0, 5); // Only first 5 products
+
+        console.log("Filtered Similar Products:", filtered);
+        setSimilarProducts(filtered);
+      } catch (error) {
+        console.error("Error fetching similar products:", error);
+        setSimilarProducts([]); // Error aanaa empty array set pannu
+      }
+    };
+
+    if (product.product_id) {
+      fetchSimilarProducts();
+    }
+  }, [
+    product.product_id,
+    product.category_id,
+    product.category_name,
+    product.category,
+  ]);
 
   // after submit review effect
   useEffect(() => {
@@ -145,14 +214,36 @@ const ProductDetail = () => {
     }
   };
 
-  // 🆕 Fetch product and its images from database
+  // ✅ Full product details (WITH images) fetch pannum
   useEffect(() => {
-    if (data && data.length > 0) {
-      const productId = parseInt(id);
-      const foundProduct = data.find((item) => item.product_id === productId);
-      setProduct(foundProduct);
+    const fetchProductDetails = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${BACKEND_URL}/api/products/${id}`);
+        const data = await response.json();
+
+        console.log("Full Product Data:", data.product.gender); // ✅ Ippo images array varum
+        setProduct(data.product);
+      } catch (error) {
+        console.error("Error fetching product:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProductDetails();
+  }, [id]);
+
+  //image with full url
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return "/placeholder-image.png";
+
+    if (imagePath.startsWith("http")) {
+      return imagePath;
     }
-  }, [data, id]);
+
+    return `${BACKEND_URL}${imagePath}`;
+  };
 
   // Use useMemo to compute isInCart safely
   const isInCart = useMemo(() => {
@@ -173,70 +264,15 @@ const ProductDetail = () => {
   // Get displayed reviews
   const displayedReviews = productReviews.slice(0, reviewsToShow);
   const hasMoreReviews = reviewsToShow < productReviews.length;
-
   const [cur, setCur] = useState(0);
   const [openIndex, setOpenIndex] = useState(null);
-  const [isZoomed, setIsZoomed] = useState(false);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-
-  const handleImageClick = (e) => {
-    if (!isZoomed) {
-      setIsZoomed(true);
-    } else if (!isDragging) {
-      setIsZoomed(false);
-      setPosition({ x: 0, y: 0 });
-    }
-  };
-
-  const handleMouseDown = (e) => {
-    if (isZoomed) {
-      setIsDragging(true);
-      setDragStart({
-        x: e.clientX - position.x,
-        y: e.clientY - position.y,
-      });
-    }
-  };
-
-  const handleMouseMove = (e) => {
-    if (isDragging && isZoomed) {
-      setPosition({
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y,
-      });
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
 
   const toggle = (index) => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
-  const prev = () =>
-    setCur((cur) => (cur === 0 ? img.length - 1 : cur - 1));
-  const next = () =>
-    setCur((cur) => (cur === img.length - 1 ? 0 : cur + 1));
-
-  const getImageUrl = (imagePath) => {
-    if (!imagePath) return "/placeholder-image.png"; // Fallback image
-
-    // If already a full URL, return as is
-    if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-      return imagePath;
-    }
-
-    // If relative path, prepend backend URL
-    if (imagePath.startsWith("/static/")) {
-      return `http://localhost:5000${imagePath}`;
-    }
-
-    return imagePath;
-  };
+  const prev = () => setCur((cur) => (cur === 0 ? img.length - 1 : cur - 1));
+  const next = () => setCur((cur) => (cur === img.length - 1 ? 0 : cur + 1));
 
   const backButtonVariants = {
     hidden: {
@@ -398,59 +434,43 @@ const ProductDetail = () => {
           {/* image */}
           <div className="flex lg:sticky lg:top-10 justify-center items-start px-2">
             <div className="relative overflow-hidden w-full h-[400px] md:h-[600px] lg:h-[900px] flex rounded-4xl">
-              {img.map((item, id) => (
+              {product.images?.map((img, index) => (
                 <img
-                  key={id}
-                  src={product.image_url}
-                  alt="img"
-                  loading="lazy"
-                  className={`object-cover object-center min-w-full transition-all ease-out duration-500 ${
-                    isZoomed ? "cursor-move" : "cursor-zoom-in"
-                  }`}
+                  key={img.image_id}
+                  src={getImageUrl(img.image_url)} /* ✅ Fix */
+                  alt={`Thumbnail ${index + 1}`}
+                  // loading="lazy"
+                  className={`object-cover object-center min-w-full transition-all ease-out duration-500`}
                   style={{
-                    transform: `translateX(-${cur * 100}%) scale(${
-                      isZoomed ? 2 : 1
-                    }) translate(${isZoomed ? position.x : 0}px, ${
-                      isZoomed ? position.y : 0
-                    }px)`,
+                    transform: `translateX(-${cur * 100}%)`,
                   }}
-                  onClick={handleImageClick}
-                  onMouseDown={handleMouseDown}
-                  onMouseMove={handleMouseMove}
-                  onMouseUp={handleMouseUp}
-                  onMouseLeave={handleMouseUp}
-                  draggable={false}
                 />
               ))}
 
-              {!isZoomed && (
-                <>
-                  <div className="absolute inset-0 flex justify-between items-center px-5">
-                    <button
-                      onClick={prev}
-                      className="bg-black/80 p-2 rounded-full flex justify-center cursor-pointer items-center"
-                    >
-                      <MdKeyboardArrowLeft className="text-white text-[22px]" />
-                    </button>
-                    <button
-                      onClick={next}
-                      className="bg-black/80 p-2 rounded-full flex justify-center cursor-pointer items-center"
-                    >
-                      <MdKeyboardArrowRight className="text-white text-[22px]" />
-                    </button>
-                  </div>
-                  <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-2">
-                    {img.map((s, index) => (
-                      <div
-                        key={index}
-                        className={`w-1.5 h-1.5 bg-white rounded-full transition-all ${
-                          cur === index ? "p-2" : "bg-opacity-50"
-                        }`}
-                      ></div>
-                    ))}
-                  </div>
-                </>
-              )}
+              <div className="absolute inset-0 flex justify-between items-center px-5">
+                <button
+                  onClick={prev}
+                  className="bg-black/80 p-2 rounded-full flex justify-center cursor-pointer items-center"
+                >
+                  <MdKeyboardArrowLeft className="text-white text-[22px]" />
+                </button>
+                <button
+                  onClick={next}
+                  className="bg-black/80 p-2 rounded-full flex justify-center cursor-pointer items-center"
+                >
+                  <MdKeyboardArrowRight className="text-white text-[22px]" />
+                </button>
+              </div>
+              <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-2">
+                {product.images?.map((s, index) => (
+                  <div
+                    key={index}
+                    className={`w-1.5 h-1.5 bg-white rounded-full transition-all ${
+                      cur === index ? "p-2" : "bg-opacity-50"
+                    }`}
+                  ></div>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -461,8 +481,8 @@ const ProductDetail = () => {
                 {product.category_name}
               </p>
             </div>
-            <div className="text-white lg:mt-20 mb-3">
-              <h1 className="font-heading font-[950] text-[35px] md:text-[55px] leading-none">
+            <div className="w-full text-white lg:mt-6 mb-3">
+              <h1 className="font-heading font-[950] text-[35px] md:text-[35px] leading-none">
                 {product.product_name}
               </h1>
             </div>
@@ -473,52 +493,39 @@ const ProductDetail = () => {
             </div> */}
             <div className="text-white my-3 md:my-5 border-t border-t-white/10 border-b border-b-white/10 flex justify-between items-center w-full py-3 px-1">
               <p className="font-['Poppins'] font-semibold text-[18px] md:text-[24px]">
-                ₹{product.price}
+                ₹{parseInt(product.price)}
               </p>
               <div className="flex justify-center items-center gap-3">
                 <p className="font-['Poppins'] line-through text-white/30 text-[14px]">
-                  ₹{(product.price * 1.2).toFixed(2)}
+                  ₹{parseInt(product.actual_price)}
                 </p>
-                <p className="font-['Poppins'] text-[14px]">20% OFF</p>
+                <p className="font-['Poppins'] text-[14px]">{parseInt(product.discount)}% OFF</p>
               </div>
             </div>
-            <div className="flex flex-col gap-2">
-              <h1 className="text-white text-[12px] tracking-wide font-body">
-                Choose Other Versions
-              </h1>
-              <div className="flex items-center gap-2">
-                <img
-                  src={assets.dhosti1}
-                  alt="img"
-                  loading="lazy"
-                  className="w-[50px] h-[50px] object-cover object-center"
-                />
-                <img
-                  src={assets.dhosti1}
-                  alt="img"
-                  loading="lazy"
-                  className="w-[50px] h-[50px] object-cover object-center"
-                />
-                <img
-                  src={assets.dhosti1}
-                  alt="img"
-                  loading="lazy"
-                  className="w-[50px] h-[50px] object-cover object-center"
-                />
-                <img
-                  src={assets.dhosti1}
-                  alt="img"
-                  loading="lazy"
-                  className="w-[50px] h-[50px] object-cover object-center"
-                />
-                <img
-                  src={assets.dhosti1}
-                  alt="img"
-                  loading="lazy"
-                  className="w-[50px] h-[50px] object-cover object-center"
-                />
+            {/* Choose Other Versions Section - Replace existing section */}
+            {similarProducts.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <h1 className="text-white text-[12px] tracking-wide font-body">
+                  Choose Other Versions
+                </h1>
+                <div className="flex items-center gap-2">
+                  {similarProducts.map((item) => (
+                    <Link
+                      key={item.product_id}
+                      to={`/product/${item.product_id}`}
+                      className="hover:scale-110 transition-transform duration-200"
+                    >
+                      <img
+                        src={getImageUrl(item.primary_image)}
+                        alt={item.product_name}
+                        loading="lazy"
+                        className="w-[50px] h-[50px] object-cover object-center rounded-md border border-white/20 hover:border-white/60 transition-colors"
+                      />
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
             <div className="flex flex-wrap md:flex-nowrap items-center mt-4 md:mt-7 gap-1">
               {product?.sizes?.map((size, id) => (
                 <div
@@ -644,17 +651,7 @@ const ProductDetail = () => {
                 >
                   <div className="mt-2 pb-5">
                     <ul className="space-y-5 leading-normal text-[12px] font-body text-white">
-                      <li className="pl-2">
-                        Material - {product?.details?.Material}
-                      </li>
-                      <li className="pl-2 flex items-center gap-2">
-                        <span className="text-white/60">Category:</span>
-                        <span>{product.category_name}</span>
-                      </li>
-                      <li className="pl-2 flex items-center gap-2">
-                        <span className="text-white/60">Product ID:</span>
-                        <span>#{product.product_id}</span>
-                      </li>
+                      <li className="pl-2">{product?.item_description}</li>
                     </ul>
                   </div>
                 </div>
@@ -859,7 +856,7 @@ const ProductDetail = () => {
         {/* The Wardrobe Hub */}
         <div
           className={`w-full mx-auto md:mt-7 py-6 ${
-            product.gender == "Male" ? "hidden" : "block"
+            product.gender == "men" ? "hidden" : "block"
           }`}
         >
           <div className="flex flex-col justify-center items-center py-3 md:mb-10">
@@ -905,41 +902,14 @@ const ProductDetail = () => {
             </h1>
           </div>
 
-          <div className="w-[90%] mx-auto py-8">
-            <div className="w-[300px] flex flex-col gap-4 cursor-pointer group">
-              <div className="relative overflow-hidden rounded-[12px]">
-                <img
-                  src={assets.dhosti1}
-                  alt="img"
-                  loading="lazy"
-                  className="w-full h-[400px] object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-              </div>
-
-              <div className="flex justify-between items-start text-white">
-                <div className="flex flex-col justify-center items-start gap-3">
-                  <h1 className="w-[90%] text-[16px] font-semibold font-body capitalize leading-6">
-                    Men Matching Border Dhoti & Half Sleeves Shirt Set Maroon
-                    C81
-                  </h1>
-                  <p className="font-body text-[14px] leading-none">₹1,200</p>
-                </div>
-                <div className="flex flex-col justify-center items-start gap-3">
-                  <p className="px-2 py-1 border-2 border-white text-[14px] font-body">
-                    20%
-                  </p>
-                  <p className="text-gray-500 line-through font-body text-[14px]">
-                    ₹1,500
-                  </p>
-                </div>
-              </div>
-              <div className="flex justify-start">
-                <p className="text-white/65 tracking-wide font-body capitalize text-[10px] leading-0">
-                  0 styling Available
-                </p>
-              </div>
+          {/* Pass similarProducts to ProductSwiper */}
+          {similarProducts.length > 0 ? (
+            <ProductSwiper products={similarProducts} />
+          ) : (
+            <div className="text-center text-white/50 py-10 font-body">
+              No similar products found
             </div>
-          </div>
+          )}
         </div>
 
         {/* Curated Styles for Everyone */}
@@ -949,7 +919,7 @@ const ProductDetail = () => {
               Curated Styles for Everyone
             </h1>
           </div>
-          <ProductSwiper />
+          <Trending />
         </div>
 
         {/* Virtual Try-On Modal - Complete Frontend Only */}

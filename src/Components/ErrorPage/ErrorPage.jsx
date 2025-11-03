@@ -1,10 +1,16 @@
 // src/pages/ErrorPage.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Home, ArrowLeft, Search, AlertTriangle } from "lucide-react";
 
 const ErrorPage = () => {
+
+    //dynamic title
+  useEffect(() => {
+  document.title = `404 - SLNS Sarees`;
+}, []);
+
   // Animation Variants
   const containerVariants = {
     hidden: { opacity: 0 },

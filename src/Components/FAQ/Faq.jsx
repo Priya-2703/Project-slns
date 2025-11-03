@@ -90,6 +90,11 @@ const faqSections = [
 ];
 
 function AccordionItem({ id, question, answer, isOpen, onToggle, index }) {
+  //dynamic title
+  useEffect(() => {
+    document.title = `FAQ - SLNS Sarees`;
+  }, []);
+
   const ref = useRef(null);
   const isInView = useInView(ref, {
     once: false,

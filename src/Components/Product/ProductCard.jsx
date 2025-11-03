@@ -99,17 +99,17 @@ const ProductCard = ({ product }) => {
 
         <div className="flex justify-between items-start text-white">
           <div className="flex flex-col justify-center items-start gap-2 lg:gap-2">
-            <h1 className="w-[90%] text-[12px] md:text-[14px] lg:text-[17px] font-body font-[600] capitalize lg:leading-6">
+            <h1 className="w-[90%] text-[12px] md:text-[14px] lg:text-[17px] font-body font-[600] capitalize lg:leading-6 line-clamp-2">
               {product.product_name}
             </h1>
-            <p className="font-body text-[12px] md:text-[14px] lg:text-[16px] leading-none">₹{product.price}</p>
+            <p className="font-body text-[12px] md:text-[14px] lg:text-[16px] leading-none">₹{parseInt(product.price)}</p>
           </div>
           <div className="flex flex-col justify-center items-start gap-2 md:gap-3">
             <p className="px-2 py-1 border-2 border-white text-[12px] md:text-[14px] lg:text-[16px] font-body">
-              {product.discount}%
+              {parseInt(product.discount)}%
             </p>
             <p className="text-gray-500 line-through font-body text-[12px] md:text-[14px] lg:text-[16px]">
-              ₹{product.actualPrice}
+              ₹{parseInt(product.actual_price)}
             </p>
           </div>
         </div>
