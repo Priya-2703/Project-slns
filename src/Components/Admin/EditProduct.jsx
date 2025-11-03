@@ -7,7 +7,7 @@ export default function EditProduct() {
   const navigate = useNavigate();
   const { showToast } = useContext(ToastContext);
 
-  const API_BASE_URL = "https://e6d7d36fc1c2.ngrok-free.app";
+  const API_BASE_URL = "http://localhost:5000";
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -248,28 +248,53 @@ export default function EditProduct() {
     try {
       const token = localStorage.getItem("token");
 
-      // Validate token
       if (!token) {
         throw new Error("Authentication required. Please login again.");
       }
 
-      // Convert data types properly
+      // ✅ Convert empty strings to null for optional fields
       const formDataToSend = {
         product_name: formData.product_name.trim(),
-        description: formData.description?.trim() || "",
-        item_description: formData.item_description?.trim() || "",
+        description: formData.description?.trim() || null, // ← Changed to null
+        item_description: formData.item_description?.trim() || null, // ← Changed to null
         gender: formData.gender,
-        special_case: formData.special_case || "",
+        special_case: formData.special_case || null, // ← Changed to null
         price: parseFloat(formData.price),
         actual_price: parseFloat(formData.actual_price),
         discount: parseFloat(formData.discount),
         category_id: parseInt(formData.category_id),
         stock_quantity: parseInt(formData.stock_quantity),
-        video_url: formData.video_url?.trim() || "",
+        video_url: formData.video_url?.trim() || null, // ← Changed to null
       };
 
+      // ✅ Validate numbers
+      if (isNaN(formDataToSend.price) || formDataToSend.price < 0) {
+        throw new Error("Invalid price value");
+      }
+      if (
+        isNaN(formDataToSend.actual_price) ||
+        formDataToSend.actual_price < 0
+      ) {
+        throw new Error("Invalid actual price value");
+      }
+      if (
+        isNaN(formDataToSend.discount) ||
+        formDataToSend.discount < 0 ||
+        formDataToSend.discount > 100
+      ) {
+        throw new Error("Discount must be between 0 and 100");
+      }
+      if (isNaN(formDataToSend.category_id)) {
+        throw new Error("Please select a category");
+      }
+      if (
+        isNaN(formDataToSend.stock_quantity) ||
+        formDataToSend.stock_quantity < 0
+      ) {
+        throw new Error("Invalid stock quantity");
+      }
+
       console.log("📤 Sending data:", formDataToSend);
-      console.log("🔑 Token present:", token ? "Yes" : "No");
 
       const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
         method: "PUT",
@@ -283,21 +308,13 @@ export default function EditProduct() {
 
       console.log("📥 Response status:", response.status);
 
-      const responseText = await response.text();
-      console.log("📥 Response text:", responseText);
-
-      // Handle different error types
       if (!response.ok) {
-        let errorMessage = "Failed to update product";
+        const responseData = await response.json().catch(() => ({}));
+        let errorMessage =
+          responseData.error ||
+          responseData.message ||
+          "Failed to update product";
 
-        try {
-          const errorData = JSON.parse(responseText);
-          errorMessage = errorData.error || errorData.message || errorMessage;
-        } catch (parseErr) {
-          errorMessage = responseText || errorMessage;
-        }
-
-        // Specific error handling
         if (response.status === 401) {
           errorMessage = "Session expired. Please login again.";
           setTimeout(() => navigate("/admin/login"), 2000);
@@ -306,26 +323,22 @@ export default function EditProduct() {
         } else if (response.status === 404) {
           errorMessage = "Product not found.";
         } else if (response.status === 500) {
-          errorMessage = `Server error: ${errorMessage}. Please check backend logs.`;
+          errorMessage = `Server error: ${errorMessage}`;
         }
 
         throw new Error(errorMessage);
       }
 
-      console.log("✅ Product updated successfully");
+      const result = await response.json();
+      console.log("✅ Product updated successfully:", result);
 
       // Upload new images if any
       if (newImages.length > 0) {
         console.log("📤 Uploading", newImages.length, "new images...");
 
         const imageFormData = new FormData();
-        newImages.forEach((file, index) => {
+        newImages.forEach((file) => {
           imageFormData.append("images", file);
-          console.log(
-            `  Image ${index + 1}:`,
-            file.name,
-            `(${(file.size / 1024).toFixed(2)} KB)`
-          );
         });
 
         const imageResponse = await fetch(
@@ -340,29 +353,19 @@ export default function EditProduct() {
           }
         );
 
-        console.log("📥 Image upload status:", imageResponse.status);
-
         if (imageResponse.ok) {
-          const imageData = await imageResponse.json();
-          console.log("✅ Images uploaded successfully:", imageData);
+          console.log("✅ Images uploaded successfully");
         } else {
-          const imageError = await imageResponse.text();
-          console.warn("⚠️ Image upload failed:", imageError);
-          // Don't throw error, just warn
+          console.warn("⚠️ Image upload failed");
         }
       }
 
-      setSuccess("Product updated successfully!");
-      console.log("🎉 All done! Redirecting...");
-
-      setTimeout(() => {
-        navigate("/admin/products");
-      }, 2000);
+      showToast("Product updated successfully!", "success");
+      setTimeout(() => navigate("/admin/products"), 1500);
     } catch (err) {
-      console.error("❌ Error updating product:");
-      console.error("  Message:", err.message);
-      console.error("  Stack:", err.stack);
+      console.error("❌ Error:", err);
       setError(err.message || "Failed to update product");
+      showToast(err.message || "Failed to update product", "error");
     } finally {
       setSaving(false);
     }

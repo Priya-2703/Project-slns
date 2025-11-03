@@ -7,87 +7,31 @@ import "swiper/css";
 import "swiper/css/navigation";
 import { Link } from "react-router-dom";
 
-const ProductSwiper = () => {
+const ProductSwiper = ({ products = null }) => {
+  const BACKEND_URL = import.meta.env.VITE_API_URL;
   const prevRef = useRef(null);
   const nextRef = useRef(null);
   const swiperRef = useRef(null);
   const [swiperReady, setSwiperReady] = useState(false);
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(false);
-  const [locked, setLocked] = useState(false); // no overflow
+  const [locked, setLocked] = useState(false);
 
-  const products = [
-    {
-      img: `${assets.poc1}`,
-      price: "2000",
-      name: "Chiku Khadi Art Silk Saree",
-      discount: "20",
-      actualPrice: "2500",
-    },
-    {
-      img: "https://framerusercontent.com/images/Fr6Vb2Bkg2Sas1x3WyJit1X8ixE.jpg",
-      price: "1600",
-      name: "Pink Khadi Art Silk Saree",
-      discount: "20",
-      actualPrice: "2000",
-    },
-    {
-      img: "https://framerusercontent.com/images/Dn2hBdEL86EDEvATmiYmOuXguY.jpg",
-      price: "1200",
-      name: "Dark Purple Mysore Silk Saree",
-      discount: "20",
-      actualPrice: "1500",
-    },
-    {
-      img: "https://framerusercontent.com/images/DKUAgaR1NNRvbRP5qzATSwPPbc.jpg",
-      price: "1600",
-      name: "Green & Purple Pochampalli Silk Saree",
-      discount: "20",
-      actualPrice: "2000",
-    },
-    {
-      img: "https://framerusercontent.com/images/Ji1Tq0FNqXyLQJOCZw9kgzRpR4.png",
-      price: "3000",
-      name: "Red Banarasi Silk Saree",
-      discount: "25",
-      actualPrice: "4000",
-    },
-    {
-      img: "https://framerusercontent.com/images/tWKMGoRtLHSLshTSDTFvy8kb24.png",
-      price: "2200",
-      name: "Blue Cotton Silk Saree",
-      discount: "15",
-      actualPrice: "2600",
-    },
-    {
-      img: "https://framerusercontent.com/images/gkVpU4bpMqOeoQhIKUMHCReH7qk.png",
-      price: "1800",
-      name: "Yellow Georgette Saree",
-      discount: "30",
-      actualPrice: "2600",
-    },
-    {
-      img: "https://framerusercontent.com/images/8fwTncuBYaX8duI9rqZM9Y7IE.png",
-      price: "2800",
-      name: "Orange Patola Silk Saree",
-      discount: "10",
-      actualPrice: "3100",
-    },
-    {
-      img: "https://framerusercontent.com/images/gRDOSxiqX2M6P7Dl3iPCNYhfrjk.png",
-      price: "3500",
-      name: "White Kanchipuram Silk Saree",
-      discount: "20",
-      actualPrice: "4400",
-    },
-    {
-      img: "https://framerusercontent.com/images/O8McCVkRWTpwpPgP56Y0tqEVdc.jpg",
-      price: "1500",
-      name: "Black Chiffon Saree",
-      discount: "35",
-      actualPrice: "2300",
-    },
-  ];
+  // Use passed products or default
+  const displayProducts = products;
+
+  // Helper function to get full image URL
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return "/placeholder-image.png";
+    if (imagePath.startsWith("http")) return imagePath;
+    return `${BACKEND_URL}${imagePath}`;
+  };
+
+  // Calculate discount percentage
+  const calculateDiscount = (price, actualPrice) => {
+    if (!actualPrice || !price) return 0;
+    return Math.round(((actualPrice - price) / actualPrice) * 100);
+  };
 
   // Bind external buttons to Swiper + keep arrow visibility in sync
   useEffect(() => {
@@ -95,7 +39,6 @@ const ProductSwiper = () => {
     const swiper = swiperRef.current;
     if (!swiper || !prevRef.current || !nextRef.current) return;
 
-    // Attach external buttons
     swiper.params.navigation.prevEl = prevRef.current;
     swiper.params.navigation.nextEl = nextRef.current;
     swiper.navigation.init();
@@ -104,10 +47,9 @@ const ProductSwiper = () => {
     const refresh = () => {
       setAtStart(swiper.isBeginning);
       setAtEnd(swiper.isEnd);
-      setLocked(swiper.isLocked); // true if no overflow (slides <= slidesPerView)
+      setLocked(swiper.isLocked);
     };
 
-    // Initial + on every change
     refresh();
     swiper.on("slideChange", refresh);
     swiper.on("resize", refresh);
@@ -124,12 +66,17 @@ const ProductSwiper = () => {
 
   const mobileView = window.innerWidth < 800;
 
+  // Return null if no products
+  if (!displayProducts || displayProducts.length === 0) {
+    return null;
+  }
+
   return (
     <>
       <div className="w-[95%] h-auto md:w-[90%] lg:w-full mx-auto relative overflow-visible py-6 lg:py-8">
         <Swiper
           modules={[Navigation]}
-          className=" w-[90%] lg-[95%] py-10 md:py-16 lg:gap-5"
+          className="w-[90%] lg-[95%] py-10 md:py-16 lg:gap-5"
           onSwiper={(swiper) => {
             swiperRef.current = swiper;
             setSwiperReady(true);
@@ -137,10 +84,10 @@ const ProductSwiper = () => {
           spaceBetween={5}
           speed={600}
           slidesPerView={3}
-          slidesPerGroup={mobileView ? 3 : 5} // 1 click = 4 slides
-          allowTouchMove={true} // swipe off
+          slidesPerGroup={mobileView ? 3 : 5}
+          allowTouchMove={true}
           loop={false}
-          watchOverflow={true} // lock when no overflow
+          watchOverflow={true}
           breakpoints={{
             460: { slidesPerView: 3, spaceBetween: 5 },
             640: { slidesPerView: 3, spaceBetween: 5 },
@@ -149,52 +96,64 @@ const ProductSwiper = () => {
             1440: { slidesPerView: 5, spaceBetween: 45 },
           }}
         >
-          {products.map((item, index) => (
-            <SwiperSlide
-              key={index}
-              className="flex justify-center items-start h-auto"
-            >
-              <Link to={"/product/:id"} className="w-full">
-                <div className="max-w-[100px] md:max-w-[180px] lg:max-w-[250px] mx-auto flex flex-col gap-2 cursor-pointer group pt-2 pb-5">
-                  <div className="relative overflow-hidden rounded-xl">
-                    <img
-                      src={item.img}
-                      alt={item.name}
-                      loading="lazy"
-                      className="w-full h-[150px] md:h-[280px] lg:h-[360px] object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                  </div>
+          {displayProducts.map((item, index) => {
+            // Handle both API products and default products
+            const productId = item.product_id || index;
+            const productName = item.product_name || item.name;
+            const productPrice = item.price;
+            const productActualPrice = item.actual_price || item.actualPrice;
+            const productImage = item.primary_image || item.img;
+            const productDiscount =
+              item.discount ||
+              calculateDiscount(productPrice, productActualPrice);
 
-                  <div className="w-full flex flex-col md:flex-row justify-between items-start text-white gap-2">
-                    <div className="w-full flex flex-col  items-start gap-1 lg:gap-2">
-                      <h1 className="w-full lg:w-[90%] text-[10px] md:text-[14px] lg:text-[17px] font-body capitalize font-medium md:leading-4.5 leading-3 lg:leading-5.5">
-                        {item.name}
-                      </h1>
-                      <p className="w-full font-body flex justify-between text-[10px] md:text-[14px] lg:text-[15px] leading-none">
-                        ₹{item.price}
-                        <span className="px-2 block md:hidden lg:py-1 lg:border-2 border-white text-[10px] md:text-[14px] lg:text-[15px] font-body">
-                          {item.discount}%
-                        </span>
-                      </p>
+            return (
+              <SwiperSlide
+                key={productId}
+                className="flex justify-center items-start h-auto"
+              >
+                <Link to={`/product/${productId}`} className="w-full">
+                  <div className="max-w-[100px] md:max-w-[180px] lg:max-w-[250px] mx-auto flex flex-col gap-2 cursor-pointer group pt-2 pb-5">
+                    <div className="relative overflow-hidden rounded-xl">
+                      <img
+                        src={getImageUrl(productImage)}
+                        alt={productName}
+                        loading="lazy"
+                        className="w-full h-[150px] md:h-[280px] lg:h-[360px] object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
                     </div>
-                    <div className=" hidden md:flex flex-row md:flex-col justify-between md:justify-center md:items-end gap-1 lg:gap-2">
-                      <p className="lg:px-2 p-1 lg:py-1 border-2 border-white text-[12px] lg:text-[15px] font-body order-2 md:order-1">
-                        {item.discount}%
-                      </p>
-                      <p className="text-gray-500 line-through font-body text-[12px] lg:text-[15px] order-1 md:order-2">
-                        ₹{item.actualPrice}
+
+                    <div className="w-full flex flex-col md:flex-row justify-between items-start text-white gap-2">
+                      <div className="w-full flex flex-col items-start gap-1 lg:gap-2">
+                        <h1 className="w-full lg:w-[90%] text-[10px] md:text-[14px] lg:text-[17px] font-body capitalize font-medium md:leading-4.5 leading-3 lg:leading-5.5 line-clamp-2">
+                          {productName}
+                        </h1>
+                        <p className="w-full font-body flex justify-between text-[10px] md:text-[14px] lg:text-[15px] leading-none">
+                          ₹{productPrice}
+                          <span className="px-2 block md:hidden lg:py-1 lg:border-2 border-white text-[10px] md:text-[14px] lg:text-[15px] font-body">
+                            {productDiscount}%
+                          </span>
+                        </p>
+                      </div>
+                      <div className="hidden md:flex flex-row md:flex-col justify-between md:justify-center md:items-end gap-1 lg:gap-2">
+                        <p className="lg:px-2 p-1 lg:py-1 border-2 border-white text-[12px] lg:text-[15px] font-body order-2 md:order-1">
+                          {parseInt(productDiscount)}%
+                        </p>
+                        <p className="text-gray-500 line-through font-body text-[12px] lg:text-[15px] order-1 md:order-2">
+                          ₹{parseInt(productActualPrice)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="hidden md:flex justify-start">
+                      <p className="text-white/65 tracking-wide font-body capitalize text-[8px] lg:text-[10px] leading-0">
+                        {index + 2} styling Available
                       </p>
                     </div>
                   </div>
-                  <div className="hidden md:flex justify-start">
-                    <p className="text-white/65 tracking-wide font-body capitalize text-[8px] lg:text-[10px] leading-0">
-                      {index + 2} styling Available
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            </SwiperSlide>
-          ))}
+                </Link>
+              </SwiperSlide>
+            );
+          })}
         </Swiper>
 
         {/* External arrows (outside) */}

@@ -8,9 +8,267 @@ import {
 import { assets } from "../../../public/assets/asset";
 import "./Landing.css";
 import LoaderAni from "../LoaderAni";
+import { Link } from "react-router-dom";
 const Trending = lazy(() => import("./Trending"));
 const NewArrival = lazy(() => import("./NewArrival"));
 const Review = lazy(() => import("./Review"));
+
+// 🎯 3D Banner Carousel Component
+const BannerCarousel3D = () => {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const adBanners = [
+    {
+      id: 1,
+      title: "Festive Collection 2026",
+      subtitle: "Premium Designer Sarees",
+      image:
+        "https://framerusercontent.com/images/Q0ih86EcQhWKKGCX5VU05ql9c.jpg",
+      gradient: "from-purple-600/40 to-pink-600/40",
+    },
+    {
+      id: 2,
+      title: "Traditional Elegance",
+      subtitle: "Handwoven Silk Collection",
+      image:
+        "https://framerusercontent.com/images/kw9cJ8cAr3HMqNCZMrzald2zdH4.jpg",
+      gradient: "from-blue-600/40 to-cyan-600/40",
+    },
+    {
+      id: 3,
+      title: "Limited Edition",
+      subtitle: "Exclusive Designer Wear",
+      image:
+        "https://framerusercontent.com/images/Wa9VEYx9s6XaxR5umPBFrfvfyY.jpg",
+      gradient: "from-orange-600/40 to-amber-600/40",
+    },
+  ];
+
+  // Auto-rotate every 3 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % adBanners.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [adBanners.length]);
+
+  const getCardStyle = (index) => {
+    const diff = (index - activeIndex + adBanners.length) % adBanners.length;
+
+    if (diff === 0) {
+      // Front card
+      return {
+        zIndex: 30,
+        x: "0%",
+        scale: 1,
+        rotateY: 0,
+        filter: "blur(0px)",
+        opacity: 1,
+      };
+    } else if (diff === 1) {
+      // Right card
+      return {
+        zIndex: 20,
+        x: "65%",
+        scale: 0.75,
+        rotateY: -25,
+        filter: "blur(3px)",
+        opacity: 0.6,
+      };
+    } else {
+      // Left card
+      return {
+        zIndex: 10,
+        x: "-65%",
+        scale: 0.75,
+        rotateY: 25,
+        filter: "blur(3px)",
+        opacity: 0.6,
+      };
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: false, amount: 0.2 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+      className="w-full py-20 relative overflow-hidden"
+    >
+      {/* Section Title */}
+      <motion.div
+        initial={{ opacity: 0, y: -30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: false }}
+        transition={{ duration: 0.6 }}
+        className="text-center mb-6 md:mb-10"
+      >
+        <h2 className="text-white text-3xl md:text-5xl font-heading font-bold mb-3">
+          Special Offers
+        </h2>
+        <p className="text-white/60 text-sm md:text-base font-body">
+          Exclusive deals just for you
+        </p>
+      </motion.div>
+
+      {/* 3D Carousel Container */}
+      <div
+        className="relative w-full h-[400px] md:h-[500px] flex items-center justify-center"
+        style={{ perspective: "2000px" }}
+      >
+        {adBanners.map((banner, index) => {
+          const style = getCardStyle(index);
+          const isActive = index === activeIndex;
+
+          return (
+            <motion.div
+              key={banner.id}
+              className="absolute w-[85%] md:w-[600px] lg:w-[700px] h-[350px] md:h-[450px] rounded-2xl overflow-hidden cursor-pointer"
+              animate={style}
+              transition={{
+                duration: 0.7,
+                ease: [0.34, 1.56, 0.64, 1],
+              }}
+              onClick={() => setActiveIndex(index)}
+              whileHover={
+                isActive
+                  ? {
+                      scale: 1.02,
+                      transition: { duration: 0.3 },
+                    }
+                  : {}
+              }
+              style={{
+                transformStyle: "preserve-3d",
+              }}
+            >
+              {/* Banner Image */}
+              <div className="relative w-full h-full">
+                <img
+                  src={banner.image}
+                  alt={banner.title}
+                  className="w-full h-full object-cover"
+                />
+
+                {/* Gradient Overlay */}
+                <div
+                  className={`absolute inset-0 bg-gradient-to-br ${banner.gradient}`}
+                />
+                <div className="absolute inset-0 bg-black/30" />
+
+                {/* Content */}
+                <motion.div
+                  className="absolute inset-0 flex flex-col justify-center items-center text-center px-8"
+                  animate={{
+                    opacity: isActive ? 1 : 0,
+                  }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <motion.p
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={
+                      isActive ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }
+                    }
+                    transition={{ delay: 0.2, duration: 0.5 }}
+                    className="text-white/90 text-xs md:text-sm font-body tracking-widest mb-3"
+                  >
+                    {banner.subtitle}
+                  </motion.p>
+
+                  <motion.h3
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={
+                      isActive ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }
+                    }
+                    transition={{ delay: 0.3, duration: 0.5 }}
+                    className="text-white text-3xl md:text-5xl lg:text-6xl font-heading font-bold mb-6 drop-shadow-2xl"
+                  >
+                    {banner.title}
+                  </motion.h3>
+
+                  <Link to={"/product"}>
+                    <motion.button
+                      initial={{ y: 20, opacity: 0 }}
+                      animate={
+                        isActive ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }
+                      }
+                      transition={{ delay: 0.4, duration: 0.5 }}
+                      whileHover={{
+                        scale: 1.05,
+                        boxShadow: "0 0 30px rgba(149, 94, 48, 0.8)",
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                      className="bg-accet hover:bg-accet/90 text-white px-8 py-3 rounded-full font-body text-sm font-semibold shadow-xl transition-all duration-300"
+                    >
+                      Shop Now
+                    </motion.button>
+                  </Link>
+                </motion.div>
+
+                {/* Shimmer Effect on Active Card */}
+                {isActive && (
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                    animate={{
+                      x: ["-100%", "100%"],
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      repeatDelay: 1,
+                      ease: "easeInOut",
+                    }}
+                  />
+                )}
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Dot Indicators */}
+      <div className="flex justify-center items-center gap-3  md:mt-2">
+        {adBanners.map((_, index) => (
+          <motion.button
+            key={index}
+            onClick={() => setActiveIndex(index)}
+            className="relative"
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <motion.div
+              className="md:w-2 md:h-2 w-1 h-1 rounded-full border-2 border-white/50"
+              animate={{
+                backgroundColor:
+                  activeIndex === index ? "#955E30" : "transparent",
+                borderColor: activeIndex === index ? "#955E30" : "#ffffff80",
+                scale: activeIndex === index ? 1.3 : 1,
+              }}
+              transition={{ duration: 0.3 }}
+            />
+
+            {/* Progress Ring */}
+            {activeIndex === index && (
+              <motion.div
+                className="absolute inset-0 rounded-full border-2 border-accet"
+                initial={{ scale: 1, opacity: 1 }}
+                animate={{ scale: 1.8, opacity: 0 }}
+                transition={{
+                  duration: 3,
+                  ease: "linear",
+                  repeat: Infinity,
+                }}
+              />
+            )}
+          </motion.button>
+        ))}
+      </div>
+
+    </motion.div>
+  );
+};
 
 const Landing = () => {
   const images = [
@@ -56,12 +314,13 @@ const Landing = () => {
     },
   ];
 
+  //dynamic title
+  useEffect(() => {
+    document.title = `Welcome to SLNS Sarees`;
+  }, []);
+
   // 🔹 Banner Carousel State
-  const banners = [
-    assets.banner,
-    assets.banner2, // Replace with assets.banner2
-    assets.banner3, // Replace with assets.banner3
-  ];
+  const banners = [assets.banner, assets.banner2, assets.banner3];
 
   const [currentBanner, setCurrentBanner] = useState(0);
 
@@ -480,6 +739,9 @@ const Landing = () => {
             <Review />
           </motion.div>
         </Suspense>
+
+        {/* 🎯 3D BANNER CAROUSEL - NEW SECTION */}
+        <BannerCarousel3D />
       </div>
     </>
   );

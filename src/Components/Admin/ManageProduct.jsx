@@ -28,7 +28,7 @@ export default function ManageProducts() {
   }, [stats]);
 
   // Base URL for your API - UPDATE THIS TO YOUR BACKEND URL
-  const API_BASE_URL = "https://e6d7d36fc1c2.ngrok-free.app";
+  const API_BASE_URL = "http://localhost:5000";
 
   //priya
   // const fetchProducts = async () => {

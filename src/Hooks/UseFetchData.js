@@ -6,7 +6,7 @@ const UseFetchData = () => {
   const [error, setError] = useState(null);
 
   // Base URL for your API - UPDATE THIS TO YOUR BACKEND URL
-  const API_BASE_URL = "https://c8f6b21a078d.ngrok-free.app";
+   const BACKEND_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     fetchData();
@@ -17,7 +17,7 @@ const UseFetchData = () => {
       setLoading(true);
       setError(null);
 
-      const res = await fetch(`${API_BASE_URL}/api/products`,
+      const res = await fetch(`${BACKEND_URL}/api/products`,
          {
         headers: {
           "ngrok-skip-browser-warning": "true",
@@ -39,7 +39,7 @@ const UseFetchData = () => {
         
         if (product.primary_image_id) {
           // New method: Image stored in database
-          imageUrl = `${API_BASE_URL}/api/images/${product.primary_image_id}`;
+          imageUrl = `${BACKEND_URL}/api/images/${product.primary_image_id}`;
         } else if (product.primary_image) {
           // Check if it's already a full URL
           if (product.primary_image.startsWith('http://') || product.primary_image.startsWith('https://')) {
@@ -47,11 +47,11 @@ const UseFetchData = () => {
           } 
           // Check if it's an API endpoint
           else if (product.primary_image.startsWith('/api/images/')) {
-            imageUrl = `${API_BASE_URL}${product.primary_image}`;
+            imageUrl = `${BACKEND_URL}${product.primary_image}`;
           }
           // Check if it's a static file path
           else if (product.primary_image.startsWith('/static/')) {
-            imageUrl = `${API_BASE_URL}${product.primary_image}`;
+            imageUrl = `${BACKEND_URL}${product.primary_image}`;
           }
         }
 
@@ -61,7 +61,7 @@ const UseFetchData = () => {
         };
       });
 
-      console.log("✅ Processed Products with Images:", ans.products);
+      // console.log("✅ Processed Products with Images:", ans.products);
       setData(processedProducts || []);
       setLoading(false);
     } catch (error) {

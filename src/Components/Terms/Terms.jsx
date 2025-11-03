@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
@@ -34,16 +34,20 @@ const terms = [
 ];
 
 const Terms = () => {
+  //dynamic title
+  useEffect(() => {
+    document.title = `Terms and Conditions - SLNS Sarees`;
+  }, []);
   return (
     <>
-      <motion.div 
+      <motion.div
         className="w-full mx-auto bg-black mt-20 md:mt-28 py-3 md:py-5"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6 }}
       >
         <div className="w-[85%] lg:w-[80%] mx-auto">
-          <motion.div 
+          <motion.div
             className="flex justify-start items-start"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -59,7 +63,7 @@ const Terms = () => {
         </div>
 
         <div className="w-full lg:w-[75%] text-white mx-auto mt-6">
-          <motion.div 
+          <motion.div
             className="w-[80%] mx-auto grid grid-cols-1"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -71,7 +75,7 @@ const Terms = () => {
           </motion.div>
 
           <div className="w-[80%] mx-auto flex flex-col text-justify font-body mt-3 md:mt-6">
-            <motion.p 
+            <motion.p
               className="text-[12px] md:text-[16px]"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -86,8 +90,8 @@ const Terms = () => {
             <div className="flex flex-col text-justify py-4">
               {terms.map((item, id) => {
                 return (
-                  <motion.div 
-                    key={id} 
+                  <motion.div
+                    key={id}
                     className="pb-5"
                     initial={{ opacity: 0, x: -30 }}
                     whileInView={{ opacity: 1, x: 0 }}
@@ -107,7 +111,7 @@ const Terms = () => {
               })}
             </div>
 
-            <motion.p 
+            <motion.p
               className="text-[12px] md:text-[16px]"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}

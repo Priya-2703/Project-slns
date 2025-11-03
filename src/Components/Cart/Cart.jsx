@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { FaArrowLeft, FaMinus, FaPlus } from "react-icons/fa";
 import { FaTrashCan } from "react-icons/fa6";
 import { Link } from "react-router-dom";
@@ -13,6 +13,11 @@ function Cart() {
     removeFromCart,
     updateCartItemQuantity,
   } = useContext(CartContext);
+
+
+  useEffect(() => {
+  document.title = `Cart (${cart.length}) - SLNS Sarees`;
+}, [cart.length]);
 
   // Math
   const currency = (n) =>
@@ -253,8 +258,9 @@ function Cart() {
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: index * 0.1 + 0.3 }}
+                            className="w-full"
                           >
-                            <p className="font-medium font-body text-white leading-5">
+                            <p className="font-medium font-body w-full max-w-[150px] md:max-w-[200px] text-white leading-5 line-clamp-2 ">
                               {it.product_name}
                             </p>
                             <p className="text-sm font-body text-neutral-400">
@@ -410,7 +416,7 @@ function Cart() {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: index * 0.1 + 0.2 }}
                           >
-                            <p className="font-bold font-body text-white leading-5">
+                            <p className="font-bold font-body text-white leading-5 line-clamp-2">
                               {it.product_name}
                             </p>
                             <p className="text-[12px] uppercase font-body text-neutral-400">
