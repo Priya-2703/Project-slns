@@ -98,13 +98,12 @@ const ProductDetail = () => {
     if (product.product_name) {
       document.title = `${product.product_name} - Your Store Name`;
     }
-    
+
     // ✅ Component unmount aagum pothu reset
     return () => {
       document.title = "SLNS Sarees";
     };
   }, [product.product_name]);
-
 
   // Replace the similar products useEffect with this:
   useEffect(() => {
@@ -259,6 +258,11 @@ const ProductDetail = () => {
   // Add this handler function
   const handleLoadMoreReviews = () => {
     setReviewsToShow((prev) => prev + 4);
+  };
+
+  //add to cart
+  const handleAddToCart = async () => {
+    await addToCart(product);
   };
 
   // Get displayed reviews
@@ -499,7 +503,9 @@ const ProductDetail = () => {
                 <p className="font-['Poppins'] line-through text-white/30 text-[14px]">
                   ₹{parseInt(product.actual_price)}
                 </p>
-                <p className="font-['Poppins'] text-[14px]">{parseInt(product.discount)}% OFF</p>
+                <p className="font-['Poppins'] text-[14px]">
+                  {parseInt(product.discount)}% OFF
+                </p>
               </div>
             </div>
             {/* Choose Other Versions Section - Replace existing section */}
@@ -545,7 +551,7 @@ const ProductDetail = () => {
               <Link to={"/cart"}>
                 <button
                   onClick={() => {
-                    addToCart(product);
+                    handleAddToCart();
                     handleCart();
                   }}
                   className="text-[16px] text-white px-3 py-4 font-body rounded-[8px] w-full bg-accet hover:scale-[1.02] transition-all"

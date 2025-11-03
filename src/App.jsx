@@ -28,6 +28,7 @@ import ManageProducts from "./Components/Admin/ManageProduct";
 import ManageCategories from "./Components/Admin/Categories/ManageCategories";
 import ManageOrders from "./Components/Admin/ManageOrders";
 import EditProduct from "./Components/Admin/EditProduct";
+import CustomerManagement from "./Components/Admin/CustomerManagement";
 
 const About = lazy(() => import("./Components/About/About"));
 const Faq = lazy(() => import("./Components/FAQ/Faq"));
@@ -99,6 +100,14 @@ function AppContent() {
     "/b2b-signup",
     "/signin",
     "/b2b-signin",
+    "/admin/dashboard",
+    "/admin/products/add",
+    "/admin/products",
+    "/admin/products/edit/:id",
+    "/admin/categories",
+    "/admin/orders",
+    "/admin/import",
+    "/admin/customers",
     "/forgot-password",
   ];
 
@@ -219,6 +228,14 @@ function AppContent() {
             element={
               <ProtectedAdminRoute>
                 <ManageOrders />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
+            path="/admin/customers"
+            element={
+              <ProtectedAdminRoute>
+                <CustomerManagement />
               </ProtectedAdminRoute>
             }
           />

@@ -23,7 +23,8 @@ export default function ManageOrders() {
   });
 
   // Base URL for your API - UPDATE THIS TO YOUR BACKEND URL
-  const API_BASE_URL = "http://localhost:5000";
+   const BACKEND_URL = import.meta.env.VITE_API_URL;
+
 
   useEffect(() => {
     fetchOrders();
@@ -32,7 +33,7 @@ export default function ManageOrders() {
   const fetchOrders = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${API_BASE_URL}/api/admin/orders`, {
+      const response = await fetch(`${BACKEND_URL}/api/admin/orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
@@ -87,7 +88,7 @@ export default function ManageOrders() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${API_BASE_URL}/api/admin/orders/${orderId}/status`,
+        `${BACKEND_URL}/api/admin/orders/${orderId}/status`,
         {
           method: "PUT",
           headers: {
@@ -209,7 +210,7 @@ export default function ManageOrders() {
   }
 
   return (
-    <div className="min-h-screen bg-black py-20">
+    <div className="min-h-screen bg-black py-20 mt-14">
       <div className="w-[90%] mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">

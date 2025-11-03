@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 export default function EditCategoryModal({ isOpen, onClose, onSuccess, category }) {
 
     // Base URL for your API - UPDATE THIS TO YOUR BACKEND URL
-  const API_BASE_URL = "http://localhost:5000";
+   const BACKEND_URL = import.meta.env.VITE_API_URL;
+
   
   const [formData, setFormData] = useState({
     category_name: "",
@@ -27,7 +28,7 @@ export default function EditCategoryModal({ isOpen, onClose, onSuccess, category
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${API_BASE_URL}/api/categories/${category.category_id}`,
+        `${BACKEND_URL}/api/categories/${category.category_id}`,
         {
           method: "PUT",
           headers: {

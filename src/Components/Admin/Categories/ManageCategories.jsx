@@ -13,17 +13,16 @@ export default function ManageCategories() {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   // Base URL for your API - UPDATE THIS TO YOUR BACKEND URL
-  const API_BASE_URL = "http://localhost:5000";
+   const BACKEND_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  //saran
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${API_BASE_URL}/api/categories`, {
+      const response = await fetch(`${BACKEND_URL}/api/categories`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "ngrok-skip-browser-warning": "true",
@@ -37,7 +36,6 @@ export default function ManageCategories() {
         const data = JSON.parse(responseText);
         if (response.ok) {
           setCategories(data.categories);
-          console.log("✅ Success! Data:", data);
         }
       } catch (parseError) {
         console.error("❌ JSON Parse Error:", parseError);
@@ -51,27 +49,6 @@ export default function ManageCategories() {
     }
   };
 
-  //priyaa
-  // const fetchCategories = async () => {
-  //   try {
-  //     const token = localStorage.getItem("token");
-  //     const response = await fetch(
-  //       "https://5b1a1ca66a6b.ngrok-free.app/api/categories",
-  //       {
-  //         headers: { Authorization: `Bearer ${token}` },
-  //       }
-  //     );
-  //     const data = await response.json();
-  //     if (response.ok) {
-  //       setCategories(data);
-  //     }
-  //   } catch (err) {
-  //     console.error("Failed to fetch categories:", err);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const handleEdit = (category) => {
     setSelectedCategory(category);
     setIsEditModalOpen(true);
@@ -81,7 +58,7 @@ export default function ManageCategories() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${API_BASE_URL}/api/categories/${categoryId}`,
+        `${BACKEND_URL}/api/categories/${categoryId}`,
         {
           method: "DELETE",
           headers: {
@@ -105,7 +82,6 @@ export default function ManageCategories() {
       alert("Category deleted successfully!");
       fetchCategories();
       setDeleteConfirm(null);
-      console.log("✅ Category deleted:", categoryId);
     } catch (err) {
       console.error("❌ Delete error:", err);
       alert("Failed to delete category: " + err.message);
@@ -131,7 +107,7 @@ export default function ManageCategories() {
   }
 
   return (
-    <div className="min-h-screen bg-black py-20 mt-28 cursor-auto">
+    <div className="min-h-screen bg-black py-20 mt-14 cursor-auto">
       <div className="w-[90%] mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">

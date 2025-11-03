@@ -10,7 +10,8 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }) {
   });
 
     // Base URL for your API - UPDATE THIS TO YOUR BACKEND URL
-  const API_BASE_URL = "http://localhost:5000";
+   const BACKEND_URL = import.meta.env.VITE_API_URL;
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,7 +37,7 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }) {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE_URL}/api/categories`, {
+      const response = await fetch(`${BACKEND_URL}/api/categories`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

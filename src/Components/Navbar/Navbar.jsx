@@ -7,10 +7,12 @@ import { IoBusiness } from "react-icons/io5";
 import { CartContext } from "../../Context/UseCartContext";
 import { GoHeart } from "react-icons/go";
 import { WishlistContext } from "../../Context/UseWishListContext";
+import { ToastContext } from "../../Context/UseToastContext";
 
 const Navbar = () => {
   const { cart } = useContext(CartContext);
   const { wishlist } = useContext(WishlistContext);
+  const { showToast } = useContext(ToastContext);
   const [showCard, setShowCard] = useState(false); // profile card
   const [menuOpen, setMenuOpen] = useState(false); // side menu
   const cardRef = useRef(null);
@@ -30,6 +32,7 @@ const Navbar = () => {
   const checkLoginStatus = () => {
     const token = localStorage.getItem("token");
     const userStr = localStorage.getItem("user");
+
 
     if (token && userStr) {
       try {
@@ -64,7 +67,7 @@ const Navbar = () => {
 
     // Optional: Show success message
     // You can use your toast context here if you have one
-    console.log("Logged out successfully");
+    showToast("Logged out successfully");
   };
 
   useEffect(() => {
@@ -101,7 +104,7 @@ const Navbar = () => {
   // ⭐ NEW: Admin menu items
   const adminMenuItems = [
     { path: "/admin/dashboard", label: "Dashboard", icon: "📊" },
-    { path: "/product", label: "View Products", icon: "📦" },
+    { path: "/admin/products", label: "Manage Products", icon: "📦" },
     { path: "/admin/products/add", label: "Add Product", icon: "➕" },
     { path: "/admin/categories", label: "Manage Categories", icon: "🏷️" },
     { path: "/admin/import", label: "Bulk Import", icon: "📥" },
@@ -215,7 +218,10 @@ const Navbar = () => {
                   {/* ⭐ NEW: Show user info if logged in */}
                   {isLoggedIn && user && (
                     <div className="w-full  px-3 py-2 mb-2">
-                      <Link to={"/profile"} className=" flex items-center gap-2 text-white hover:text-white/60 transition-all duration-200">
+                      <Link
+                        to={"/profile"}
+                        className=" flex items-center gap-2 text-white hover:text-white/60 transition-all duration-200"
+                      >
                         <div>
                           <CircleUserRound
                             size={mobileView ? 16 : 24}
@@ -228,9 +234,7 @@ const Navbar = () => {
                           <p className=" text-xs capitalize font-body font-semibold">
                             {user.name}
                           </p>
-                          <p className=" text-[10px] font-body">
-                            {user.email}
-                          </p>
+                          <p className=" text-[10px] font-body">{user.email}</p>
                         </div>
                       </Link>
                       {user.role === "admin" && (
@@ -334,8 +338,9 @@ const Navbar = () => {
                     key={index}
                     to={item.path}
                     onClick={() => setMenuOpen(false)}
+                    className="cursor-pointer select-none"
                   >
-                    <p className="tracking-wide uppercase text-white hover:text-ac transition-colors flex items-center gap-2">
+                    <p className="tracking-wide uppercase cursor-pointer select-none text-white hover:text-ac transition-colors flex items-center gap-2">
                       <span>{item.icon}</span>
                       {item.label}
                     </p>
@@ -351,7 +356,7 @@ const Navbar = () => {
                     to={item.path}
                     onClick={() => setMenuOpen(false)}
                   >
-                    <p className="tracking-wide uppercase text-white hover:text-[#955E30] transition-colors">
+                    <p className="tracking-wide uppercase cursor-pointer text-white hover:text-[#955E30] transition-colors">
                       {item.label}
                     </p>
                   </Link>

@@ -34,11 +34,6 @@ const NewArrival = () => {
         .trim()
         .replace(/[_\s-]/g, "");
       const match = specialCase === "newarrival";
-
-      if (match) {
-        console.log("✅ Found new arrival product:", product.product_name);
-      }
-
       return match;
     }) || [];
 
