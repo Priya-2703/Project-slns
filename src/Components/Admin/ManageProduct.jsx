@@ -25,7 +25,7 @@ export default function ManageProducts() {
   useEffect(() => {
     fetchProducts();
     fetchCategories();
-  }, [stats]);
+  }, []);
 
   // Base URL for your API - UPDATE THIS TO YOUR BACKEND URL
   const API_BASE_URL = "http://localhost:5000";

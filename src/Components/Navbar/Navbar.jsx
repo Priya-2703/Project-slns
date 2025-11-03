@@ -101,7 +101,7 @@ const Navbar = () => {
   // ⭐ NEW: Admin menu items
   const adminMenuItems = [
     { path: "/admin/dashboard", label: "Dashboard", icon: "📊" },
-    { path: "/product", label: "View Products", icon: "📦" },
+    { path: "/admin/products", label: "View Products", icon: "📦" },
     { path: "/admin/products/add", label: "Add Product", icon: "➕" },
     { path: "/admin/categories", label: "Manage Categories", icon: "🏷️" },
     { path: "/admin/import", label: "Bulk Import", icon: "📥" },
