@@ -27,7 +27,7 @@ export default function ManageCategories() {
       );
       const data = await response.json();
       if (response.ok) {
-        setCategories(data);
+        setCategories(data.categories);
       }
     } catch (err) {
       console.error("Failed to fetch categories:", err);
