@@ -173,7 +173,7 @@ function AppContent() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           {/* ========================================
                       ADMIN ROUTES (Protected - Admin Only)
-                    ======================================== */}
+           ======================================== */}
           <Route
             path="/admin/dashboard"
             element={
