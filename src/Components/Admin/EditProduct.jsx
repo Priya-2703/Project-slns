@@ -7,7 +7,8 @@ export default function EditProduct() {
   const navigate = useNavigate();
   const { showToast } = useContext(ToastContext);
 
-  const API_BASE_URL = "http://localhost:5000";
+  const BACKEND_URL = import.meta.env.VITE_API_URL;
+
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -41,7 +42,7 @@ export default function EditProduct() {
   const fetchProduct = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
+      const response = await fetch(`${BACKEND_URL}/api/products/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "ngrok-skip-browser-warning": "69420",
@@ -86,7 +87,7 @@ export default function EditProduct() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${API_BASE_URL}/api/products/${productId}/images`,
+        `${BACKEND_URL}/api/products/${productId}/images`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -107,7 +108,7 @@ export default function EditProduct() {
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${API_BASE_URL}/api/categories`, {
+      const response = await fetch(`${BACKEND_URL}/api/categories`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "ngrok-skip-browser-warning": "69420",
@@ -188,7 +189,7 @@ export default function EditProduct() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${API_BASE_URL}/api/images/${imageId}`, {
+      const response = await fetch(`${BACKEND_URL}/api/images/${imageId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -216,7 +217,7 @@ export default function EditProduct() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${API_BASE_URL}/api/products/${id}/primary-image`,
+        `${BACKEND_URL}/api/products/${id}/primary-image`,
         {
           method: "PUT",
           headers: {
@@ -296,7 +297,7 @@ export default function EditProduct() {
 
       console.log("📤 Sending data:", formDataToSend);
 
-      const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
+      const response = await fetch(`${BACKEND_URL}/api/products/${id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -342,7 +343,7 @@ export default function EditProduct() {
         });
 
         const imageResponse = await fetch(
-          `${API_BASE_URL}/api/products/${id}/images`,
+          `${BACKEND_URL}/api/products/${id}/images`,
           {
             method: "POST",
             headers: {
@@ -380,7 +381,7 @@ export default function EditProduct() {
   }
 
   return (
-    <div className="min-h-screen bg-black py-20">
+    <div className="min-h-screen bg-black py-20 mt-14">
       <div className="w-[90%] max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-4 px-4">
@@ -692,7 +693,7 @@ export default function EditProduct() {
                       }`}
                     >
                       <img
-                        src={`${API_BASE_URL}/api/images/${image.image_id}`}
+                        src={`${BACKEND_URL}/api/images/${image.image_id}`}
                         alt="Product"
                         className="w-full h-full object-cover"
                         onError={(e) => {

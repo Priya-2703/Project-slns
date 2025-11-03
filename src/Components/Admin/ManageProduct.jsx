@@ -28,54 +28,12 @@ export default function ManageProducts() {
   }, []);
 
   // Base URL for your API - UPDATE THIS TO YOUR BACKEND URL
-  const API_BASE_URL = "http://localhost:5000";
-
-  //priya
-  // const fetchProducts = async () => {
-  //   try {
-  //     const token = localStorage.getItem("token");
-  //     const response = await fetch(
-  //       `${API_BASE_URL}/api/products`,
-  //       {
-  //         headers: { Authorization: `Bearer ${token}` },
-  //       }
-  //     );
-  //     const data = await response.json();
-  //     if (response.ok) {
-  //       setProducts(data);
-  //       calculateStats(data);
-  //     }
-  //   } catch (err) {
-  //     console.error("Failed to fetch products:", err);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  //   const fetchCategories = async () => {
-  //   try {
-  //     const token = localStorage.getItem("token");
-  //     const response = await fetch(`${API_BASE_URL}/api/categories`, {
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     });
-  //     const data = await response.json();
-  //     if (response.ok) {
-  //       setCategories(data);
-  //     }
-  //   } catch (err) {
-  //     console.error("Failed to fetch categories:", err);
-  //   }
-  // };
-
-  //saran fetchProducts
-  
-  
-
+   const BACKEND_URL = import.meta.env.VITE_API_URL;
 
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${API_BASE_URL}/api/products`, {
+      const response = await fetch(`${BACKEND_URL}/api/products`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "ngrok-skip-browser-warning": "true",
@@ -107,7 +65,7 @@ export default function ManageProducts() {
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${API_BASE_URL}/api/categories`, {
+      const response = await fetch(`${BACKEND_URL}/api/categories`, {
         headers: { Authorization: `Bearer ${token}`,
          "ngrok-skip-browser-warning": "true",
         },
@@ -146,7 +104,7 @@ export default function ManageProducts() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${API_BASE_URL}/api/products/${productId}`, //  change api
+        `${BACKEND_URL}/api/products/${productId}`, //  change api
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
@@ -180,7 +138,7 @@ export default function ManageProducts() {
       const token = localStorage.getItem("token");
       await Promise.all(
         selectedProducts.map((id) =>
-          fetch(`${API_BASE_URL}/api/products/${id}`, {
+          fetch(`${BACKEND_URL}/api/products/${id}`, {
             // change api
             method: "DELETE",
             headers: { Authorization: `Bearer ${token}` },
@@ -217,7 +175,7 @@ export default function ManageProducts() {
 
   const getImageUrl = (product) => {
     if (product.primary_image_id) {
-      return `${API_BASE_URL}/api/images/${product.primary_image_id}`; //change api
+      return `${BACKEND_URL}/api/images/${product.primary_image_id}`; //change api
     }
     if (product.primary_image) {
       if (
@@ -284,7 +242,7 @@ export default function ManageProducts() {
   }
 
   return (
-    <div className="min-h-screen bg-black py-20">
+    <div className="min-h-screen bg-black py-20 mt-20">
       <div className="w-[90%] mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">

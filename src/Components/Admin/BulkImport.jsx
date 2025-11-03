@@ -7,6 +7,8 @@ export default function BulkImport() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
 
+  const BACKEND_URL = import.meta.env.VITE_API_URL;
+
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
 
@@ -31,7 +33,7 @@ export default function BulkImport() {
   const downloadTemplate = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/admin/products/template"
+        `${BACKEND_URL}/api/admin/products/template`
       );
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -71,7 +73,7 @@ export default function BulkImport() {
       formData.append("file", file);
 
       const response = await fetch(
-        "http://localhost:5000/api/admin/products/import",
+        `${BACKEND_URL}/api/admin/products/import`,
         {
           method: "POST",
           headers: {
@@ -100,7 +102,7 @@ export default function BulkImport() {
   };
 
   return (
-    <div className="min-h-screen bg-black py-20">
+    <div className="min-h-screen bg-black py-20 mt-14">
       <div className="w-[90%] max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-10">
