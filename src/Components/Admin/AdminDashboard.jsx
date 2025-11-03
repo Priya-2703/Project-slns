@@ -8,7 +8,15 @@ export default function AdminDashboard() {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false); // Modal state
 
   // Base URL for your API - UPDATE THIS TO YOUR BACKEND URL
-  const API_BASE_URL = "http://localhost:5000";
+     const BACKEND_URL = import.meta.env.VITE_API_URL;
+
+
+
+    //dynamic title
+    useEffect(() => {
+      document.title = `Admin Dashboard - SLNS Sarees`;
+    }, []);
+  
 
   useEffect(() => {
     fetchStats();
@@ -47,7 +55,7 @@ export default function AdminDashboard() {
     const token = localStorage.getItem("token");
     
     const response = await fetch(
-      `${API_BASE_URL}/api/admin/stats`,
+      `${BACKEND_URL}/api/admin/stats`,
       {
         headers: { 
           Authorization: `Bearer ${token}`,
@@ -91,7 +99,7 @@ export default function AdminDashboard() {
   const getImageUrl = (product) => {
     // For products with primary_image_id from database
     if (product.primary_image_id) {
-      return `${API_BASE_URL}/api/images/${product.primary_image_id}`;
+      return `${BACKEND_URL}/api/images/${product.primary_image_id}`;
     }
 
     // For products with primary_image URL (legacy)
@@ -139,7 +147,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-black py-20 cursor-auto">
+    <div className="min-h-screen bg-black py-20 mt-14 cursor-auto">
       <div className="w-[90%] mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
