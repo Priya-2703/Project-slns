@@ -109,6 +109,13 @@ function AppContent() {
     "/admin/import",
     "/admin/customers",
     "/forgot-password",
+    "/admin/dashboard",
+    "/admin/products/add",
+    "/admin/products",
+    "/admin/products/edit/:id",
+    "/admin/categories",
+    "/admin/orders",
+    "/admin/import",
   ];
 
   // Check if current path matches any valid route pattern
