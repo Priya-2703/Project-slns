@@ -9,6 +9,9 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }) {
     description: ''
   });
 
+    // Base URL for your API - UPDATE THIS TO YOUR BACKEND URL
+  const API_BASE_URL = "http://localhost:5000";
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -18,6 +21,8 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }) {
     if (error) setError('');
   };
 
+
+  //priya
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -31,7 +36,7 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }) {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/categories', {
+      const response = await fetch(`${API_BASE_URL}/api/categories`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -59,6 +64,9 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }) {
       setLoading(false);
     }
   };
+
+
+
 
   const handleClose = () => {
     if (!loading) {

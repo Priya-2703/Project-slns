@@ -7,30 +7,78 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false); // Modal state
 
+  // Base URL for your API - UPDATE THIS TO YOUR BACKEND URL
+  const API_BASE_URL = "http://localhost:5000";
+
   useEffect(() => {
     fetchStats();
-    console.log(stats)
+    // console.log(stats)
   }, []);
 
+
+  // const fetchStats = async () => {
+  //   try {
+  //     const token = localStorage.getItem("token");
+  //     const response = await fetch(
+  //       "https://c8f6b21a078d.ngrok-free.app/api/admin/stats",
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //         "ngrok-skip-browser-warning": "true"
+  //       }
+  //     );
+  //     const data = await response.json();
+  //       console.log(data)
+  //     if (response.ok) {
+  //       setStats(data);
+  //     }
+
+  //   } catch (err) {
+  //     console.error("Failed to fetch stats:", err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+
+  //sk api call 
+
   const fetchStats = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    
+    const response = await fetch(
+      `${API_BASE_URL}/api/admin/stats`,
+      {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true"
+        },
+      }
+    );
+
+    // Raw text edukurom
+    const responseText = await response.text();
+    
+    // Parse panna try panrom
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(
-        "http://localhost:5000/api/admin/stats",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      const data = await response.json();
+      const data = JSON.parse(responseText);
       if (response.ok) {
         setStats(data);
+        // console.log("✅ Success! Data:", data);
       }
-    } catch (err) {
-      console.error("Failed to fetch stats:", err);
-    } finally {
-      setLoading(false);
+    } catch (parseError) {
+      console.error("❌ JSON Parse Error:", parseError);
+      console.error("Full Response:", responseText);
+      alert("JSON parse aagala. Console-a paaru.");
     }
-  };
+
+  } catch (err) {
+    console.error("Error:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleCategorySuccess = (data) => {
     console.log("Category added:", data);
@@ -43,7 +91,7 @@ export default function AdminDashboard() {
   const getImageUrl = (product) => {
     // For products with primary_image_id from database
     if (product.primary_image_id) {
-      return `http://localhost:5000/api/images/${product.primary_image_id}`;
+      return `${API_BASE_URL}/api/images/${product.primary_image_id}`;
     }
 
     // For products with primary_image URL (legacy)
@@ -394,14 +442,14 @@ export default function AdminDashboard() {
                     <img
                       src={getImageUrl(product)}
                       alt={product.product_name}
-                      onError={(e) => {
-                        console.error(
-                          "Image failed to load for product:",
-                          product.product_id
-                        );
-                        e.target.src =
-                          'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23333" width="200" height="200"/%3E%3Ctext fill="%23666" font-family="sans-serif" font-size="14" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle"%3ENo Image%3C/text%3E%3C/svg%3E';
-                      }}
+                      // onError={(e) => {
+                      //   console.error(
+                      //     "Image failed to load for product:",
+                      //     product.product_id
+                      //   );
+                      //   e.target.src =
+                      //     'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23333" width="200" height="200"/%3E%3Ctext fill="%23666" font-family="sans-serif" font-size="14" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle"%3ENo Image%3C/text%3E%3C/svg%3E';
+                      // }}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       loading="lazy"
                     />

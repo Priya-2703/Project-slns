@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 
 export default function EditCategoryModal({ isOpen, onClose, onSuccess, category }) {
+
+    // Base URL for your API - UPDATE THIS TO YOUR BACKEND URL
+  const API_BASE_URL = "http://localhost:5000";
+  
   const [formData, setFormData] = useState({
     category_name: "",
     description: "",
@@ -23,7 +27,7 @@ export default function EditCategoryModal({ isOpen, onClose, onSuccess, category
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:5000/api/categories/${category.category_id}`,
+        `${API_BASE_URL}/api/categories/${category.category_id}`,
         {
           method: "PUT",
           headers: {

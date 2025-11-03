@@ -27,6 +27,7 @@ import ProtectedAdminRoute, {
 import ManageProducts from "./Components/Admin/ManageProduct";
 import ManageCategories from "./Components/Admin/Categories/ManageCategories";
 import ManageOrders from "./Components/Admin/ManageOrders";
+import EditProduct from "./Components/Admin/EditProduct";
 
 const About = lazy(() => import("./Components/About/About"));
 const Faq = lazy(() => import("./Components/FAQ/Faq"));
@@ -194,6 +195,14 @@ function AppContent() {
             element={
               <ProtectedAdminRoute>
                 <ManageProducts />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
+            path="/admin/products/edit/:id"
+            element={
+              <ProtectedAdminRoute>
+                <EditProduct />
               </ProtectedAdminRoute>
             }
           />

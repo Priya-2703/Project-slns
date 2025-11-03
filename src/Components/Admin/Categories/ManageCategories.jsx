@@ -12,22 +12,37 @@ export default function ManageCategories() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
+  // Base URL for your API - UPDATE THIS TO YOUR BACKEND URL
+  const API_BASE_URL = "http://localhost:5000";
+
   useEffect(() => {
     fetchCategories();
   }, []);
 
+  //saran
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(
-        "http://localhost:5000/api/categories",
-        {
-          headers: { Authorization: `Bearer ${token}` },
+      const response = await fetch(`${API_BASE_URL}/api/categories`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      });
+
+      const responseText = await response.text();
+
+      // Parse panna try panrom
+      try {
+        const data = JSON.parse(responseText);
+        if (response.ok) {
+          setCategories(data.categories);
+          console.log("✅ Success! Data:", data);
         }
-      );
-      const data = await response.json();
-      if (response.ok) {
-        setCategories(data.categories);
+      } catch (parseError) {
+        console.error("❌ JSON Parse Error:", parseError);
+        console.error("Full Response:", responseText);
+        alert("JSON parse aagala. Console-a paaru.");
       }
     } catch (err) {
       console.error("Failed to fetch categories:", err);
@@ -35,6 +50,27 @@ export default function ManageCategories() {
       setLoading(false);
     }
   };
+
+  //priyaa
+  // const fetchCategories = async () => {
+  //   try {
+  //     const token = localStorage.getItem("token");
+  //     const response = await fetch(
+  //       "https://5b1a1ca66a6b.ngrok-free.app/api/categories",
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       }
+  //     );
+  //     const data = await response.json();
+  //     if (response.ok) {
+  //       setCategories(data);
+  //     }
+  //   } catch (err) {
+  //     console.error("Failed to fetch categories:", err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleEdit = (category) => {
     setSelectedCategory(category);
@@ -45,24 +81,34 @@ export default function ManageCategories() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:5000/api/categories/${categoryId}`,
+        `${API_BASE_URL}/api/categories/${categoryId}`,
         {
           method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "ngrok-skip-browser-warning": "69420", // ← Any value works (consistency-kaga)
+            "Content-Type": "application/json",
+          },
         }
       );
 
-      if (response.ok) {
-        alert("Category deleted successfully!");
-        fetchCategories();
-        setDeleteConfirm(null);
-      } else {
-        const error = await response.json();
-        alert(error.message || "Failed to delete category");
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({
+          message: "Failed to delete category",
+        }));
+        throw new Error(
+          error.message || `HTTP error! status: ${response.status}`
+        );
       }
+
+      // Success
+      alert("Category deleted successfully!");
+      fetchCategories();
+      setDeleteConfirm(null);
+      console.log("✅ Category deleted:", categoryId);
     } catch (err) {
-      console.error("Delete error:", err);
-      alert("Failed to delete category");
+      console.error("❌ Delete error:", err);
+      alert("Failed to delete category: " + err.message);
     }
   };
 

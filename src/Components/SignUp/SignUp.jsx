@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Check, X } from "lucide-react";
 import { assets } from "../../../public/assets/asset";
 import { Link } from "react-router-dom";
 
@@ -10,8 +10,6 @@ export default function SignUp() {
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
-
-  // ⭐ NEW: State for loading and error handling
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -22,11 +20,22 @@ export default function SignUp() {
       ...prev,
       [name]: value,
     }));
-    // Clear error when user starts typing
     setError("");
   };
 
-  // ⭐ NEW: Backend connection function
+  // ⭐ NEW: Password validation function
+  const validatePassword = (password) => {
+    return {
+      minLength: password.length >= 8,
+      hasUpperCase: /[A-Z]/.test(password),
+      hasLowerCase: /[a-z]/.test(password),
+      hasNumber: /\d/.test(password),
+      hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    };
+  };
+
+  const passwordValidation = validatePassword(formData.password);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Form submitted:", formData);
@@ -35,7 +44,6 @@ export default function SignUp() {
     setSuccess("");
 
     try {
-      // 🔗 CONNECTION POINT: Send POST request to Flask backend
       const response = await fetch("http://localhost:5000/api/signup", {
         method: "POST",
         headers: {
@@ -47,22 +55,21 @@ export default function SignUp() {
       const data = await response.json();
 
       if (response.ok) {
-        // ✅ Success: Store token and user data
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
+        setSuccess("Account created successfully! Redirecting to sign in...");
 
-        setSuccess("Account created successfully!");
+        setFormData({
+          name: "",
+          email: "",
+          password: "",
+        });
 
-        // Redirect to dashboard or home page after 1.5 seconds
         setTimeout(() => {
-          window.location.href = "/"; // Change to your route
-        }, 1500);
+          window.location.href = "/signin";
+        }, 2000);
       } else {
-        // ❌ Error from backend
         setError(data.error || "Signup failed. Please try again.");
       }
     } catch (err) {
-      // ❌ Network or other error
       console.error("Signup error:", err);
       setError("Unable to connect to server. Please try again.");
     } finally {
@@ -98,14 +105,14 @@ export default function SignUp() {
         <div className="bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-black/15 justify-center overflow-hidden rounded-[25px] px-4 md:px-10 py-4">
           {/* Form */}
           <div className="w-[90%] md:w-[80%] mx-auto space-y-2">
-            {/* ⭐ NEW: Error Alert */}
+            {/* Error Alert */}
             {error && (
               <div className="mb-4 p-3 bg-red-500 bg-opacity-80 text-white rounded-lg">
                 {error}
               </div>
             )}
 
-            {/* ⭐ NEW: Success Alert */}
+            {/* Success Alert */}
             {success && (
               <div className="mb-4 p-3 bg-green-500 bg-opacity-80 text-white rounded-lg">
                 {success}
@@ -125,6 +132,7 @@ export default function SignUp() {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Jane Smith"
+                  required
                   className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[11px] md:text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
                 />
               </div>
@@ -140,6 +148,7 @@ export default function SignUp() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="jane@framer.com"
+                  required
                   className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[11px] md:text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
                 />
               </div>
@@ -156,6 +165,7 @@ export default function SignUp() {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="jane@123456"
+                    required
                     className="w-full px-4 py-2 font-['Poppins'] rounded-lg text-[11px] md:text-[13px] bg-white/60 bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
                   />
                   <button
@@ -166,14 +176,113 @@ export default function SignUp() {
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
+
+                {/* ⭐ NEW: Password Requirements Below Input */}
+                {formData.password && (
+                  <div className="mt-2 font-['Poppins'] bg-gray-900 bg-opacity-50 rounded-lg p-3">
+                    <h3 className="font-semibold text-[10px] md:text-[11px] text-white mb-2">
+                      Password Requirements:
+                    </h3>
+                    <div className="space-y-1">
+                      {/* Minimum Length */}
+                      <div className="flex items-center gap-2">
+                        {passwordValidation.minLength ? (
+                          <Check size={14} className="text-green-400" />
+                        ) : (
+                          <X size={14} className="text-red-400" />
+                        )}
+                        <span
+                          className={`text-[8px] md:text-[10px] ${
+                            passwordValidation.minLength
+                              ? "text-green-300"
+                              : "text-gray-300"
+                          }`}
+                        >
+                          At least 8 characters
+                        </span>
+                      </div>
+
+                      {/* Uppercase Letter */}
+                      <div className="flex items-center gap-2">
+                        {passwordValidation.hasUpperCase ? (
+                          <Check size={14} className="text-green-400" />
+                        ) : (
+                          <X size={14} className="text-red-400" />
+                        )}
+                        <span
+                          className={`text-[8px] md:text-[10px] ${
+                            passwordValidation.hasUpperCase
+                              ? "text-green-300"
+                              : "text-gray-300"
+                          }`}
+                        >
+                          One uppercase letter
+                        </span>
+                      </div>
+
+                      {/* Lowercase Letter */}
+                      <div className="flex items-center gap-2">
+                        {passwordValidation.hasLowerCase ? (
+                          <Check size={14} className="text-green-400" />
+                        ) : (
+                          <X size={14} className="text-red-400" />
+                        )}
+                        <span
+                          className={`text-[8px] md:text-[10px] ${
+                            passwordValidation.hasLowerCase
+                              ? "text-green-300"
+                              : "text-gray-300"
+                          }`}
+                        >
+                          One lowercase letter
+                        </span>
+                      </div>
+
+                      {/* Number */}
+                      <div className="flex items-center gap-2">
+                        {passwordValidation.hasNumber ? (
+                          <Check size={14} className="text-green-400" />
+                        ) : (
+                          <X size={14} className="text-red-400" />
+                        )}
+                        <span
+                          className={`text-[8px] md:text-[10px] ${
+                            passwordValidation.hasNumber
+                              ? "text-green-300"
+                              : "text-gray-300"
+                          }`}
+                        >
+                          At least one digit
+                        </span>
+                      </div>
+
+                      {/* Special Character */}
+                      <div className="flex items-center gap-2">
+                        {passwordValidation.hasSpecialChar ? (
+                          <Check size={14} className="text-green-400" />
+                        ) : (
+                          <X size={14} className="text-red-400" />
+                        )}
+                        <span
+                          className={`text-[8px] md:text-[10px] ${
+                            passwordValidation.hasSpecialChar
+                              ? "text-green-300"
+                              : "text-gray-300"
+                          }`}
+                        >
+                          One special character (!@#$%^&*)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Sign Up Button - ⭐ UPDATED with loading state */}
+              {/* Sign Up Button */}
               <button
-                onClick={handleSubmit}
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#8E6740] text-[12px] md:text-[14px] font-['Poppins'] hover:bg-[#8e6740cc] text-white font-semibold py-2 rounded-lg transition duration-200 transform mt-2"
+                className="w-full bg-[#8E6740] text-[12px] md:text-[14px] font-['Poppins'] hover:bg-[#8e6740cc] text-white font-semibold py-2 rounded-lg transition duration-200 transform mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? "Creating Account..." : "Sign Up"}
               </button>
@@ -189,17 +298,6 @@ export default function SignUp() {
                 Sign in
               </Link>
             </p>
-
-            {/* Password Requirements */}
-            <div className="mt-6 font-['Poppins'] bg-gray-900 bg-opacity-50 rounded-lg p-3 md:p-4">
-              <h3 className="font-semibold text-[10px] md:text-[12px] text-white mb-2">
-                Password Requirements
-              </h3>
-              <p className="text-[8px] md:text-[10px] text-gray-200">
-                8 characters, 1 uppercase letter, 1 lowercase letter, at least
-                one digit, at least one special character.
-              </p>
-            </div>
           </div>
         </div>
       </div>

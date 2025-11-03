@@ -8,6 +8,9 @@ export default function AddProduct() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  // Base URL for your API - UPDATE THIS TO YOUR BACKEND URL
+  const API_BASE_URL = "http://localhost:5000";
+
   const [formData, setFormData] = useState({
     product_name: "",
     description: "",
@@ -30,17 +33,49 @@ export default function AddProduct() {
     fetchCategories();
   }, []);
 
+  //sk
   const fetchCategories = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/categories");
-      const data = await response.json();
-      if (response.ok) {
-        setCategories(data.categories);
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${API_BASE_URL}/api/categories`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "true",
+        },
+      });
+      // Raw text edukurom
+      const responseText = await response.text();
+
+      // Parse panna try panrom
+      try {
+        const data = JSON.parse(responseText);
+        if (response.ok) {
+          setCategories(data.categories);
+          // console.log("✅ Success! Data:", data);
+        }
+      } catch (parseError) {
+        console.error("❌ JSON Parse Error:", parseError);
+        console.error("Full Response:", responseText);
+        alert("JSON parse aagala. Console-a paaru.");
       }
     } catch (err) {
       console.error("Failed to fetch categories:", err);
     }
   };
+
+  //priya
+  // const fetchCategories = async () => {
+  //   try {
+  //     const response = await fetch(`${API_BASE_URL}/api/categories`);
+  //     const data = await response.json();
+  //     if (response.ok) {
+  //       setCategories(data.categories);
+  //     }
+  //   } catch (err) {
+  //     console.error("Failed to fetch categories:", err);
+  //   }
+  // };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -82,19 +117,34 @@ export default function AddProduct() {
   };
 
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
+    const newFiles = Array.from(e.target.files);
 
-    if (files.length > 4) {
-      setError("Maximum 4 images allowed");
+    // Check total images (existing + new)
+    const totalImages = images.length + newFiles.length;
+
+    if (totalImages > 4) {
+      const remaining = 4 - images.length;
+      setError(
+        remaining > 0
+          ? `Maximum 4 images allowed. You can add ${remaining} more image(s).`
+          : "Maximum 4 images reached. Please remove some images first."
+      );
       return;
     }
 
-    setImages(files);
+    // Append new images to existing ones
+    const updatedImages = [...images, ...newFiles];
+    setImages(updatedImages);
 
-    // Create previews
-    const previews = files.map((file) => URL.createObjectURL(file));
-    setImagePreviews(previews);
+    // Create previews for new files and append
+    const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
+    const updatedPreviews = [...imagePreviews, ...newPreviews];
+    setImagePreviews(updatedPreviews);
+
     setError("");
+
+    // Reset input to allow same file selection again
+    e.target.value = "";
   };
 
   const removeImage = (index) => {
@@ -160,7 +210,7 @@ export default function AddProduct() {
       console.log("Submitting product with images...");
 
       // Send single request with all data
-      const response = await fetch("http://localhost:5000/api/products", {
+      const response = await fetch(`${API_BASE_URL}/api/products`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -277,6 +327,7 @@ export default function AddProduct() {
               value={formData.item_description}
               onChange={handleChange}
               rows="4"
+              required
               className="w-full px-4 capitalize py-3 bg-black/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-[#955E30] font-body"
               placeholder="Enter Items description"
             />
@@ -370,7 +421,7 @@ export default function AddProduct() {
                 </option>
                 <option
                   className="bg-transparent font-body text-black"
-                  value='new arrival'
+                  value="new arrival"
                 >
                   New Arrival
                 </option>
@@ -393,7 +444,11 @@ export default function AddProduct() {
               >
                 <option value="">Select Category</option>
                 {categories.map((cat) => (
-                  <option key={cat.category_id} className="bg-transparent font-body text-black" value={cat.category_id}>
+                  <option
+                    key={cat.category_id}
+                    className="bg-transparent font-body text-black"
+                    value={cat.category_id}
+                  >
                     {cat.category_name}
                   </option>
                 ))}

@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import UseFetchData from "../../Hooks/UseFetchData";
 import ProductCard from "./ProductCard";
 import { motion, AnimatePresence, useInView } from "framer-motion";
-import { Search, X } from "lucide-react";
+import { Search, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 const categories = [
@@ -28,8 +28,257 @@ const categories = [
   },
 ];
 
+// 🎨 Banner Data
+const banners = [
+  {
+    id: 1,
+    title: "New Collection 2026",
+    subtitle: "Exclusive Designer Sarees",
+    description: "Up to 50% OFF",
+    image: "https://framerusercontent.com/images/Q0ih86EcQhWKKGCX5VU05ql9c.jpg",
+    bgGradient: "from-purple-600/30 via-pink-600/30 to-red-600/30",
+  },
+  {
+    id: 2,
+    title: "Traditional Elegance",
+    subtitle: "Premium Half Sarees",
+    description: "Shop Now & Save Big",
+    image: "https://framerusercontent.com/images/kw9cJ8cAr3HMqNCZMrzald2zdH4.jpg",
+    bgGradient: "from-blue-600/30 via-cyan-600/30 to-teal-600/30",
+  },
+  {
+    id: 3,
+    title: "Festive Special",
+    subtitle: "Designer Chudidhars",
+    description: "Limited Time Offer",
+    image: "https://framerusercontent.com/images/Wa9VEYx9s6XaxR5umPBFrfvfyY.jpg",
+    bgGradient: "from-orange-600/30 via-amber-600/30 to-yellow-600/30",
+  },
+  {
+    id: 4,
+    title: "Men's Collection",
+    subtitle: "Classic Dhosti's",
+    description: "Best Deals Inside",
+    image: "https://framerusercontent.com/images/xWh57g9CWUCZz6Uf9bKYhaOKmg.jpg",
+    bgGradient: "from-green-600/30 via-emerald-600/30 to-lime-600/30",
+  },
+];
+
+// 🎯 Banner Carousel Component
+const BannerCarousel = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [direction, setDirection] = useState(1);
+
+  useEffect(() => {
+    if (isPaused) return;
+
+    const interval = setInterval(() => {
+      setDirection(1);
+      setCurrentIndex((prev) => (prev + 1) % banners.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [isPaused]);
+
+  const goToSlide = (index) => {
+    setDirection(index > currentIndex ? 1 : -1);
+    setCurrentIndex(index);
+  };
+
+  const goToPrevious = () => {
+    setDirection(-1);
+    setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length);
+  };
+
+  const goToNext = () => {
+    setDirection(1);
+    setCurrentIndex((prev) => (prev + 1) % banners.length);
+  };
+
+  const slideVariants = {
+    enter: (direction) => ({
+      x: direction > 0 ? 1000 : -1000,
+      opacity: 0,
+      scale: 0.8,
+    }),
+    center: {
+      zIndex: 1,
+      x: 0,
+      opacity: 1,
+      scale: 1,
+    },
+    exit: (direction) => ({
+      zIndex: 0,
+      x: direction < 0 ? 1000 : -1000,
+      opacity: 0,
+      scale: 0.8,
+    }),
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+      className="w-[90%] mx-auto relative overflow-hidden rounded-2xl h-[200px] md:h-[280px] lg:h-[350px] group"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      {/* Banner Slides */}
+      <AnimatePresence initial={false} custom={direction}>
+        <motion.div
+          key={currentIndex}
+          custom={direction}
+          variants={slideVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={{
+            x: { type: "spring", stiffness: 300, damping: 30 },
+            opacity: { duration: 0.4 },
+            scale: { duration: 0.4 },
+          }}
+          className="absolute w-full h-full"
+        >
+          {/* Background Image with Overlay */}
+          <div className="absolute inset-0">
+            <img
+              src={banners[currentIndex].image}
+              alt={banners[currentIndex].title}
+              className="w-full h-full object-cover"
+            />
+            {/* Gradient Overlay */}
+            <div
+              className={`absolute inset-0 bg-gradient-to-r ${banners[currentIndex].bgGradient} backdrop-blur-[2px]`}
+            />
+            <div className="absolute inset-0 bg-black/40" />
+          </div>
+
+          {/* Content */}
+          <div className="relative h-full flex items-center px-6 md:px-12 lg:px-16">
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+              className="max-w-2xl"
+            >
+              {/* Subtitle */}
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                className="text-white/90 text-[10px] md:text-sm lg:text-base font-['Poppins'] tracking-wider mb-2"
+              >
+                {banners[currentIndex].subtitle}
+              </motion.p>
+
+              {/* Title */}
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.5 }}
+                className="text-white text-2xl md:text-4xl lg:text-6xl font-bold font-heading mb-2 md:mb-4 drop-shadow-lg"
+              >
+                {banners[currentIndex].title}
+              </motion.h1>
+
+              {/* Description */}
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+                className="text-white text-sm md:text-xl lg:text-2xl font-semibold font-['Poppins'] mb-4 md:mb-6"
+              >
+                {banners[currentIndex].description}
+              </motion.p>
+            </motion.div>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Navigation Arrows */}
+      <motion.button
+        whileHover={{ scale: 1.1, x: -5 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={goToPrevious}
+        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-md hover:bg-white/20 p-2 md:p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 z-10"
+      >
+        <ChevronLeft className="w-4 h-4 md:w-6 md:h-6 text-white" />
+      </motion.button>
+
+      <motion.button
+        whileHover={{ scale: 1.1, x: 5 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={goToNext}
+        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-md hover:bg-white/20 p-2 md:p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 z-10"
+      >
+        <ChevronRight className="w-4 h-4 md:w-6 md:h-6 text-white" />
+      </motion.button>
+
+      {/* Dot Indicators */}
+      <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 flex gap-2 md:gap-3 z-10">
+        {banners.map((_, index) => (
+          <motion.button
+            key={index}
+            onClick={() => goToSlide(index)}
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.9 }}
+            className="relative group"
+          >
+            {/* Outer Ring */}
+            <motion.div
+              initial={false}
+              animate={{
+                scale: currentIndex === index ? 1 : 0,
+                opacity: currentIndex === index ? 1 : 0,
+              }}
+              className="absolute inset-0 rounded-full border-2 border-accet -m-1"
+            />
+            
+            {/* Dot */}
+            <motion.div
+              initial={false}
+              animate={{
+                width: currentIndex === index ? "32px" : "8px",
+                backgroundColor: currentIndex === index ? "#955E30" : "rgba(255,255,255,0.5)",
+              }}
+              transition={{ duration: 0.3 }}
+              className="h-2 rounded-full"
+            />
+
+            {/* Progress Bar for Active Slide */}
+            {currentIndex === index && !isPaused && (
+              <motion.div
+                initial={{ scaleX: 0 }}
+                animate={{ scaleX: 1 }}
+                transition={{ duration: 3, ease: "linear" }}
+                className="absolute top-0 left-0 h-full bg-white rounded-full origin-left"
+              />
+            )}
+          </motion.button>
+        ))}
+      </div>
+
+      {/* Pause Indicator */}
+      <AnimatePresence>
+        {isPaused && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="absolute top-4 right-4 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full z-10"
+          >
+            <p className="text-white text-[10px] md:text-xs font-['Poppins']">Paused</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+};
+
 const Product = () => {
-  const { data,loading } = UseFetchData();
+  const { data, loading } = UseFetchData();
   const [search, setSearch] = useState("");
   const [products, setProducts] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -37,7 +286,12 @@ const Product = () => {
   const dropdownRef = useRef(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
 
-  // 🔄 CHANGED: Filter products locally for search
+  //dynamic title
+  useEffect(() => {
+    document.title = `Shop Now - SLNS Sarees`;
+  }, []);
+
+  // 🔄 Filter products locally for search
   const displayProducts = products.filter((item) => {
     const matchCategory = selectedCategory
       ? item.category_name === selectedCategory
@@ -51,7 +305,6 @@ const Product = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     setProducts(data);
-    // Search is handled by displayProducts filter
   };
 
   const clearSearch = () => {
@@ -157,7 +410,6 @@ const Product = () => {
     }),
   };
 
-  // 🎯 Product Card Variants (Row-based delay calculation)
   const getColumnDelay = (index) => {
     const isMobile = window.innerWidth < 768;
     const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
@@ -207,6 +459,11 @@ const Product = () => {
       variants={pageVariants}
       className="w-full mx-auto py-6 mt-16 md:mt-28"
     >
+      {/* 🎯 BANNER CAROUSEL - NEW */}
+      <div className="mb-6">
+        <BannerCarousel />
+      </div>
+
       {/* Breadcrumb & Search Bar */}
       <div className="w-[90%] flex justify-between items-center mx-auto mt-4 py-3">
         <motion.div
@@ -293,7 +550,12 @@ const Product = () => {
                     : "drop-shadow-[0px_0px_0px] drop-shadow-accet"
                 }`}
               >
-                <img src={item.img} alt="category" loading="lazy" className="object-cover" />
+                <img
+                  src={item.img}
+                  alt="category"
+                  loading="lazy"
+                  className="object-cover"
+                />
               </div>
               <h1 className="text-[8px] md:text-[10px] text-center font-['Poppins']">
                 {item.name}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
@@ -30,6 +30,10 @@ const policy = [
 ];
 
 const Privacy = () => {
+  //dynamic title
+  useEffect(() => {
+    document.title = `Privacy Policy - SLNS Sarees`;
+  }, []);
   return (
     <>
       <motion.div

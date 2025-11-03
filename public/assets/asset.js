@@ -25,12 +25,16 @@ import signup from "./signup.mp4"
 import bgvideo from "./bgvideo.mp4"
 import forpassbg from "./forpassbg.mp4"
 import banner from "./banner.jpg"
+import banner2 from "./banner2.png"
+import banner3 from "./banner3.png"
 import butterflyAnim from "./butterfly.json"
 
 export const assets={
     logo,
     owner,
     banner,
+    banner2,
+    banner3,
     butterflyAnim,
     visa,
     mastercard,

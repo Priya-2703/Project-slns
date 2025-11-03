@@ -22,6 +22,9 @@ export default function ManageOrders() {
     totalRevenue: 0,
   });
 
+  // Base URL for your API - UPDATE THIS TO YOUR BACKEND URL
+  const API_BASE_URL = "http://localhost:5000";
+
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -29,16 +32,13 @@ export default function ManageOrders() {
   const fetchOrders = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(
-        "http://localhost:5000/api/admin/orders",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const response = await fetch(`${API_BASE_URL}/api/admin/orders`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const data = await response.json();
       if (response.ok) {
-        setOrders(data);
-        calculateStats(data);
+        setOrders(data.orders);
+        calculateStats(data.orders);
       }
     } catch (err) {
       console.error("Failed to fetch orders:", err);
@@ -46,17 +46,38 @@ export default function ManageOrders() {
       setLoading(false);
     }
   };
+  console.log("a useeffect", orders.status);
 
   const calculateStats = (orderList) => {
     const stats = {
       total: orderList.length,
-      pending: orderList.filter((o) => o.status === "pending").length,
-      processing: orderList.filter((o) => o.status === "processing").length,
-      shipped: orderList.filter((o) => o.status === "shipped").length,
-      delivered: orderList.filter((o) => o.status === "delivered").length,
-      cancelled: orderList.filter((o) => o.status === "cancelled").length,
+      pending: orderList.filter(
+        (o) =>
+          o.status?.toLowerCase() === "pending" ||
+          o.order_status?.toLowerCase() === "pending"
+      ).length,
+      processing: orderList.filter(
+        (o) =>
+          o.status?.toLowerCase() === "processing" ||
+          o.order_status?.toLowerCase() === "processing"
+      ).length,
+      shipped: orderList.filter(
+        (o) =>
+          o.status?.toLowerCase() === "shipped" ||
+          o.order_status?.toLowerCase() === "shipped"
+      ).length,
+      delivered: orderList.filter(
+        (o) =>
+          o.status?.toLowerCase() === "delivered" ||
+          o.order_status?.toLowerCase() === "delivered"
+      ).length,
+      cancelled: orderList.filter(
+        (o) =>
+          o.status?.toLowerCase() === "cancelled" ||
+          o.order_status?.toLowerCase() === "cancelled"
+      ).length,
       totalRevenue: orderList
-        .filter((o) => o.status !== "cancelled")
+        .filter((o) => (o.status || o.order_status) !== "cancelled")
         .reduce((sum, o) => sum + parseFloat(o.total_amount || 0), 0),
     };
     setStats(stats);
@@ -66,7 +87,7 @@ export default function ManageOrders() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `http://localhost:5000/api/admin/orders/${orderId}/status`,
+        `${API_BASE_URL}/api/admin/orders/${orderId}/status`,
         {
           method: "PUT",
           headers: {
@@ -313,12 +334,27 @@ export default function ManageOrders() {
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="w-full bg-black/10 border border-white/20 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[#955E30] transition-colors font-body"
               >
-                <option className="text-black bg-transparent" value="all">All Status</option>
-                <option className="text-black bg-transparent" value="pending">Pending</option>
-                <option className="text-black bg-transparent" value="processing">Processing</option>
-                <option className="text-black bg-transparent" value="shipped">Shipped</option>
-                <option className="text-black bg-transparent" value="delivered">Delivered</option>
-                <option className="text-black bg-transparent" value="cancelled">Cancelled</option>
+                <option className="text-black bg-transparent" value="all">
+                  All Status
+                </option>
+                <option className="text-black bg-transparent" value="pending">
+                  Pending
+                </option>
+                <option
+                  className="text-black bg-transparent"
+                  value="processing"
+                >
+                  Processing
+                </option>
+                <option className="text-black bg-transparent" value="shipped">
+                  Shipped
+                </option>
+                <option className="text-black bg-transparent" value="delivered">
+                  Delivered
+                </option>
+                <option className="text-black bg-transparent" value="cancelled">
+                  Cancelled
+                </option>
               </select>
             </div>
 
@@ -332,10 +368,18 @@ export default function ManageOrders() {
                 onChange={(e) => setPaymentFilter(e.target.value)}
                 className="w-full bg-black/10 border border-white/20 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[#955E30] transition-colors font-body"
               >
-                <option className="text-black bg-transparent" value="all">All Payments</option>
-                <option className="text-black bg-transparent" value="paid">Paid</option>
-                <option className="text-black bg-transparent" value="pending">Pending</option>
-                <option className="text-black bg-transparent" value="failed">Failed</option>
+                <option className="text-black bg-transparent" value="all">
+                  All Payments
+                </option>
+                <option className="text-black bg-transparent" value="paid">
+                  Paid
+                </option>
+                <option className="text-black bg-transparent" value="pending">
+                  Pending
+                </option>
+                <option className="text-black bg-transparent" value="failed">
+                  Failed
+                </option>
               </select>
             </div>
 
@@ -349,10 +393,18 @@ export default function ManageOrders() {
                 onChange={(e) => setDateFilter(e.target.value)}
                 className="w-full bg-black/10 border border-white/20 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[#955E30] transition-colors font-body"
               >
-                <option className="text-black bg-transparent" value="all">All Time</option>
-                <option className="text-black bg-transparent" value="today">Today</option>
-                <option className="text-black bg-transparent" value="week">Last 7 Days</option>
-                <option className="text-black bg-transparent" value="month">Last 30 Days</option>
+                <option className="text-black bg-transparent" value="all">
+                  All Time
+                </option>
+                <option className="text-black bg-transparent" value="today">
+                  Today
+                </option>
+                <option className="text-black bg-transparent" value="week">
+                  Last 7 Days
+                </option>
+                <option className="text-black bg-transparent" value="month">
+                  Last 30 Days
+                </option>
               </select>
             </div>
           </div>
@@ -407,7 +459,7 @@ export default function ManageOrders() {
                   {/* Customer */}
                   <div className="col-span-2">
                     <p className="text-white font-body text-sm">
-                      {order.customer_name || "N/A"}
+                      {order.customer_name || order.customer_id}
                     </p>
                     <p className="text-white/40 text-xs truncate">
                       {order.customer_email || "N/A"}
@@ -417,7 +469,7 @@ export default function ManageOrders() {
                   {/* Date */}
                   <div className="col-span-2">
                     <p className="text-white/80 font-body text-sm">
-                      {formatDate(order.created_at)}
+                      {formatDate(order.order_date)}
                     </p>
                   </div>
 

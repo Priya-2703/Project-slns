@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import "./ContactForm.css";
 
@@ -10,6 +10,11 @@ const ContactForm = () => {
     subject: "",
     message: "",
   });
+
+  //dynamic title
+  useEffect(() => {
+  document.title = `Contact - SLNS Sarees`;
+}, []);
 
   // ⭐ NEW: State for loading and feedback
   const [loading, setLoading] = useState(false);
@@ -409,7 +414,7 @@ const ContactForm = () => {
                 Sending...
               </motion.span>
             ) : (
-              "Subscribe"
+              "Submit"
             )}
           </motion.button>
         </motion.form>
