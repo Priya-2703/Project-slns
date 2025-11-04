@@ -23,7 +23,6 @@ const ProductCard = ({ product }) => {
     }
   };
 
-  console.log(product.image_url)
 
   // bubbles
   const bubbles = Array.from({ length: 6 });
