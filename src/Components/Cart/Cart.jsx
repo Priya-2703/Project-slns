@@ -4,6 +4,7 @@ import { FaTrashCan } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 import { CartContext } from "../../Context/UseCartContext";
 import { motion } from "framer-motion";
+import { getImageUrl } from "../../utils/imageHelper";
 
 function Cart() {
   const {
@@ -13,6 +14,8 @@ function Cart() {
     removeFromCart,
     updateCartItemQuantity,
   } = useContext(CartContext);
+
+  console.log(cart)
 
 
   useEffect(() => {
@@ -393,10 +396,10 @@ function Cart() {
                           className="flex items-center gap-4"
                         >
                           <motion.img
-                            src={it.image_url}
+                            src={getImageUrl(it.primary_image)}
                             alt={it.product_name}
                             loading="lazy"
-                            className="h-14 w-14 rounded-lg object-cover ring-1 ring-neutral-800"
+                            className="max-w-14 max-h-20 rounded-lg object-cover ring-1 ring-neutral-800"
                             whileHover={{
                               scale: 1.15,
                               rotate: 5,
@@ -416,7 +419,7 @@ function Cart() {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: index * 0.1 + 0.2 }}
                           >
-                            <p className="font-bold font-body text-white leading-5 line-clamp-2">
+                            <p className="font-bold font-body text-white leading-5 line-clamp-1">
                               {it.product_name}
                             </p>
                             <p className="text-[12px] uppercase font-body text-neutral-400">

@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ToastContext } from "../../Context/UseToastContext";
+import { X, Plus, Trash2 } from "lucide-react";
 
 export default function EditProduct() {
   const { id } = useParams();
@@ -8,7 +9,6 @@ export default function EditProduct() {
   const { showToast } = useContext(ToastContext);
 
   const BACKEND_URL = import.meta.env.VITE_API_URL;
-
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -19,6 +19,11 @@ export default function EditProduct() {
   const [primaryImageId, setPrimaryImageId] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  const [selectedCategoryName, setSelectedCategoryName] = useState("");
+  const [customSubCategories, setCustomSubCategories] = useState([]);
+  const [showSubCategoryModal, setShowSubCategoryModal] = useState(false);
+  const [newSubCategory, setNewSubCategory] = useState("");
 
   const [formData, setFormData] = useState({
     product_name: "",
@@ -32,12 +37,41 @@ export default function EditProduct() {
     category_id: "",
     stock_quantity: "",
     video_url: "",
+    sub_category: "",
+    sizes: [],
   });
+
+  const defaultSareeSubCategories = [
+    "Kanchipuram Saree",
+    "Mysore Silk Saree",
+    "Banarasi Saree",
+    "Pochampally Saree",
+    "Cotton Saree",
+    "Silk Saree",
+    "Pattu Saree",
+    "Designer Saree",
+  ];
+
+  const halfSareeSizeOptions = ["Stitched", "Unstitched"];
+  const normalSizeOptions = ["S", "M", "L", "XL", "XXL", "XXXL"];
 
   useEffect(() => {
     fetchProduct();
     fetchCategories();
+    fetchCustomSubCategories();
   }, [id]);
+
+  // 🎯 FIX: Update selectedCategoryName when categories or category_id changes
+  useEffect(() => {
+    if (formData.category_id && categories.length > 0) {
+      const category = categories.find(
+        (cat) => cat.category_id === parseInt(formData.category_id)
+      );
+      if (category) {
+        setSelectedCategoryName(category.category_name);
+      }
+    }
+  }, [formData.category_id, categories]);
 
   const fetchProduct = async () => {
     try {
@@ -54,6 +88,20 @@ export default function EditProduct() {
       const data = await response.json();
       const product = data.product || data;
 
+      // 🎯 Parse sizes from JSON if exists
+      let parsedSizes = [];
+      if (product.sizes) {
+        try {
+          parsedSizes =
+            typeof product.sizes === "string"
+              ? JSON.parse(product.sizes)
+              : product.sizes;
+        } catch (e) {
+          console.error("Error parsing sizes:", e);
+          parsedSizes = [];
+        }
+      }
+
       setFormData({
         product_name: product.product_name || "",
         description: product.description || "",
@@ -66,9 +114,10 @@ export default function EditProduct() {
         category_id: product.category_id || "",
         stock_quantity: product.stock_quantity || "",
         video_url: product.video_url || "",
+        sub_category: product.sub_category || "",
+        sizes: parsedSizes,
       });
 
-      // Fetch product images
       if (product.product_id) {
         fetchProductImages(product.product_id);
       }
@@ -124,13 +173,135 @@ export default function EditProduct() {
     }
   };
 
+  const fetchCustomSubCategories = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${BACKEND_URL}/api/subcategories`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "ngrok-skip-browser-warning": "69420",
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setCustomSubCategories(data.subcategories || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch sub-categories:", err);
+    }
+  };
+
+  const handleAddSubCategory = async () => {
+    if (!newSubCategory.trim()) {
+      setError("Please enter a sub-category name");
+      return;
+    }
+
+    const allSubCategories = [
+      ...defaultSareeSubCategories,
+      ...customSubCategories,
+    ];
+    if (
+      allSubCategories.some(
+        (sub) => sub.toLowerCase() === newSubCategory.toLowerCase()
+      )
+    ) {
+      setError("This sub-category already exists");
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${BACKEND_URL}/api/subcategories`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name: newSubCategory.trim() }),
+      });
+
+      if (response.ok) {
+        setCustomSubCategories([...customSubCategories, newSubCategory.trim()]);
+        setNewSubCategory("");
+        setSuccess("Sub-category added successfully!");
+        setTimeout(() => setSuccess(""), 3000);
+      } else {
+        const data = await response.json();
+        setError(data.error || "Failed to add sub-category");
+      }
+    } catch (err) {
+      console.error("Error adding sub-category:", err);
+      setError("Failed to add sub-category");
+    }
+  };
+
+  const handleDeleteSubCategory = async (subCategoryName) => {
+    if (
+      !window.confirm(`Are you sure you want to delete "${subCategoryName}"?`)
+    ) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `${BACKEND_URL}/api/subcategories/${encodeURIComponent(
+          subCategoryName
+        )}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        setCustomSubCategories(
+          customSubCategories.filter((sub) => sub !== subCategoryName)
+        );
+        setSuccess("Sub-category deleted successfully!");
+        setTimeout(() => setSuccess(""), 3000);
+
+        if (formData.sub_category === subCategoryName) {
+          setFormData((prev) => ({ ...prev, sub_category: "" }));
+        }
+      } else {
+        const data = await response.json();
+        setError(data.error || "Failed to delete sub-category");
+      }
+    } catch (err) {
+      console.error("Error deleting sub-category:", err);
+      setError("Failed to delete sub-category");
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
     setFormData((prev) => {
       const updated = { ...prev, [name]: value };
 
-      // Auto-calculate price when actual_price or discount changes
+      // 🎯 If category changes
+      if (name === "category_id") {
+        const selectedCategory = categories.find(
+          (cat) => cat.category_id === parseInt(value)
+        );
+        const categoryName = selectedCategory
+          ? selectedCategory.category_name
+          : "";
+        setSelectedCategoryName(categoryName);
+
+        // Reset dependent fields only when user changes category (not on initial load)
+        if (prev.category_id !== "") {
+          updated.sub_category = "";
+          updated.sizes = [];
+        }
+      }
+
+      // Auto-calculate price
       if (name === "actual_price" || name === "discount") {
         const actualPrice =
           parseFloat(name === "actual_price" ? value : updated.actual_price) ||
@@ -138,7 +309,6 @@ export default function EditProduct() {
         const discount =
           parseFloat(name === "discount" ? value : updated.discount) || 0;
 
-        // Validate discount percentage (0-100)
         if (discount > 100) {
           setError("Discount cannot exceed 100%");
           updated.discount = "100";
@@ -148,7 +318,6 @@ export default function EditProduct() {
           updated.discount = "0";
         }
 
-        // Calculate price = actual_price - (actual_price * discount / 100)
         if (actualPrice > 0 && discount >= 0) {
           const discountAmount = actualPrice * (discount / 100);
           const finalPrice = actualPrice - discountAmount;
@@ -162,6 +331,36 @@ export default function EditProduct() {
     });
   };
 
+  const handleSizeChange = (size) => {
+    setFormData((prev) => {
+      const currentSizes = [...prev.sizes];
+
+      if (currentSizes.includes(size)) {
+        return {
+          ...prev,
+          sizes: currentSizes.filter((s) => s !== size),
+        };
+      } else {
+        return {
+          ...prev,
+          sizes: [...currentSizes, size],
+        };
+      }
+    });
+  };
+
+  const handleSelectAllSizes = () => {
+    const allSizes = isHalfSareeCategory
+      ? halfSareeSizeOptions
+      : normalSizeOptions;
+
+    if (formData.sizes.length === allSizes.length) {
+      setFormData((prev) => ({ ...prev, sizes: [] }));
+    } else {
+      setFormData((prev) => ({ ...prev, sizes: allSizes }));
+    }
+  };
+
   const handleNewImageSelect = (e) => {
     const files = Array.from(e.target.files);
     const totalImages = existingImages.length + newImages.length + files.length;
@@ -173,7 +372,6 @@ export default function EditProduct() {
 
     setNewImages((prev) => [...prev, ...files]);
 
-    // Create previews
     const previews = files.map((file) => URL.createObjectURL(file));
     setNewImagePreviews((prev) => [...prev, ...previews]);
     setError("");
@@ -253,22 +451,22 @@ export default function EditProduct() {
         throw new Error("Authentication required. Please login again.");
       }
 
-      // ✅ Convert empty strings to null for optional fields
       const formDataToSend = {
         product_name: formData.product_name.trim(),
-        description: formData.description?.trim() || null, // ← Changed to null
-        item_description: formData.item_description?.trim() || null, // ← Changed to null
+        description: formData.description?.trim() || null,
+        item_description: formData.item_description?.trim() || null,
         gender: formData.gender,
-        special_case: formData.special_case || null, // ← Changed to null
+        special_case: formData.special_case || null,
         price: parseFloat(formData.price),
         actual_price: parseFloat(formData.actual_price),
         discount: parseFloat(formData.discount),
         category_id: parseInt(formData.category_id),
         stock_quantity: parseInt(formData.stock_quantity),
-        video_url: formData.video_url?.trim() || null, // ← Changed to null
+        video_url: formData.video_url?.trim() || null,
+        sub_category: formData.sub_category || null,
+        sizes: JSON.stringify(formData.sizes),
       };
 
-      // ✅ Validate numbers
       if (isNaN(formDataToSend.price) || formDataToSend.price < 0) {
         throw new Error("Invalid price value");
       }
@@ -295,8 +493,6 @@ export default function EditProduct() {
         throw new Error("Invalid stock quantity");
       }
 
-      console.log("📤 Sending data:", formDataToSend);
-
       const response = await fetch(`${BACKEND_URL}/api/products/${id}`, {
         method: "PUT",
         headers: {
@@ -306,8 +502,6 @@ export default function EditProduct() {
         },
         body: JSON.stringify(formDataToSend),
       });
-
-      console.log("📥 Response status:", response.status);
 
       if (!response.ok) {
         const responseData = await response.json().catch(() => ({}));
@@ -331,12 +525,7 @@ export default function EditProduct() {
       }
 
       const result = await response.json();
-      console.log("✅ Product updated successfully:", result);
-
-      // Upload new images if any
       if (newImages.length > 0) {
-        console.log("📤 Uploading", newImages.length, "new images...");
-
         const imageFormData = new FormData();
         newImages.forEach((file) => {
           imageFormData.append("images", file);
@@ -369,6 +558,23 @@ export default function EditProduct() {
       showToast(err.message || "Failed to update product", "error");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const getAllSubCategories = () => {
+    return [...defaultSareeSubCategories, ...customSubCategories];
+  };
+
+  const isSareeCategory = selectedCategoryName === "Sarees";
+  const isHalfSareeCategory = selectedCategoryName === "Half Sarees";
+  const showSubCategory = isSareeCategory;
+  const showSizes = !isSareeCategory && selectedCategoryName !== "";
+
+  const getSizeOptions = () => {
+    if (isHalfSareeCategory) {
+      return halfSareeSizeOptions;
+    } else {
+      return normalSizeOptions;
     }
   };
 
@@ -409,19 +615,134 @@ export default function EditProduct() {
           </Link>
         </div>
 
+        {/* 🎯 SUB-CATEGORY MANAGEMENT MODAL */}
+        {showSubCategoryModal && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+            <div className="bg-gradient-to-br from-black via-gray-900 to-black border border-white/20 rounded-2xl p-6 md:p-8 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-white font1">
+                  Manage Sub-Categories
+                </h2>
+                <button
+                  onClick={() => setShowSubCategoryModal(false)}
+                  className="text-white/60 hover:text-white transition-colors"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-white font-body mb-2">
+                  Add New Sub-Category
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newSubCategory}
+                    onChange={(e) => setNewSubCategory(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddSubCategory();
+                      }
+                    }}
+                    className="flex-1 px-4 py-3 bg-black/30 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-[#955E30] font-body"
+                    placeholder="e.g., Kanjeevaram Saree"
+                  />
+                  <button
+                    onClick={handleAddSubCategory}
+                    className="bg-[#955E30] hover:bg-[#955E30]/80 text-white px-6 py-3 rounded-lg font-body transition-colors flex items-center gap-2"
+                  >
+                    <Plus size={20} />
+                    Add
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-white font-body mb-3 flex items-center gap-2">
+                  <span className="bg-white/10 px-3 py-1 rounded-full text-sm">
+                    {getAllSubCategories().length}
+                  </span>
+                  Sub-Categories
+                </h3>
+
+                <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                  <div className="mb-4">
+                    <p className="text-white/50 text-xs font-body mb-2 uppercase tracking-wide">
+                      Default (Cannot Delete)
+                    </p>
+                    {defaultSareeSubCategories.map((subCat) => (
+                      <div
+                        key={subCat}
+                        className="flex items-center justify-between bg-black/30 border border-white/10 rounded-lg p-3 mb-2"
+                      >
+                        <span className="text-white font-body capitalize">
+                          {subCat}
+                        </span>
+                        <span className="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded font-body">
+                          Default
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {customSubCategories.length > 0 && (
+                    <div>
+                      <p className="text-white/50 text-xs font-body mb-2 uppercase tracking-wide">
+                        Custom (Can Delete)
+                      </p>
+                      {customSubCategories.map((subCat) => (
+                        <div
+                          key={subCat}
+                          className="flex items-center justify-between bg-black/30 border border-white/10 rounded-lg p-3 mb-2 group hover:border-white/30 transition-all"
+                        >
+                          <span className="text-white font-body capitalize">
+                            {subCat}
+                          </span>
+                          <button
+                            onClick={() => handleDeleteSubCategory(subCat)}
+                            className="text-red-400 hover:text-red-300 transition-colors opacity-0 group-hover:opacity-100 flex items-center gap-1"
+                          >
+                            <Trash2 size={16} />
+                            Delete
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {customSubCategories.length === 0 && (
+                    <div className="text-center py-8 text-white/40 font-body">
+                      No custom sub-categories yet. Add one above!
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <button
+                  onClick={() => setShowSubCategoryModal(false)}
+                  className="w-full bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-lg font-body transition-colors border border-white/20"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Form */}
         <form
           onSubmit={handleSubmit}
           className="bg-white/5 border border-white/10 rounded-xl p-8 backdrop-blur-sm"
         >
-          {/* Success Message */}
+          {/* Success/Error Messages */}
           {success && (
             <div className="mb-6 p-4 bg-green-500/20 border border-green-500 rounded-lg text-green-400 font-body">
               {success}
             </div>
           )}
-
-          {/* Error Message */}
           {error && (
             <div className="mb-6 p-4 bg-red-500/20 border border-red-500 rounded-lg text-red-400 font-body">
               {error}
@@ -637,6 +958,163 @@ export default function EditProduct() {
             </div>
           </div>
 
+          {/* 🎯 Sub Category (ONLY FOR SAREES) */}
+          {showSubCategory && (
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-white font-body">
+                  Sub Category *
+                  <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded ml-2">
+                    Sarees Only
+                  </span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowSubCategoryModal(true)}
+                  className="text-[#955E30] hover:text-[#955E30]/80 text-sm font-body flex items-center gap-1"
+                >
+                  <Plus size={16} />
+                  Manage Sub-Categories
+                </button>
+              </div>
+              <select
+                name="sub_category"
+                value={formData.sub_category}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 bg-black/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-[#955E30] font-body"
+              >
+                <option
+                  className="bg-transparent font-body text-black"
+                  value=""
+                >
+                  Select Saree Type
+                </option>
+                <optgroup label="Default Sub-Categories">
+                  {defaultSareeSubCategories.map((subCat) => (
+                    <option
+                      key={subCat}
+                      className="bg-transparent font-body text-black capitalize"
+                      value={subCat}
+                    >
+                      {subCat}
+                    </option>
+                  ))}
+                </optgroup>
+                {customSubCategories.length > 0 && (
+                  <optgroup label="Custom Sub-Categories">
+                    {customSubCategories.map((subCat) => (
+                      <option
+                        key={subCat}
+                        className="bg-transparent font-body text-black capitalize"
+                        value={subCat}
+                      >
+                        {subCat} ⭐
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+              </select>
+              <p className="text-white/50 text-xs font-body mt-1">
+                Select type of Saree or add custom sub-category
+              </p>
+            </div>
+          )}
+
+          {/* 🎯 MULTIPLE SIZE SELECTION */}
+          {showSizes && (
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <label className="block text-white font-body">
+                  {isHalfSareeCategory
+                    ? "Available Types *"
+                    : "Available Sizes *"}
+                  <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded ml-2">
+                    Multiple Selection
+                  </span>
+                </label>
+                <button
+                  type="button"
+                  onClick={handleSelectAllSizes}
+                  className="text-[#955E30] hover:text-[#955E30]/80 text-sm font-body underline"
+                >
+                  {formData.sizes.length === getSizeOptions().length
+                    ? "Deselect All"
+                    : "Select All"}
+                </button>
+              </div>
+
+              <div className="bg-black/10 border border-white/20 rounded-lg p-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                  {getSizeOptions().map((size) => (
+                    <label
+                      key={size}
+                      className={`relative flex items-center justify-center p-3 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
+                        formData.sizes.includes(size)
+                          ? "border-[#955E30] bg-[#955E30]/20"
+                          : "border-white/20 bg-black/20 hover:border-white/40"
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.sizes.includes(size)}
+                        onChange={() => handleSizeChange(size)}
+                        className="sr-only"
+                      />
+                      <span className="text-white font-body text-sm font-semibold">
+                        {size}
+                      </span>
+                      {formData.sizes.includes(size) && (
+                        <svg
+                          className="absolute top-1 right-1 w-4 h-4 text-[#955E30]"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      )}
+                    </label>
+                  ))}
+                </div>
+
+                {formData.sizes.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-white/10">
+                    <p className="text-white/60 text-xs font-body mb-2">
+                      Selected ({formData.sizes.length}):
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.sizes.map((size) => (
+                        <span
+                          key={size}
+                          className="bg-[#955E30]/30 text-white px-3 py-1 rounded-full text-xs font-body flex items-center gap-2"
+                        >
+                          {size}
+                          <button
+                            type="button"
+                            onClick={() => handleSizeChange(size)}
+                            className="hover:text-red-400 transition-colors"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <p className="text-white/50 text-xs font-body mt-3">
+                  {isHalfSareeCategory
+                    ? "Select one or both types (Stitched and/or Unstitched)"
+                    : "Select all available sizes for this product"}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Stock and Video Row */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
@@ -702,14 +1180,12 @@ export default function EditProduct() {
                         }}
                       />
 
-                      {/* Primary Badge */}
                       {primaryImageId === image.image_id && (
                         <div className="absolute top-2 left-2 bg-[#955E30] text-white text-xs px-2 py-1 rounded font-body">
                           Primary
                         </div>
                       )}
 
-                      {/* Actions */}
                       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
                         {primaryImageId !== image.image_id && (
                           <button

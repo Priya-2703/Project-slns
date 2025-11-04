@@ -307,11 +307,6 @@ const Navbar = () => {
       >
         <div className="flex flex-col  font-body">
           <div className="flex justify-end items-center">
-            {/* <div>
-              <h1 className="font2-medium text-[12px] md:text-[16px] tracking-wide uppercase text-white">
-                {user?.role === 'admin' ? 'Admin Menu' : 'Menu'}
-              </h1>
-            </div> */}
             <button
               onClick={() => setMenuOpen(false)}
               aria-label="Close menu"
@@ -322,13 +317,6 @@ const Navbar = () => {
           </div>
 
           <div className="w-full flex flex-col text-[12px] md:text-[16px] justify-center gap-8 md:gap-10 mb-4">
-            {/* <Link to={"/"}>
-              <p className=" tracking-wide uppercase text-white">Home</p>
-            </Link>
-            <Link to={"/about"}>
-              <p className="tracking-wide uppercase text-white">About Us</p>
-            </Link> */}
-
             {/* ⭐ NEW: Conditional menu based on role */}
             {user?.role === "admin" ? (
               // Admin Menu
@@ -377,69 +365,6 @@ const Navbar = () => {
                 </button>{" "}
               </>
             )}
-
-            {/* Product + Dropdown  mb-[-15px]*/}
-            {/* <div className="w-full">
-              <Link to={"/product"}>
-                <button
-                  type="button"
-                  // onClick={() => setProductOpen((o) => !o)}
-                  className="w-full flex justify-between items-center tracking-wide uppercase text-white cursor-pointer select-none"
-                  // aria-expanded={productOpen}
-                  // aria-controls="product-menu"
-                >
-                  Product
-                </button>
-              </Link> */}
-
-            {/* <div
-                                id="product-menu"
-                                className={`pl-4 mt-3 overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
-                                  productOpen ? "max-h-60 opacity-100" : "max-h-0 opacity-0"
-                                }`}
-                              >
-                                <ul className="flex flex-col gap-3">
-                                  <li className="border-b-[1px] pb-3 px-2 border-white/20">
-                                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
-                                      Sarees
-                                    </a>
-                                  </li>
-                                  <li className="border-b-[1px] pb-3 px-2 border-white/20">
-                                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
-                                      Half sarees
-                                    </a>
-                                  </li>
-                                  <li className="border-b-[1px] pb-3 px-2 border-white/20">
-                                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
-                                      Chudidhars
-                                    </a>
-                                  </li>
-                                  <li className="border-b-[1px] pb-3 px-2 border-white/20">
-                                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
-                                      Dhotis & Shirts for Mens
-                                    </a>
-                                  </li>
-                                  <li className="border-b-[1px] pb-4 px-2 border-white/20">
-                                    <a className="font2-bold text-[13px] tracking-wide text-white/90 hover:text-white transition-colors cursor-pointer">
-                                      Dhotis & Shirts for Kids
-                                    </a>
-                                  </li>
-                                </ul>
-                              </div> */}
-            {/* </div> */}
-
-            {/* <Link to={"/wishlist"}>
-              <p className=" tracking-wide uppercase text-white">Wishlist</p>
-            </Link>
-            <Link to={"/profile"}>
-              <p className=" tracking-wide uppercase text-white">profile</p>
-            </Link>
-            <Link to={"/faq"}>
-              <p className=" tracking-wide uppercase text-white">FAQ</p>
-            </Link>
-            <Link to={"/contact"}>
-              <p className=" tracking-wide uppercase text-white">Contact</p>
-            </Link> */}
           </div>
         </div>
       </div>
