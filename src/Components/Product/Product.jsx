@@ -4,6 +4,7 @@ import ProductCard from "./ProductCard";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { Search, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { assets } from "../../../public/assets/asset";
 
 const categories = [
   {
@@ -43,7 +44,7 @@ const banners = [
     title: "Traditional Elegance",
     subtitle: "Premium Half Sarees",
     description: "Shop Now & Save Big",
-    image: "https://framerusercontent.com/images/kw9cJ8cAr3HMqNCZMrzald2zdH4.jpg",
+    image: "https://i.pinimg.com/1200x/e9/f4/95/e9f495c0fa12709a31d5350bea2f0b68.jpg",
     bgGradient: "from-blue-600/30 via-cyan-600/30 to-teal-600/30",
   },
   {
@@ -59,7 +60,7 @@ const banners = [
     title: "Men's Collection",
     subtitle: "Classic Dhosti's",
     description: "Best Deals Inside",
-    image: "https://framerusercontent.com/images/xWh57g9CWUCZz6Uf9bKYhaOKmg.jpg",
+    image: assets.dhostiBanner,
     bgGradient: "from-green-600/30 via-emerald-600/30 to-lime-600/30",
   },
 ];

@@ -23,7 +23,7 @@ const BannerCarousel3D = () => {
       title: "Festive Collection 2026",
       subtitle: "Premium Designer Sarees",
       image:
-        "https://framerusercontent.com/images/Q0ih86EcQhWKKGCX5VU05ql9c.jpg",
+        "https://i.pinimg.com/736x/48/c0/b2/48c0b23c689e22115975c3de8414f9bb.jpg",
       gradient: "from-purple-600/40 to-pink-600/40",
     },
     {
@@ -31,7 +31,7 @@ const BannerCarousel3D = () => {
       title: "Traditional Elegance",
       subtitle: "Handwoven Silk Collection",
       image:
-        "https://framerusercontent.com/images/kw9cJ8cAr3HMqNCZMrzald2zdH4.jpg",
+        "https://i.pinimg.com/1200x/9b/8b/31/9b8b3171fe1162ec7625c2de5c952f65.jpg",
       gradient: "from-blue-600/40 to-cyan-600/40",
     },
     {
@@ -39,7 +39,7 @@ const BannerCarousel3D = () => {
       title: "Limited Edition",
       subtitle: "Exclusive Designer Wear",
       image:
-        "https://framerusercontent.com/images/Wa9VEYx9s6XaxR5umPBFrfvfyY.jpg",
+        "https://i.pinimg.com/1200x/0d/ef/2c/0def2c81113e494d166d77e62d8a28b1.jpg",
       gradient: "from-orange-600/40 to-amber-600/40",
     },
   ];
@@ -265,7 +265,6 @@ const BannerCarousel3D = () => {
           </motion.button>
         ))}
       </div>
-
     </motion.div>
   );
 };
@@ -728,6 +727,9 @@ const Landing = () => {
           </motion.div>
         </Suspense>
 
+        {/* 🎯 3D BANNER CAROUSEL - NEW SECTION */}
+        <BannerCarousel3D />
+
         {/* Review*/}
         <Suspense fallback={<LoaderAni />}>
           <motion.div
@@ -739,9 +741,6 @@ const Landing = () => {
             <Review />
           </motion.div>
         </Suspense>
-
-        {/* 🎯 3D BANNER CAROUSEL - NEW SECTION */}
-        <BannerCarousel3D />
       </div>
     </>
   );
