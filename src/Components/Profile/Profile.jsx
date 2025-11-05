@@ -39,6 +39,18 @@ const Profile = () => {
     isDefault: false,
   });
   const [savingAddress, setSavingAddress] = useState(false);
+  const [showEditAddressPopup, setShowEditAddressPopup] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(null);
+  const [editAddressData, setEditAddressData] = useState({
+    area: "",
+    landmark: "",
+    town_city: "",
+    state: "",
+    country: "India",
+    pincode: "",
+    type: "Home",
+    isDefault: false,
+  });
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -226,6 +238,119 @@ const Profile = () => {
       console.error("Error fetching addresses:", error);
       setAddresses([]);
     }
+  };
+
+  // ✅ Handle Edit Address Click
+  const handleEditAddressClick = (address) => {
+    setEditingAddress(address);
+    setEditAddressData({
+      area: address.area || "",
+      landmark: address.landmark || "",
+      town_city: address.town_city || "",
+      state: address.state || "",
+      country: address.country || "India",
+      pincode: address.pincode || "",
+      type: address.type || "Home",
+      isDefault: address.isDefault || false,
+    });
+    setShowEditAddressPopup(true);
+  };
+
+  // ✅ Handle Edit Address Input Change
+  const handleEditAddressInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setEditAddressData({
+      ...editAddressData,
+      [name]: type === "checkbox" ? checked : value,
+    });
+  };
+
+  // ✅ Update Address
+  const handleUpdateAddress = async () => {
+    try {
+      // Validation
+      if (
+        !editAddressData.area ||
+        !editAddressData.town_city ||
+        !editAddressData.state ||
+        !editAddressData.country ||
+        !editAddressData.pincode
+      ) {
+        showToast("Please fill all required fields", "error");
+        return;
+      }
+
+      setSavingAddress(true);
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `${BACKEND_URL}/api/addresses/${
+          editingAddress.id || editingAddress._id
+        }`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(editAddressData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update address");
+      }
+
+      const data = await response.json();
+      console.log("Address updated:", data);
+
+      if (data.success) {
+        // Update the addresses array
+        setAddresses(
+          addresses.map((addr) =>
+            (addr.id || addr._id) === (editingAddress.id || editingAddress._id)
+              ? data.address
+              : addr
+          )
+        );
+        setShowEditAddressPopup(false);
+        setEditingAddress(null);
+        showToast("Address updated successfully!", "success");
+
+        // Reset form
+        setEditAddressData({
+          area: "",
+          landmark: "",
+          town_city: "",
+          state: "",
+          country: "India",
+          pincode: "",
+          type: "Home",
+          isDefault: false,
+        });
+      }
+    } catch (error) {
+      console.error("Error updating address:", error);
+      showToast("Failed to update address. Please try again.", "error");
+    } finally {
+      setSavingAddress(false);
+    }
+  };
+
+  // ✅ Cancel Edit Address
+  const handleCancelEditAddress = () => {
+    setShowEditAddressPopup(false);
+    setEditingAddress(null);
+    setEditAddressData({
+      area: "",
+      landmark: "",
+      town_city: "",
+      state: "",
+      country: "India",
+      pincode: "",
+      type: "Home",
+      isDefault: false,
+    });
   };
 
   // ✅ Update Profile
@@ -784,7 +909,11 @@ const Profile = () => {
                       { id: "profile", icon: User, label: "Profile Info" },
                       { id: "orders", icon: Package, label: "My Orders" },
                       { id: "addresses", icon: MapPin, label: "Addresses" },
-                      { id: "changePassword", icon: Settings, label: "Change Password" },
+                      {
+                        id: "changePassword",
+                        icon: Settings,
+                        label: "Change Password",
+                      },
                     ].map((item, index) => (
                       <motion.button
                         key={item.id}
@@ -1185,13 +1314,7 @@ const Profile = () => {
                                   <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    onClick={() =>
-                                      navigate(
-                                        `/profile/edit-address/${
-                                          addr.id || addr._id
-                                        }`
-                                      )
-                                    }
+                                    onClick={() => handleEditAddressClick(addr)}
                                     className="flex-1 bg-gray-800 hover:bg-gray-700 text-[12px] font-body md:text-[16px] px-4 py-2 rounded-lg transition-all duration-300"
                                   >
                                     Edit
@@ -1237,7 +1360,6 @@ const Profile = () => {
                       <h2 className="text-2xl font-bold mb-6">
                         Change Password
                       </h2>
-                      
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -1246,7 +1368,7 @@ const Profile = () => {
           </div>
         </>
       )}
-
+      {/* add address popup */}
       <AnimatePresence>
         {showAddAddressPopup && (
           <>
@@ -1438,6 +1560,211 @@ const Profile = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleCancelAddAddress}
+                    className="flex-1 bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-700 transition-all duration-300 flex items-center justify-center gap-2 font-body"
+                  >
+                    <X size={20} />
+                    Cancel
+                  </motion.button>
+                </div>
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* edit address popup */}
+      {/* ✅ EDIT ADDRESS POPUP */}
+      <AnimatePresence>
+        {showEditAddressPopup && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
+              onClick={handleCancelEditAddress}
+            />
+
+            <div className="fixed inset-0 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <motion.div
+                variants={popupVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="bg-gradient-to-br from-gray-900 to-black border-2 border-gray-800 rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl my-8"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl md:text-3xl font-bold font-heading">
+                    Edit Address
+                  </h2>
+                  <motion.button
+                    whileHover={{ scale: 1.1, rotate: 90 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={handleCancelEditAddress}
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    <X size={24} />
+                  </motion.button>
+                </div>
+
+                {/* Form */}
+                <div className="space-y-4">
+                  {/* Area */}
+                  <div>
+                    <label className="text-gray-400 text-sm mb-2 block font-body">
+                      Area / Locality *
+                    </label>
+                    <input
+                      type="text"
+                      name="area"
+                      value={editAddressData.area}
+                      onChange={handleEditAddressInputChange}
+                      placeholder="Enter area or locality"
+                      className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                    />
+                  </div>
+
+                  {/* Landmark */}
+                  <div>
+                    <label className="text-gray-400 text-sm mb-2 block font-body">
+                      Landmark (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      name="landmark"
+                      value={editAddressData.landmark}
+                      onChange={handleEditAddressInputChange}
+                      placeholder="Enter nearby landmark"
+                      className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                    />
+                  </div>
+
+                  {/* Town/City & State */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-gray-400 text-sm mb-2 block font-body">
+                        Town / City *
+                      </label>
+                      <input
+                        type="text"
+                        name="town_city"
+                        value={editAddressData.town_city}
+                        onChange={handleEditAddressInputChange}
+                        placeholder="Enter city"
+                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-gray-400 text-sm mb-2 block font-body">
+                        State *
+                      </label>
+                      <input
+                        type="text"
+                        name="state"
+                        value={editAddressData.state}
+                        onChange={handleEditAddressInputChange}
+                        placeholder="Enter state"
+                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Country & Pincode */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-gray-400 text-sm mb-2 block font-body">
+                        Country *
+                      </label>
+                      <input
+                        type="text"
+                        name="country"
+                        value={editAddressData.country}
+                        onChange={handleEditAddressInputChange}
+                        placeholder="Enter country"
+                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-gray-400 text-sm mb-2 block font-body">
+                        Pincode *
+                      </label>
+                      <input
+                        type="text"
+                        name="pincode"
+                        value={editAddressData.pincode}
+                        onChange={handleEditAddressInputChange}
+                        placeholder="Enter pincode"
+                        maxLength="6"
+                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Address Type */}
+                  <div>
+                    <label className="text-gray-400 text-sm mb-2 block font-body">
+                      Address Type
+                    </label>
+                    <select
+                      name="type"
+                      value={editAddressData.type}
+                      onChange={handleEditAddressInputChange}
+                      className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                    >
+                      <option value="Home">Home</option>
+                      <option value="Work">Work</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+
+                  {/* Default Address Checkbox */}
+                  <div className="flex items-center gap-3 pt-2">
+                    <input
+                      type="checkbox"
+                      name="isDefault"
+                      id="editIsDefault"
+                      checked={editAddressData.isDefault}
+                      onChange={handleEditAddressInputChange}
+                      className="w-5 h-5 rounded border-gray-700 bg-gray-800/50 text-white focus:ring-2 focus:ring-gray-500 cursor-pointer"
+                    />
+                    <label
+                      htmlFor="editIsDefault"
+                      className="text-gray-300 font-body cursor-pointer"
+                    >
+                      Set as default address
+                    </label>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 mt-8">
+                  <motion.button
+                    type="button"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleUpdateAddress}
+                    disabled={savingAddress}
+                    className="flex-1 bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200 transition-all duration-300 flex items-center justify-center gap-2 font-body disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {savingAddress ? (
+                      <>
+                        <Loader size={20} className="animate-spin" />
+                        Updating...
+                      </>
+                    ) : (
+                      <>
+                        <Save size={20} />
+                        Update Address
+                      </>
+                    )}
+                  </motion.button>
+                  <motion.button
+                    type="button"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleCancelEditAddress}
                     className="flex-1 bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-700 transition-all duration-300 flex items-center justify-center gap-2 font-body"
                   >
                     <X size={20} />
