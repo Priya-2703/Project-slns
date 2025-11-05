@@ -54,6 +54,7 @@ export default function AddProduct() {
   // 🎯 Size options
   const halfSareeSizeOptions = ["Stitched", "Unstitched"];
   const normalSizeOptions = ["S", "M", "L", "XL", "XXL", "XXXL"];
+  const kidsSizeOptions = ["1-2", "3-4", "5-6", "7-8", "9-10", "11-12","13-14","15-16"];
 
   useEffect(() => {
     fetchCategories();
@@ -260,9 +261,11 @@ export default function AddProduct() {
   };
 
   const handleSelectAllSizes = () => {
-    const allSizes = isHalfSareeCategory
-      ? halfSareeSizeOptions
-      : normalSizeOptions;
+    const allSizes = isKidsCategory
+    ? kidsSizeOptions
+    : isHalfSareeCategory
+    ? halfSareeSizeOptions
+    : normalSizeOptions;
 
     if (formData.sizes.length === allSizes.length) {
       setFormData((prev) => ({ ...prev, sizes: [] }));
@@ -391,12 +394,15 @@ export default function AddProduct() {
 
   const isSareeCategory = selectedCategoryName === "Sarees";
   const isHalfSareeCategory = selectedCategoryName === "Half Sarees";
+  const isKidsCategory = selectedCategoryName === "Kids Dhosti's";
   const showSubCategory = isSareeCategory;
   const showSizes = !isSareeCategory && selectedCategoryName !== "";
 
   const getSizeOptions = () => {
     if (isHalfSareeCategory) {
       return halfSareeSizeOptions;
+    }else if(isKidsCategory){
+      return kidsSizeOptions;
     } else {
       return normalSizeOptions;
     }
