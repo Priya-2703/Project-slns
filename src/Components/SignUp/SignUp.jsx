@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Eye, EyeOff, Check, X } from "lucide-react";
 import { assets } from "../../../public/assets/asset";
 import { Link } from "react-router-dom";
+import { useGoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -13,6 +15,18 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // ⭐ NEW: Initialize the Google Login Hook
+  const googleSignIn = useGoogleLogin({
+    onSuccess: (tokenResponse) => {
+      // The token is in tokenResponse.access_token for implicit flow
+      handleGoogleSuccess(tokenResponse);
+    },
+    onError: () => {
+      setError("Google Sign-In was unsuccessful. Please try again.");
+    },
+    flow: "implicit",
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -72,6 +86,41 @@ export default function SignUp() {
     } catch (err) {
       console.error("Signup error:", err);
       setError("Unable to connect to server. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  //mock google sign in test
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      // 1. Decode the Google Token directly on the frontend
+      const decoded = jwtDecode(credentialResponse.credential);
+      console.log("Decoded Google User Info:", decoded); // Console-la paakunga!
+
+      // 2. Simulate storing user data (like your real backend would do)
+      const mockUserData = {
+        name: decoded.name,
+        email: decoded.email,
+        picture: decoded.picture,
+        role: "user", // Default role for testing
+      };
+
+      localStorage.setItem("token", "dummy-jwt-token-for-google-user"); // Dummy token
+      localStorage.setItem("user", JSON.stringify(mockUserData));
+
+      // 3. Show success message and redirect
+      setSuccess("Google login successful! Redirecting...");
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1500);
+    } catch (err) {
+      console.error("Google Login decode error:", err);
+      setError("Failed to process Google login. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -287,6 +336,39 @@ export default function SignUp() {
                 {loading ? "Creating Account..." : "Sign Up"}
               </button>
             </form>
+
+            {/* google sinup */}
+            <div className="relative flex py-3 items-center">
+              <div className="flex-grow border-t border-gray-400"></div>
+              <span className="flex-shrink mx-4 text-gray-400 text-sm">OR</span>
+              <div className="flex-grow border-t border-gray-400"></div>
+            </div>
+
+            <button
+              onClick={() => googleSignIn()}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-3 bg-white text-black text-[14px] font-body font-normal py-3 rounded-[150px] transition-all duration-200 transform mt-2 hover:scale-95 hover:bg-accet hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18">
+                <path
+                  fill="#4285F4"
+                  d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2.04a4.8 4.8 0 0 1-7.18-2.53H1.83v2.1A7.98 7.98 0 0 0 8.98 17z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M4.5 10.49a4.77 4.77 0 0 1 0-3.04V5.35H1.83a7.98 7.98 0 0 0 0 7.14l2.67-2z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M8.98 3.58c1.17 0 2.23.4 3.06 1.2l2.3-2.3A7.92 7.92 0 0 0 1.83 5.35L4.5 7.45a4.77 4.77 0 0 1 4.48-3.87z"
+                />
+              </svg>
+              Sign up with Google
+            </button>
 
             {/* Sign In Link */}
             <p className="text-center font-['Poppins'] text-[12px] md:text-[16px] text-gray-900 mt-3 md:mt-6">

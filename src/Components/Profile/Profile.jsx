@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   User,
   Package,
@@ -17,98 +17,263 @@ import {
   Clock,
   LogIn,
   CircleUserRound,
+  Loader,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ToastContext } from "../../Context/UseToastContext";
 
 const Profile = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showAuthPopup, setShowAuthPopup] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [showAddAddressPopup, setShowAddAddressPopup] = useState(false); // ✅ ADD THIS
+  const [newAddress, setNewAddress] = useState({
+    area: "",
+    landmark: "",
+    town_city: "",
+    state: "",
+    country: "India",
+    pincode: "",
+    type: "Home",
+    isDefault: false,
+  });
+  const [savingAddress, setSavingAddress] = useState(false);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { showToast } = useContext(ToastContext);
+
+  // Backend URL
+  const BACKEND_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    //dynamic title
     document.title = `Profile - SLNS Sarees`;
+  }, [location]);
 
-    const token =
-      localStorage.getItem("authToken") ||
-      localStorage.getItem("token") ||
-      localStorage.getItem("accessToken");
+  useEffect(() => {
+    const checkAuthAndFetchData = async () => {
+      const token = localStorage.getItem("token");
 
-    const userDataString =
-      localStorage.getItem("userData") || localStorage.getItem("user");
+      // If no token found, show auth popup
+      if (!token) {
+        setIsAuthenticated(false);
+        setShowAuthPopup(true);
+        setLoading(false);
+        return;
+      }
 
-    console.log("Auth Check - Token:", token);
-    console.log("Auth Check - UserData:", userDataString);
-
-    if (token && userDataString) {
+      // User is authenticated
       setIsAuthenticated(true);
-      const parsedUser = JSON.parse(userDataString);
-      setUserData(parsedUser);
-      setShowAuthPopup(false); // ADD THIS
-    } else {
-      setIsAuthenticated(false);
-      setShowAuthPopup(true);
-    }
+      setShowAuthPopup(false);
+
+      try {
+        // Fetch all user data in parallel
+        await Promise.all([
+          fetchUserProfile(token),
+          fetchUserOrders(token),
+          fetchUserAddresses(token),
+        ]);
+      } catch (error) {
+        console.error("Error loading user data:", error);
+        // If token is invalid, show auth popup
+        if (
+          error.message.includes("401") ||
+          error.message.includes("Unauthorized")
+        ) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("userData");
+          setIsAuthenticated(false);
+          setShowAuthPopup(true);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuthAndFetchData();
   }, []);
 
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
 
-  const [userData, setUserData] = useState({});
+  // ✅ User Data State with default avatar
+  const [userData, setUserData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    dob: "",
+    gender: "",
+    picture: "",
+    address: "",
+  });
 
   const [editData, setEditData] = useState({ ...userData });
+  const [orders, setOrders] = useState([]);
+  const [addresses, setAddresses] = useState([]);
 
-  const [orders] = useState([
-    {
-      id: "#ORD001",
-      date: "2024-01-15",
-      items: 3,
-      total: 2499,
-      status: "Delivered",
-      products: ["Cotton T-Shirt", "Denim Jeans", "Sneakers"],
-    },
-    {
-      id: "#ORD002",
-      date: "2024-01-20",
-      items: 2,
-      total: 1899,
-      status: "Shipped",
-      products: ["Formal Shirt", "Trousers"],
-    },
-    {
-      id: "#ORD003",
-      date: "2024-01-22",
-      items: 1,
-      total: 899,
-      status: "Processing",
-      products: ["Hoodie"],
-    },
-  ]);
+  // ✅ Fetch User Profile from Backend
+  const fetchUserProfile = async (token) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${BACKEND_URL}/api/profile`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
-  const [addresses, setAddresses] = useState([
-    {
-      id: 1,
-      type: "Home",
-      address: "123, Anna Nagar, Chennai - 600040",
-      isDefault: true,
-    },
-    {
-      id: 2,
-      type: "Work",
-      address: "456, T Nagar, Chennai - 600017",
-      isDefault: false,
-    },
-  ]);
+      if (!response.ok) {
+        throw new Error("Failed to fetch profile");
+      }
+
+      const data = await response.json();
+
+      // ✅ Handle profile picture (Google or default)
+      const profileData = {
+        ...data.user,
+        picture:
+          data.user.picture ||
+          data.user.avatar ||
+          getDefaultAvatar(data.user.name),
+      };
+
+      setUserData(profileData);
+      setEditData(profileData);
+
+      console.log("api/profile", data);
+
+      // Save to localStorage
+      localStorage.setItem("userData", JSON.stringify(profileData));
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      setError(error.message);
+
+      // Load from localStorage as fallback
+      const savedUser = localStorage.getItem("userData");
+      if (savedUser) {
+        const parsedUser = JSON.parse(savedUser);
+        parsedUser.picture =
+          parsedUser.picture || getDefaultAvatar(parsedUser.name);
+        setUserData(parsedUser);
+        setEditData(parsedUser);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ✅ Get default avatar (UI Avatars API or local icon)
+  const getDefaultAvatar = (name) => {
+    if (name) {
+      // Use UI Avatars API
+      const initials = name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase();
+      return `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        name
+      )}&background=8E6740&color=fff&size=200&bold=true`;
+    }
+    return null; // Will show CircleUserRound icon
+  };
+
+  // ✅ Fetch User Orders
+  const fetchUserOrders = async (token) => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/profile/orders`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch orders");
+      }
+
+      const data = await response.json();
+      setOrders(data.orders || []);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      setOrders([]);
+    }
+  };
+
+  // ✅ Fetch User Addresses
+  const fetchUserAddresses = async (token) => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/profile/addresses`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch addresses");
+      }
+
+      const data = await response.json();
+
+      console.log("address", data);
+      setAddresses(data.addresses || []);
+    } catch (error) {
+      console.error("Error fetching addresses:", error);
+      setAddresses([]);
+    }
+  };
+
+  // ✅ Update Profile
+  const handleSave = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${BACKEND_URL}/api/profile`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(editData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update profile");
+      }
+
+      const data = await response.json();
+      console.log("api/update", data);
+
+      if (data.success) {
+        // ✅ Use backend response if available, otherwise use editData
+        const backendUser = data.user || data.data || editData;
+
+        setUserData(backendUser);
+        setEditData(backendUser);
+
+        console.log("updatedData", backendUser);
+
+        localStorage.setItem("userData", JSON.stringify(backendUser));
+
+        alert("Profile updated successfully!");
+      }
+      setIsEditing(false);
+
+      console.log("isediting", isEditing);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      alert("Failed to update profile. Please try again.");
+    }
+  };
 
   const handleEdit = () => {
     setIsEditing(true);
     setEditData({ ...userData });
-  };
-
-  const handleSave = () => {
-    setUserData({ ...editData });
-    setIsEditing(false);
   };
 
   const handleCancel = () => {
@@ -123,17 +288,161 @@ const Profile = () => {
     });
   };
 
-  const deleteAddress = (id) => {
-    setAddresses(addresses.filter((addr) => addr.id !== id));
+  // ✅ Delete Address
+  const deleteAddress = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${BACKEND_URL}/api/addresses/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete address");
+      }
+
+      setAddresses(addresses.filter((addr) => addr.id !== id));
+      alert("Address deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting address:", error);
+      alert("Failed to delete address. Please try again.");
+    }
   };
 
-  const setDefaultAddress = (id) => {
-    setAddresses(
-      addresses.map((addr) => ({
-        ...addr,
-        isDefault: addr.id === id,
-      }))
-    );
+  // ✅ Add New Address Handler
+  const handleAddAddressClick = () => {
+    setShowAddAddressPopup(true);
+    setNewAddress({
+      area: "",
+      landmark: "",
+      town_city: "",
+      state: "",
+      country: "India",
+      pincode: "",
+      type: "Home",
+      isDefault: false,
+    });
+  };
+
+  // ✅ Handle Address Input Change
+  const handleAddressInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setNewAddress({
+      ...newAddress,
+      [name]: type === "checkbox" ? checked : value,
+    });
+  };
+
+  // ✅ Save New Address
+  const handleSaveAddress = async () => {
+    try {
+      // Validation
+      if (
+        !newAddress.area ||
+        !newAddress.town_city ||
+        !newAddress.state ||
+        !newAddress.country ||
+        !newAddress.pincode
+      ) {
+        showToast("Please fill all required fields", "error");
+        return;
+      }
+
+      setSavingAddress(true);
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${BACKEND_URL}/api/profile/addresses`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newAddress),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add address");
+      }
+
+      const data = await response.json();
+      console.log("Address added:", data);
+
+      if (data.success) {
+        setAddresses([...addresses, data.address]);
+        setShowAddAddressPopup(false);
+        showToast("Address added successfully!", "success");
+
+        // Reset form
+        setNewAddress({
+          area: "",
+          landmark: "",
+          town_city: "",
+          state: "",
+          country: "India",
+          pincode: "",
+          type: "Home",
+          isDefault: false,
+        });
+      }
+    } catch (error) {
+      console.error("Error adding address:", error);
+      showToast("Failed to add address. Please try again.", "error");
+    } finally {
+      setSavingAddress(false);
+    }
+  };
+
+  // ✅ Cancel Add Address
+  const handleCancelAddAddress = () => {
+    setShowAddAddressPopup(false);
+    setNewAddress({
+      area: "",
+      landmark: "",
+      town_city: "",
+      state: "",
+      country: "India",
+      pincode: "",
+      type: "Home",
+      isDefault: false,
+    });
+  };
+
+  // ✅ Set Default Address
+  const setDefaultAddress = async (id) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `${BACKEND_URL}/api/addresses/${id}/default`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to set default address");
+      }
+
+      setAddresses(
+        addresses.map((addr) => ({
+          ...addr,
+          isDefault: addr.id === id,
+        }))
+      );
+
+      alert("Default address updated!");
+    } catch (error) {
+      console.error("Error setting default address:", error);
+      alert("Failed to update default address. Please try again.");
+    }
   };
 
   const handleSignInRedirect = () => {
@@ -169,6 +478,7 @@ const Profile = () => {
 
   const mobileView = window.innerWidth < 480;
 
+  // Animation variants (keep existing ones)
   const pageVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -288,6 +598,22 @@ const Profile = () => {
     },
   };
 
+  // ✅ Loading Screen
+  if (loading && !showAuthPopup) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
+        >
+          <Loader className="w-12 h-12 text-white animate-spin mx-auto mb-4" />
+          <p className="text-gray-400 text-lg">Loading your profile...</p>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <motion.div
       initial="hidden"
@@ -295,7 +621,7 @@ const Profile = () => {
       variants={pageVariants}
       className="min-h-screen bg-black text-white mt-20 md:mt-28"
     >
-      {/* Authentication Popup */}
+      {/* Authentication Popup - SAME AS BEFORE */}
       <AnimatePresence>
         {showAuthPopup && !isAuthenticated && (
           <>
@@ -374,8 +700,8 @@ const Profile = () => {
         )}
       </AnimatePresence>
 
-      {/* Profile Content - SIMPLIFIED WRAPPER */}
-      {isAuthenticated ? (
+      {/* Profile Content */}
+      {isAuthenticated && (
         <>
           {/* Header */}
           <div className="mx-2 lg:mx-0">
@@ -396,7 +722,7 @@ const Profile = () => {
 
           <div className="max-w-7xl mx-auto px-4 py-3 md:py-8">
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              {/* Sidebar Navigation - FIXED */}
+              {/* Sidebar Navigation */}
               <motion.div
                 variants={sidebarVariants}
                 initial="hidden"
@@ -410,34 +736,55 @@ const Profile = () => {
                     transition={{ duration: 0.5, delay: 0.2 }}
                     className="flex lg:flex-col items-center mb-6 ml-0"
                   >
+                    {/* ✅ Profile Picture with Google Image or Default */}
+                    {userData.picture ? (
+                      <motion.img
+                        src={userData.picture}
+                        alt={userData.name}
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        transition={{ duration: 0.3 }}
+                        onError={(e) => {
+                          // Fallback to default avatar if image fails to load
+                          e.target.style.display = "none";
+                          e.target.nextSibling.style.display = "flex";
+                        }}
+                        className="md:w-20 md:h-20 w-16 h-16 rounded-full object-cover flex justify-center items-center border-4 border-white/10 md:mb-3"
+                      />
+                    ) : null}
+
+                    {/* ✅ Default Icon (shown if no image) */}
                     <motion.div
                       whileHover={{ scale: 1.1, rotate: 5 }}
                       transition={{ duration: 0.3 }}
-                      className="md:w-20 md:h-20 w-16 h-16 rounded-full flex justify-center items-center border-4 border-white/10 md:mb-3"
+                      className={`md:w-20 md:h-20 w-16 h-16 rounded-full flex justify-center items-center border-4 border-white/10 md:mb-3 bg-gradient-to-br from-[#8E6740] to-[#6b4e2f] ${
+                        userData.picture ? "hidden" : "flex"
+                      }`}
                     >
                       <CircleUserRound
-                        size={mobileView ? 16 : 100}
+                        size={mobileView ? 40 : 50}
                         strokeWidth={1.5}
                         color="white"
                         className="nav-item"
                       />
                     </motion.div>
-                    <div className="flex flex-col justify-center items-start lg:items-center">
+
+                    <div className="flex flex-col justify-center items-start lg:items-center ml-3 lg:ml-0">
                       <h3 className="text-[14px] md:text-[18px] capitalize font-body font-medium">
-                        {userData.name}
+                        {userData.name || "User"}
                       </h3>
                       <p className="text-gray-400 font-body text-[10px] md:text-[12px]">
-                        {userData.email}
+                        {userData.email || "email@example.com"}
                       </p>
                     </div>
                   </motion.div>
 
+                  {/* Navigation Tabs - SAME AS BEFORE */}
                   <nav className="lg:space-y-2 flex lg:flex-col justify-around items-center gap-2">
                     {[
                       { id: "profile", icon: User, label: "Profile Info" },
                       { id: "orders", icon: Package, label: "My Orders" },
                       { id: "addresses", icon: MapPin, label: "Addresses" },
-                      { id: "settings", icon: Settings, label: "Settings" },
+                      { id: "changePassword", icon: Settings, label: "Change Password" },
                     ].map((item, index) => (
                       <motion.button
                         key={item.id}
@@ -461,10 +808,9 @@ const Profile = () => {
                 </div>
               </motion.div>
 
-              {/* Main Content */}
+              {/* Main Content - Profile Info Tab */}
               <div className="lg:col-span-3">
                 <AnimatePresence mode="wait">
-                  {/* Profile Info Tab */}
                   {activeTab === "profile" && (
                     <motion.div
                       key="profile"
@@ -502,15 +848,25 @@ const Profile = () => {
                               className="flex font-body gap-2"
                             >
                               <motion.button
+                                type="button"
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={handleSave}
-                                className="flex items-center gap-2 text-[12px] md:text-[16px] bg-green-600 px-3 md:px-4 py-2 rounded-lg hover:bg-green-700 transition-all duration-300"
+                                disabled={loading}
+                                className="flex items-center gap-2 text-[12px] md:text-[16px] bg-green-600 px-3 md:px-4 py-2 rounded-lg hover:bg-green-700 transition-all duration-300 disabled:opacity-50"
                               >
-                                <Save size={mobileView ? 14 : 18} />
+                                {loading ? (
+                                  <Loader
+                                    size={mobileView ? 14 : 18}
+                                    className="animate-spin"
+                                  />
+                                ) : (
+                                  <Save size={mobileView ? 14 : 18} />
+                                )}
                                 Save
                               </motion.button>
                               <motion.button
+                                type="button"
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={handleCancel}
@@ -583,10 +939,13 @@ const Profile = () => {
                                 field.type === "select" ? (
                                   <select
                                     name={field.name}
-                                    value={editData[field.name]}
+                                    value={editData[field.name] || ""}
                                     onChange={handleInputChange}
                                     className="outline-none flex-1 text-[14px] md:text-[16px] text-white bg-black"
                                   >
+                                    <option value="" className="bg-black">
+                                      Select Gender
+                                    </option>
                                     <option value="Male" className="bg-black">
                                       Male
                                     </option>
@@ -601,16 +960,16 @@ const Profile = () => {
                                   <input
                                     type={field.type}
                                     name={field.name}
-                                    value={editData[field.name]}
+                                    value={editData[field.name] || ""}
                                     onChange={handleInputChange}
-                                    className="bg-transparent outline-none flex-1 text-white"
+                                    className="bg-transparent outline-none flex-1 text-white text-[14px] md:text-[16px]"
                                   />
                                 )
                               ) : (
                                 <span className="text-[14px] md:text-[16px]">
-                                  {field.name === "dob"
+                                  {field.name === "dob" && field.value
                                     ? new Date(field.value).toLocaleDateString()
-                                    : field.value}
+                                    : field.value || "Not set"}
                                 </span>
                               )}
                             </motion.div>
@@ -633,67 +992,91 @@ const Profile = () => {
                       <h2 className="text-[24px] font-body font-bold mb-6">
                         My Orders
                       </h2>
-                      {orders.map((order, index) => (
-                        <motion.div
-                          key={order.id}
-                          variants={cardVariants}
-                          custom={index}
-                          whileHover={{ scale: 1.02, y: -5 }}
-                          transition={{ duration: 0.3 }}
-                          className="bg-black rounded-[20px] p-6 border border-gray-800 hover:border-gray-700"
-                        >
-                          <div className="flex flex-wrap justify-between items-start mb-4">
-                            <div>
-                              <h3 className="text-xl font-bold mb-2">
-                                {order.id}
-                              </h3>
-                              <p className="text-gray-400 text-[12px] md:text-[14px]">
-                                Order Date:{" "}
-                                {new Date(order.date).toLocaleDateString()}
-                              </p>
-                            </div>
-                            <StatusBadge status={order.status} />
-                          </div>
 
-                          <div className="border-t border-gray-800 pt-4 mt-4">
-                            <div className="flex items-center gap-2 mb-3">
-                              <ShoppingBag
-                                size={mobileView ? 14 : 18}
-                                className="text-gray-400"
-                              />
-                              <span className="text-gray-400">
-                                {order.items} Items
-                              </span>
+                      {orders.length === 0 ? (
+                        <div className="bg-black rounded-[20px] p-12 border border-gray-800 text-center">
+                          <Package
+                            size={48}
+                            className="mx-auto mb-4 text-gray-600"
+                          />
+                          <p className="text-gray-400 text-lg">No orders yet</p>
+                          <button
+                            onClick={() => navigate("/product")}
+                            className="mt-4 bg-white text-black px-6 py-3 rounded-lg hover:bg-gray-200 transition-all"
+                          >
+                            Start Shopping
+                          </button>
+                        </div>
+                      ) : (
+                        orders.map((order, index) => (
+                          <motion.div
+                            key={order.id || order._id}
+                            variants={cardVariants}
+                            custom={index}
+                            whileHover={{ scale: 1.02, y: -5 }}
+                            transition={{ duration: 0.3 }}
+                            className="bg-black rounded-[20px] p-6 border border-gray-800 hover:border-gray-700"
+                          >
+                            <div className="flex flex-wrap justify-between items-start mb-4">
+                              <div>
+                                <h3 className="text-xl font-bold mb-2">
+                                  {order.order_id || order.id}
+                                </h3>
+                                <p className="text-gray-400 text-[12px] md:text-[14px]">
+                                  Order Date:{" "}
+                                  {new Date(
+                                    order.created_at || order.date
+                                  ).toLocaleDateString()}
+                                </p>
+                              </div>
+                              <StatusBadge status={order.status} />
                             </div>
-                            <div className="flex flex-wrap gap-2 mb-4">
-                              {order.products.map((product, idx) => (
-                                <motion.span
-                                  key={idx}
-                                  initial={{ opacity: 0, scale: 0.8 }}
-                                  animate={{ opacity: 1, scale: 1 }}
-                                  transition={{ delay: idx * 0.1 }}
-                                  whileHover={{ scale: 1.1 }}
-                                  className="bg-gray-800 px-3 py-1 rounded-full text-[12px] md:text-[14px]"
+
+                            <div className="border-t border-gray-800 pt-4 mt-4">
+                              <div className="flex items-center gap-2 mb-3">
+                                <ShoppingBag
+                                  size={mobileView ? 14 : 18}
+                                  className="text-gray-400"
+                                />
+                                <span className="text-gray-400">
+                                  {order.items?.length || order.items} Items
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap gap-2 mb-4">
+                                {(order.products || order.items)?.map(
+                                  (product, idx) => (
+                                    <motion.span
+                                      key={idx}
+                                      initial={{ opacity: 0, scale: 0.8 }}
+                                      animate={{ opacity: 1, scale: 1 }}
+                                      transition={{ delay: idx * 0.1 }}
+                                      whileHover={{ scale: 1.1 }}
+                                      className="bg-gray-800 px-3 py-1 rounded-full text-[12px] md:text-[14px]"
+                                    >
+                                      {product.name || product}
+                                    </motion.span>
+                                  )
+                                )}
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-2xl font-bold text-green-400">
+                                  ₹{order.total || order.total_amount}
+                                </span>
+                                <motion.button
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={() =>
+                                    navigate(`/orders/${order.id || order._id}`)
+                                  }
+                                  className="bg-white text-black px-6 py-2 rounded-lg hover:bg-gray-200 transition-all duration-300 font-semibold"
                                 >
-                                  {product}
-                                </motion.span>
-                              ))}
+                                  View Details
+                                </motion.button>
+                              </div>
                             </div>
-                            <div className="flex justify-between items-center">
-                              <span className="text-2xl font-bold text-green-400">
-                                ₹{order.total}
-                              </span>
-                              <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                className="bg-white text-black px-6 py-2 rounded-lg hover:bg-gray-200 transition-all duration-300 font-semibold"
-                              >
-                                Track Order
-                              </motion.button>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
+                          </motion.div>
+                        ))
+                      )}
                     </motion.div>
                   )}
 
@@ -713,97 +1096,138 @@ const Profile = () => {
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
+                          onClick={handleAddAddressClick}
                           className="bg-white text-black text-[12px] md:text-[16px] px-4 py-2 rounded-lg hover:bg-gray-200 transition-all duration-300 font-semibold"
                         >
                           + Add New Address
                         </motion.button>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <AnimatePresence>
-                          {addresses.map((addr, index) => (
-                            <motion.div
-                              key={addr.id}
-                              variants={cardVariants}
-                              custom={index}
-                              layout
-                              exit={{
-                                opacity: 0,
-                                scale: 0.8,
-                                transition: { duration: 0.3 },
-                              }}
-                              whileHover={{ scale: 1.03, y: -5 }}
-                              transition={{ duration: 0.3 }}
-                              className="bg-black rounded-xl font-body p-4 md:p-6 border border-gray-800 hover:border-gray-700"
-                            >
-                              <div className="flex justify-between items-start mb-3">
-                                <div className="flex items-center gap-2">
-                                  <MapPin
-                                    size={mobileView ? 14 : 20}
-                                    className="text-gray-400"
-                                  />
-                                  <span className="font-bold font-body text-[14px] md:text-[16px]">
-                                    {addr.type}
-                                  </span>
+                      {addresses.length === 0 ? (
+                        <div className="bg-black rounded-[20px] p-12 border border-gray-800 text-center">
+                          <MapPin
+                            size={48}
+                            className="mx-auto mb-4 text-gray-600"
+                          />
+                          <p className="text-gray-400 text-lg">
+                            No saved addresses
+                          </p>
+                          <button
+                            onClick={handleAddAddressClick}
+                            className="mt-4 bg-white text-black px-6 py-3 rounded-lg hover:bg-gray-200 transition-all"
+                          >
+                            Add Address
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <AnimatePresence>
+                            {addresses.map((addr, index) => (
+                              <motion.div
+                                key={addr.id || addr._id}
+                                variants={cardVariants}
+                                custom={index}
+                                layout
+                                exit={{
+                                  opacity: 0,
+                                  scale: 0.8,
+                                  transition: { duration: 0.3 },
+                                }}
+                                whileHover={{ scale: 1.03, y: -5 }}
+                                transition={{ duration: 0.3 }}
+                                className="bg-black rounded-xl font-body p-4 md:p-6 border border-gray-800 hover:border-gray-700"
+                              >
+                                <div className="flex justify-between items-start mb-3">
+                                  <div className="flex items-center gap-2">
+                                    <MapPin
+                                      size={mobileView ? 14 : 20}
+                                      className="text-gray-400"
+                                    />
+                                    <span className="font-bold font-body text-[14px] md:text-[16px]">
+                                      {addr.type}
+                                    </span>
+                                  </div>
+                                  {addr.isDefault && (
+                                    <motion.span
+                                      initial={{ scale: 0 }}
+                                      animate={{ scale: 1 }}
+                                      transition={{
+                                        type: "spring",
+                                        stiffness: 200,
+                                      }}
+                                      className="bg-green-500/20 font-body text-green-400 px-3 py-1 rounded-full text-xs font-semibold border border-green-500"
+                                    >
+                                      Default
+                                    </motion.span>
+                                  )}
                                 </div>
-                                {addr.isDefault && (
-                                  <motion.span
-                                    initial={{ scale: 0 }}
-                                    animate={{ scale: 1 }}
-                                    transition={{
-                                      type: "spring",
-                                      stiffness: 200,
-                                    }}
-                                    className="bg-green-500/20 font-body text-green-400 px-3 py-1 rounded-full text-xs font-semibold border border-green-500"
-                                  >
-                                    Default
-                                  </motion.span>
-                                )}
-                              </div>
-                              <p className="text-gray-400 text-[14px] font-body md:text-[16px] mb-4">
-                                {addr.address}
-                              </p>
-                              <div className="flex gap-2">
-                                {!addr.isDefault && (
+                                <p className="text-gray-400 text-[14px] font-body md:text-[16px] mb-4">
+                                  {addr.area && `${addr.area}, `}
+                                  {addr.landmark && `${addr.landmark}, `}
+                                  {addr.town_city && `${addr.town_city}, `}
+                                  {addr.state && `${addr.state}, `}
+                                  {addr.country && `${addr.country} - `}
+                                  {addr.pincode}
+                                </p>
+                                <div className="flex gap-2">
+                                  {!addr.isDefault && (
+                                    <motion.button
+                                      whileHover={{ scale: 1.05 }}
+                                      whileTap={{ scale: 0.95 }}
+                                      onClick={() =>
+                                        setDefaultAddress(addr.id || addr._id)
+                                      }
+                                      className="flex-1 bg-gray-800 hover:bg-gray-700 text-[12px] font-body md:text-[14px] px-3 md:px-4 py-2 rounded-lg transition-all duration-300"
+                                    >
+                                      Set as Default
+                                    </motion.button>
+                                  )}
                                   <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    onClick={() => setDefaultAddress(addr.id)}
-                                    className="flex-1 bg-gray-800 hover:bg-gray-700 text-[12px] font-body md:text-[14px] px-3 md:px-4 py-2 rounded-lg transition-all duration-300"
+                                    onClick={() =>
+                                      navigate(
+                                        `/profile/edit-address/${
+                                          addr.id || addr._id
+                                        }`
+                                      )
+                                    }
+                                    className="flex-1 bg-gray-800 hover:bg-gray-700 text-[12px] font-body md:text-[16px] px-4 py-2 rounded-lg transition-all duration-300"
                                   >
-                                    Set as Default
+                                    Edit
                                   </motion.button>
-                                )}
-                                <motion.button
-                                  whileHover={{ scale: 1.05 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  className="flex-1 bg-gray-800 hover:bg-gray-700 text-[12px] font-body md:text-[16px] px-4 py-2 rounded-lg transition-all duration-300"
-                                >
-                                  Edit
-                                </motion.button>
-                                <motion.button
-                                  whileHover={{
-                                    scale: 1.1,
-                                    backgroundColor: "#dc2626",
-                                  }}
-                                  whileTap={{ scale: 0.9 }}
-                                  onClick={() => deleteAddress(addr.id)}
-                                  className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition-all duration-300"
-                                >
-                                  <X size={mobileView ? 14 : 18} />
-                                </motion.button>
-                              </div>
-                            </motion.div>
-                          ))}
-                        </AnimatePresence>
-                      </div>
+                                  <motion.button
+                                    whileHover={{
+                                      scale: 1.1,
+                                      backgroundColor: "#dc2626",
+                                    }}
+                                    whileTap={{ scale: 0.9 }}
+                                    onClick={() => {
+                                      if (
+                                        window.confirm(
+                                          "Are you sure you want to delete this address?"
+                                        )
+                                      ) {
+                                        deleteAddress(addr.id || addr._id);
+                                      }
+                                    }}
+                                    className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition-all duration-300"
+                                  >
+                                    <X size={mobileView ? 14 : 18} />
+                                  </motion.button>
+                                </div>
+                              </motion.div>
+                            ))}
+                          </AnimatePresence>
+                        </div>
+                      )}
                     </motion.div>
                   )}
 
-                  {/* Settings Tab */}
-                  {activeTab === "settings" && (
+                  {/* Settings Tab - SAME AS BEFORE */}
+                  {activeTab === "changePassword" && (
                     <motion.div
-                      key="settings"
+                      key="changePassword"
                       variants={contentVariants}
                       initial="hidden"
                       animate="visible"
@@ -811,57 +1235,9 @@ const Profile = () => {
                       className="bg-black rounded-[20px] p-4 md:p-8 border border-gray-800 font-body"
                     >
                       <h2 className="text-2xl font-bold mb-6">
-                        Account Settings
+                        Change Password
                       </h2>
-                      <div className="space-y-2 md:space-y-4">
-                        {[
-                          {
-                            title: "Change Password",
-                            desc: "Update your password regularly for security",
-                          },
-                          {
-                            title: "Notification Preferences",
-                            desc: "Manage email and SMS notifications",
-                          },
-                          {
-                            title: "Privacy Settings",
-                            desc: "Control your data and privacy options",
-                          },
-                          {
-                            title: "Payment Methods",
-                            desc: "Manage saved cards and payment options",
-                          },
-                          {
-                            title: "Delete Account",
-                            desc: "Permanently delete your account",
-                            danger: true,
-                          },
-                        ].map((setting, idx) => (
-                          <motion.div
-                            key={idx}
-                            variants={cardVariants}
-                            custom={idx}
-                            whileHover={{ scale: 1.02, x: 5 }}
-                            transition={{ duration: 0.2 }}
-                            className={`p-4 rounded-[20px] border transition-all duration-300 cursor-pointer ${
-                              setting.danger
-                                ? "border-red-800 bg-red-900/20 hover:bg-red-900/30"
-                                : "border-gray-800 bg-gray-800/50 hover:bg-gray-800"
-                            }`}
-                          >
-                            <h3
-                              className={`font-bold md:mb-1 text-[14px] md:text-[16px] ${
-                                setting.danger ? "text-red-400" : ""
-                              }`}
-                            >
-                              {setting.title}
-                            </h3>
-                            <p className="text-gray-400 text-[12px] md:text-[14px]">
-                              {setting.desc}
-                            </p>
-                          </motion.div>
-                        ))}
-                      </div>
+                      
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -869,7 +1245,210 @@ const Profile = () => {
             </div>
           </div>
         </>
-      ) : null}
+      )}
+
+      <AnimatePresence>
+        {showAddAddressPopup && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
+              onClick={handleCancelAddAddress}
+            />
+
+            <div className="fixed inset-0 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <motion.div
+                variants={popupVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="bg-gradient-to-br from-gray-900 to-black border-2 border-gray-800 rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl my-8"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl md:text-3xl font-bold font-heading">
+                    Add New Address
+                  </h2>
+                  <motion.button
+                    whileHover={{ scale: 1.1, rotate: 90 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={handleCancelAddAddress}
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    <X size={24} />
+                  </motion.button>
+                </div>
+
+                {/* Form */}
+                <div className="space-y-4">
+                  {/* Area */}
+                  <div>
+                    <label className="text-gray-400 text-sm mb-2 block font-body">
+                      Area / Locality *
+                    </label>
+                    <input
+                      type="text"
+                      name="area"
+                      value={newAddress.area}
+                      onChange={handleAddressInputChange}
+                      placeholder="Enter area or locality"
+                      className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                    />
+                  </div>
+
+                  {/* Landmark */}
+                  <div>
+                    <label className="text-gray-400 text-sm mb-2 block font-body">
+                      Landmark (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      name="landmark"
+                      value={newAddress.landmark}
+                      onChange={handleAddressInputChange}
+                      placeholder="Enter nearby landmark"
+                      className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                    />
+                  </div>
+
+                  {/* Town/City & State */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-gray-400 text-sm mb-2 block font-body">
+                        Town / City *
+                      </label>
+                      <input
+                        type="text"
+                        name="town_city"
+                        value={newAddress.town_city}
+                        onChange={handleAddressInputChange}
+                        placeholder="Enter city"
+                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-gray-400 text-sm mb-2 block font-body">
+                        State *
+                      </label>
+                      <input
+                        type="text"
+                        name="state"
+                        value={newAddress.state}
+                        onChange={handleAddressInputChange}
+                        placeholder="Enter state"
+                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Country & Pincode */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-gray-400 text-sm mb-2 block font-body">
+                        Country *
+                      </label>
+                      <input
+                        type="text"
+                        name="country"
+                        value={newAddress.country}
+                        onChange={handleAddressInputChange}
+                        placeholder="Enter country"
+                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-gray-400 text-sm mb-2 block font-body">
+                        Pincode *
+                      </label>
+                      <input
+                        type="text"
+                        name="pincode"
+                        value={newAddress.pincode}
+                        onChange={handleAddressInputChange}
+                        placeholder="Enter pincode"
+                        maxLength="6"
+                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Address Type */}
+                  <div>
+                    <label className="text-gray-400 text-sm mb-2 block font-body">
+                      Address Type
+                    </label>
+                    <select
+                      name="type"
+                      value={newAddress.type}
+                      onChange={handleAddressInputChange}
+                      className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                    >
+                      <option value="Home">Home</option>
+                      <option value="Work">Work</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+
+                  {/* Default Address Checkbox */}
+                  <div className="flex items-center gap-3 pt-2">
+                    <input
+                      type="checkbox"
+                      name="isDefault"
+                      id="isDefault"
+                      checked={newAddress.isDefault}
+                      onChange={handleAddressInputChange}
+                      className="w-5 h-5 rounded border-gray-700 bg-gray-800/50 text-white focus:ring-2 focus:ring-gray-500 cursor-pointer"
+                    />
+                    <label
+                      htmlFor="isDefault"
+                      className="text-gray-300 font-body cursor-pointer"
+                    >
+                      Set as default address
+                    </label>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 mt-8">
+                  <motion.button
+                    type="button"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleSaveAddress}
+                    disabled={savingAddress}
+                    className="flex-1 bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200 transition-all duration-300 flex items-center justify-center gap-2 font-body disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {savingAddress ? (
+                      <>
+                        <Loader size={20} className="animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save size={20} />
+                        Save Address
+                      </>
+                    )}
+                  </motion.button>
+                  <motion.button
+                    type="button"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleCancelAddAddress}
+                    className="flex-1 bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-700 transition-all duration-300 flex items-center justify-center gap-2 font-body"
+                  >
+                    <X size={20} />
+                    Cancel
+                  </motion.button>
+                </div>
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

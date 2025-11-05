@@ -31,7 +31,7 @@ const Footer = () => {
       if (logoRef.current) {
         gsap.fromTo(
           logoRef.current,
-          { scale: 0.1 },
+          { scale: 0.6 },
           {
             scale: 1,
             ease: "power2.out",
@@ -316,6 +316,9 @@ const Footer = () => {
 
   // mobile & cart page
   if (isMobile && location.pathname === "/cart") {
+    return null; // hide footer
+  }
+  if (isMobile && location.pathname === "/checkout") {
     return null; // hide footer
   }
 
