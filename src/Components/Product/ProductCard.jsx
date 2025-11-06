@@ -28,7 +28,6 @@ const ProductCard = ({ product }) => {
     }
   };
 
-  console.log("productCard", product);
 
   // bubbles
   const bubbles = Array.from({ length: 6 });

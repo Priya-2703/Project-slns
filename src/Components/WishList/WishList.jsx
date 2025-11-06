@@ -26,6 +26,7 @@ const WishList = () => {
     }
   };
 
+  console.log("Wishlist",wishlist)
   const mobileView = window.innerWidth < 480;
 
   // 🎨 Animation Variants
@@ -273,7 +274,6 @@ const WishlistCardWrapper = ({
             transition={{ duration: 0.5 }}
             src={item.image_url}
             alt={item.product_name}
-            loading="lazy"
             className="w-full h-[250px] md:h-[300px] lg:h-[400px] object-cover object-center group-hover:blur-[2px] transition-transform duration-500"
           />
 
@@ -308,7 +308,7 @@ const WishlistCardWrapper = ({
               {item.product_name}
             </h1>
             <p className="font-body text-[12px] md:text-[14px] leading-none">
-              ₹{item.price}
+              ₹{parseInt(item.price)}
             </p>
           </div>
           <div className="flex flex-col justify-center items-start gap-3">
@@ -316,10 +316,10 @@ const WishlistCardWrapper = ({
               whileHover={{ scale: 1.1 }}
               className="px-2 py-1 border-2 border-white text-[12px] md:text-[14px] font-body"
             >
-              {item.discount}%
+              {parseInt(item.discount)}%
             </motion.p>
             <p className="text-gray-500 line-through font-body text-[12px] md:text-[14px]">
-              ₹{item.actual_price}
+              ₹{parseInt(item.actual_price)}
             </p>
           </div>
         </motion.div>

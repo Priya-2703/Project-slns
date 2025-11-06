@@ -17,7 +17,7 @@ const WishlistProvider = ({ children }) => {
   const fetchWishlist = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${BACKEND_URL}/wishlist`, {
+      const response = await fetch(`${BACKEND_URL}/api/wishlist`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -31,6 +31,8 @@ const WishlistProvider = ({ children }) => {
 
       const data = await response.json();
       setWishlist(data.wishlist || []);
+
+      console.log(data.wishlist)
       
       // Save to localStorage for offline support
       localStorage.setItem("wishlist", JSON.stringify(data.wishlist || []));
@@ -65,7 +67,7 @@ const WishlistProvider = ({ children }) => {
       setLoading(true);
 
       // Backend API call
-      const response = await fetch(`${BACKEND_URL}/wishlist/add`, {
+      const response = await fetch(`${BACKEND_URL}/api/wishlist/add`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -90,6 +92,7 @@ const WishlistProvider = ({ children }) => {
       if (data.success) {
         // If updated wishlist comes from backend
         if (data.wishlist) {
+          console.log("add wishlist",data.wishlist)
           setWishlist(data.wishlist);
           localStorage.setItem("wishlist", JSON.stringify(data.wishlist));
         } else {
@@ -131,7 +134,7 @@ const WishlistProvider = ({ children }) => {
     try {
       setLoading(true);
 
-      const response = await fetch(`${BACKEND_URL}/wishlist/remove/${id}`, {
+      const response = await fetch(`${BACKEND_URL}/api/wishlist/remove/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -180,7 +183,7 @@ const WishlistProvider = ({ children }) => {
       );
 
       if (localWishlist.length > 0 && token) {
-        const response = await fetch(`${BACKEND_URL}/wishlist/sync`, {
+        const response = await fetch(`${BACKEND_URL}/api/wishlist/sync`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,

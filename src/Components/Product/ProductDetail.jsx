@@ -244,8 +244,7 @@ const ProductDetail = () => {
     return `${BACKEND_URL}${imagePath}`;
   };
 
-
-  console.log("productdetails",product)
+  console.log("productdetails", product);
 
   // Use useMemo to compute isInCart safely
   const isInCart = useMemo(() => {
@@ -614,13 +613,12 @@ const ProductDetail = () => {
                 className="relative text-[16px] text-white px-3 py-4 font-body rounded-[8px] w-full overflow-hidden group"
               >
                 {/* Animated gradient background */}
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 bg-[length:200%_100%] animate-gradient">
-                  <span className="relative flex items-center justify-center gap-2">
-                    <span className="text-lg">✨</span>
-                    Virtual Try-On
-                    <span className="text-lg">👗</span>
-                  </span>
-                </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 py-4 via-pink-600 to-indigo-600 bg-[length:200%_100%] animate-gradient"></div>
+                <span className="relative flex items-center justify-center gap-2">
+                  <span className="text-lg">✨</span>
+                  Virtual Try-On
+                  <span className="text-lg">👗</span>
+                </span>
               </motion.button>
             </div>
 
