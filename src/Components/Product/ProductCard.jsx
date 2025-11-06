@@ -11,7 +11,12 @@ const ProductCard = ({ product }) => {
     useContext(WishlistContext);
   const { showToast } = useContext(ToastContext);
 
-  const isInWishlist = wishlist.some((item) => item.product_id === product.product_id);
+  // ✅ Hover state for video
+  const [isHovered, setIsHovered] = useState(false);
+
+  const isInWishlist = wishlist.some(
+    (item) => item.product_id === product.product_id
+  );
 
   const handleWishlist = () => {
     if (isInWishlist) {
@@ -23,6 +28,7 @@ const ProductCard = ({ product }) => {
     }
   };
 
+  console.log("productCard", product);
 
   // bubbles
   const bubbles = Array.from({ length: 6 });
@@ -31,6 +37,8 @@ const ProductCard = ({ product }) => {
     <>
       <Link
         to={`/product/${product.product_id}`}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         className="lg:w-[250px] w-40 min-h-[330px] md:w-[200px] md:min-h-[430px] lg:min-h-[550px] relative flex flex-col gap-2 lg:gap-4 cursor-pointer group"
       >
         <button
@@ -87,13 +95,34 @@ const ProductCard = ({ product }) => {
             )}
           </motion.div>
         </button>
+        {/* ✅ Image/Video Container */}
         <div className="relative overflow-hidden rounded-xl">
+          {/* ✅ Image - Always visible */}
           <img
             src={product.image_url}
             alt={product.product_name}
-            // loading="lazy"
-            className="w-full h-[250px] md:h-[300px] lg:h-[400px] object-cover transition-transform duration-500 group-hover:scale-110"
+            className={`w-full h-[250px] md:h-[300px] lg:h-[400px] object-cover transition-all duration-500 ${
+              isHovered && product.video_url
+                ? "opacity-0 scale-110"
+                : "opacity-100 group-hover:scale-110"
+            }`}
           />
+
+          {/* ✅ Video - Shows on hover if exists */}
+          {product.video_url && (
+            <video
+              src={product.video_url}
+              className={`absolute inset-0 w-full h-[250px] md:h-[300px] lg:h-[400px] object-cover transition-all duration-500 ${
+                isHovered
+                  ? "opacity-100 scale-110"
+                  : "opacity-0 scale-100 pointer-events-none"
+              }`}
+              autoPlay={isHovered}
+              loop
+              muted
+              playsInline
+            />
+          )}
         </div>
 
         <div className="flex justify-between items-start text-white">
@@ -101,7 +130,9 @@ const ProductCard = ({ product }) => {
             <h1 className="w-[90%] text-[12px] md:text-[14px] lg:text-[17px] font-body font-[600] capitalize lg:leading-6 line-clamp-2">
               {product.product_name}
             </h1>
-            <p className="font-body text-[12px] md:text-[14px] lg:text-[16px] leading-none">₹{parseInt(product.price)}</p>
+            <p className="font-body text-[12px] md:text-[14px] lg:text-[16px] leading-none">
+              ₹{parseInt(product.price)}
+            </p>
           </div>
           <div className="flex flex-col justify-center items-start gap-2 md:gap-3">
             <p className="px-2 py-1 border-2 border-white text-[12px] md:text-[14px] lg:text-[16px] font-body">

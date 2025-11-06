@@ -52,7 +52,7 @@ export default function AddProduct() {
   ];
 
   // 🎯 Size options
-  const halfSareeSizeOptions = ["Stitched", "Unstitched"];
+  const halfSareeSizeOptions = ["Stitched","Semi-stitched", "Unstitched"];
   const normalSizeOptions = ["S", "M", "L", "XL", "XXL", "XXXL"];
   const kidsSizeOptions = ["1-2", "3-4", "5-6", "7-8", "9-10", "11-12","13-14","15-16"];
 
@@ -714,12 +714,6 @@ export default function AddProduct() {
                 >
                   Trending
                 </option>
-                <option
-                  className="bg-transparent font-body text-black"
-                  value="new arrival"
-                >
-                  New Arrival
-                </option>
               </select>
             </div>
           </div>
@@ -939,7 +933,7 @@ export default function AddProduct() {
 
                 <p className="text-white/50 text-xs font-body mt-3">
                   {isHalfSareeCategory
-                    ? "Select one or both types (Stitched and/or Unstitched)"
+                    ? "Select one or all types (Stitched and/or Semi-stitched and/or Unstitched)"
                     : "Select all available sizes for this product"}
                 </p>
               </div>

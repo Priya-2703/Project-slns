@@ -244,6 +244,9 @@ const ProductDetail = () => {
     return `${BACKEND_URL}${imagePath}`;
   };
 
+
+  console.log("productdetails",product)
+
   // Use useMemo to compute isInCart safely
   const isInCart = useMemo(() => {
     if (!product || !product.product_id) return false;
@@ -275,8 +278,18 @@ const ProductDetail = () => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
-  const prev = () => setCur((cur) => (cur === 0 ? img.length - 1 : cur - 1));
-  const next = () => setCur((cur) => (cur === img.length - 1 ? 0 : cur + 1));
+  // Calculate total slides (images + video if exists)
+  const totalSlides =
+    (product.images?.length || 0) + (product.video_url ? 1 : 0);
+
+  const prev = () => {
+    if (totalSlides === 0) return;
+    setCur((cur) => (cur === 0 ? totalSlides - 1 : cur - 1));
+  };
+  const next = () => {
+    if (totalSlides === 0) return;
+    setCur((cur) => (cur === totalSlides - 1 ? 0 : cur + 1));
+  };
 
   const backButtonVariants = {
     hidden: {
@@ -441,15 +454,38 @@ const ProductDetail = () => {
               {product.images?.map((img, index) => (
                 <img
                   key={img.image_id}
-                  src={getImageUrl(img.image_url)} /* ✅ Fix */
+                  src={getImageUrl(img.image_url)}
                   alt={`Thumbnail ${index + 1}`}
-                  // loading="lazy"
                   className={`object-cover object-center min-w-full transition-all ease-out duration-500`}
                   style={{
                     transform: `translateX(-${cur * 100}%)`,
                   }}
                 />
               ))}
+
+              {/* Video Slide (Last Slide) */}
+              {product.video_url && (
+                <div
+                  className="min-w-full transition-all ease-out duration-500 relative"
+                  style={{
+                    transform: `translateX(-${cur * 100}%)`,
+                  }}
+                >
+                  <video
+                    src={product.video_url}
+                    className="w-full h-full object-cover"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                  />
+                  <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur px-3 py-1 rounded-full">
+                    <p className="text-white text-sm font-body">
+                      Product Video
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div className="absolute inset-0 flex justify-between items-center px-5">
                 <button
@@ -465,15 +501,30 @@ const ProductDetail = () => {
                   <MdKeyboardArrowRight className="text-white text-[22px]" />
                 </button>
               </div>
+              {/* dot on bottom */}
               <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-2">
                 {product.images?.map((s, index) => (
                   <div
                     key={index}
-                    className={`w-1.5 h-1.5 bg-white rounded-full transition-all ${
-                      cur === index ? "p-2" : "bg-opacity-50"
+                    onClick={() => setCur(index)}
+                    className={`cursor-pointer transition-all ${
+                      cur === index
+                        ? "w-8 h-2 bg-white rounded-full"
+                        : "w-2 h-2 bg-white/50 rounded-full hover:bg-white/80"
                     }`}
-                  ></div>
+                  />
                 ))}
+                {/* ✅ Video dot (if video exists) */}
+                {product.video_url && (
+                  <div
+                    onClick={() => setCur(product.images?.length || 0)}
+                    className={`cursor-pointer transition-all ${
+                      cur === (product.images?.length || 0)
+                        ? "w-8 h-2 bg-red-500 rounded-full"
+                        : "w-2 h-2 bg-red-500/50 rounded-full hover:bg-red-500/80"
+                    }`}
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -490,11 +541,6 @@ const ProductDetail = () => {
                 {product.product_name}
               </h1>
             </div>
-            {/* <div className="text-white mt-14">
-              <h1 className="font-body border border-white tracking-wider p-2 text-[18px]">
-                {product.stockStatus}
-              </h1>
-            </div> */}
             <div className="text-white my-3 md:my-5 border-t border-t-white/10 border-b border-b-white/10 flex justify-between items-center w-full py-3 px-1">
               <p className="font-['Poppins'] font-semibold text-[18px] md:text-[24px]">
                 ₹{parseInt(product.price)}

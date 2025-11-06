@@ -242,7 +242,6 @@ function Cart() {
                         >
                           <motion.img
                             src={it.image_url}
-                            loading="lazy"
                             alt={it.product_name}
                             className="h-[100px] w-[60px] rounded-lg object-cover ring-1 ring-neutral-800"
                             whileHover={{
@@ -397,7 +396,6 @@ function Cart() {
                           <motion.img
                             src={getImageUrl(it.primary_image)}
                             alt={it.product_name}
-                            loading="lazy"
                             className="max-w-14 max-h-20 rounded-lg object-cover ring-1 ring-neutral-800"
                             whileHover={{
                               scale: 1.15,
