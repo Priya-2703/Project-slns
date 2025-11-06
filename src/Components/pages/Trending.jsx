@@ -1,16 +1,21 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { assets } from "../../../public/assets/asset";
 import { Swiper, SwiperSlide } from "swiper/react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Link, useLocation } from "react-router-dom";
+import { GoHeart } from "react-icons/go";
+import { WishlistContext } from "../../Context/UseWishListContext";
+import { IoHeartSharp } from "react-icons/io5";
+import { ToastContext } from "../../Context/UseToastContext";
 import UseFetchData from "../../Hooks/UseFetchData";
 
 const Trending = () => {
   const BACKEND_URL = import.meta.env.VITE_API_URL;
-    const location = useLocation();
+  const location = useLocation();
   const prevRef = useRef(null);
   const nextRef = useRef(null);
   const swiperRef = useRef(null);
@@ -20,6 +25,15 @@ const Trending = () => {
   const [atEnd, setAtEnd] = useState(false);
   const [locked, setLocked] = useState(false);
 
+  // ✅ Fix: Track which product is hovered by ID
+  const [hoveredId, setHoveredId] = useState(null);
+
+  const { wishlist, addToWishlist, removeFromWishlist } =
+    useContext(WishlistContext);
+  const { showToast } = useContext(ToastContext);
+
+  const bubbles = Array.from({ length: 6 });
+
   // Helper function to get full image URL
   const getImageUrl = (imagePath) => {
     if (!imagePath) return "/placeholder-image.png";
@@ -27,14 +41,13 @@ const Trending = () => {
     return `${BACKEND_URL}${imagePath}`;
   };
 
-
-  // ✅ Filter only products with special_case === "trending"
+  // Filter only products with special_case === "trending"
   const trendingProducts =
     data?.filter(
       (product) => product.special_case?.toLowerCase() === "trending"
     ) || [];
 
-  // Bind external buttons to Swiper + keep arrow visibility in sync
+  // Bind external buttons to Swiper
   useEffect(() => {
     if (!swiperReady) return;
     const swiper = swiperRef.current;
@@ -65,6 +78,25 @@ const Trending = () => {
     };
   }, [swiperReady]);
 
+  // ✅ Fix: Function to check if specific product is in wishlist
+  const isProductInWishlist = (productId) => {
+    return wishlist.some((item) => item.product_id === productId);
+  };
+
+  // ✅ Fix: Handle wishlist for specific product
+  const handleWishlist = (product, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (isProductInWishlist(product.product_id)) {
+      removeFromWishlist(product.product_id);
+      showToast("Item removed from Wishlist", "success");
+    } else {
+      addToWishlist(product);
+      showToast("Item added to Wishlist", "success");
+    }
+  };
+
   const mobileView = window.innerWidth < 800;
 
   // Don't render if no trending products
@@ -75,7 +107,11 @@ const Trending = () => {
   return (
     <>
       <div className="w-full mx-auto py-3 md:py-4 md:px-6 lg:px-8 bg-black">
-        <div className={`w-[90%] mx-auto flex flex-col justify-center items-center ${location.pathname.startsWith("/product/") ? "hidden" : "block"} text-white md:mb-8 relative py-3`}>
+        <div
+          className={`w-[90%] mx-auto flex flex-col justify-center items-center ${
+            location.pathname.startsWith("/product/") ? "hidden" : "block"
+          } text-white md:mb-8 relative py-3`}
+        >
           <h1 className="text-[40px] md:text-[65px] py-3 font-heading font-[950] capitalized leading-14 z-20">
             Trending Now
           </h1>
@@ -114,21 +150,117 @@ const Trending = () => {
             }}
           >
             {trendingProducts.map((item, index) => {
+              // ✅ Check if THIS specific product is in wishlist
+              const isInWishlist = isProductInWishlist(item.product_id);
+
+              // ✅ Check if THIS specific product is hovered
+              const isHovered = hoveredId === item.product_id;
 
               return (
                 <SwiperSlide
                   key={item.product_id}
                   className="flex justify-center items-start h-auto"
                 >
-                  <Link to={`/product/${item.product_id}`} className="w-full">
+                  <Link
+                    to={`/product/${item.product_id}`}
+                    // ✅ Set hover for THIS product only
+                    onMouseEnter={() => setHoveredId(item.product_id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                    className="w-full"
+                  >
                     <div className="max-w-[100px] md:max-w-[180px] lg:max-w-[250px] mx-auto flex flex-col gap-2 cursor-pointer group pt-2 pb-5">
                       <div className="relative overflow-hidden rounded-[12px]">
-                        <img
-                          src={getImageUrl(item.primary_image)}
-                          alt={item.product_name}
-                          loading="lazy"
-                          className="w-full h-[150px] md:h-[280px] lg:h-[360px] object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
+                        <button
+                          // ✅ Pass specific product to handleWishlist
+                          onClick={(e) => handleWishlist(item, e)}
+                          className="absolute top-2 right-2 lg:top-3 lg:right-3 z-20 rounded-[4px] lg:w-9 lg:h-9 md:w-7 md:h-7 w-6 h-6 bg-slate-800 flex justify-center items-center"
+                        >
+                          <AnimatePresence>
+                            {isInWishlist && (
+                              <motion.div
+                                key="bubbles"
+                                initial={{ opacity: 1 }}
+                                animate={{ opacity: 0 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.6 }}
+                                className="absolute inset-0 flex justify-center items-center"
+                              >
+                                {bubbles.map((_, i) => (
+                                  <motion.span
+                                    key={i}
+                                    className="absolute w-2 h-2 bg-pink-500 rounded-full"
+                                    initial={{
+                                      scale: 0,
+                                      x: 0,
+                                      y: 0,
+                                      opacity: 1,
+                                    }}
+                                    animate={{
+                                      scale: [1, 1.2, 0],
+                                      x:
+                                        Math.cos(
+                                          (i / bubbles.length) * 2 * Math.PI
+                                        ) * 20,
+                                      y:
+                                        Math.sin(
+                                          (i / bubbles.length) * 2 * Math.PI
+                                        ) * 20,
+                                      opacity: [1, 0],
+                                    }}
+                                    transition={{
+                                      duration: 0.6,
+                                      ease: "easeOut",
+                                    }}
+                                  />
+                                ))}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+
+                          <motion.div
+                            key={isInWishlist}
+                            initial={{ scale: 0 }}
+                            animate={{ scale: [0, 1.6, 1] }}
+                            transition={{ duration: 0.4, ease: "easeOut" }}
+                          >
+                            {isInWishlist ? (
+                              <IoHeartSharp className="text-[16px] lg:text-[19px] text-pink-600" />
+                            ) : (
+                              <GoHeart className="text-[15px] lg:text-[18px] text-white" />
+                            )}
+                          </motion.div>
+                        </button>
+
+                        {/* Image/Video Container */}
+                        <div className="relative overflow-hidden rounded-xl">
+                          {/* Image */}
+                          <img
+                            src={getImageUrl(item.image_url)}
+                            alt={item.product_name}
+                            className={`w-full h-[150px] md:h-[280px] lg:h-[360px] object-cover transition-all duration-500 ${
+                              isHovered && item.video_url
+                                ? "opacity-0 scale-110"
+                                : "opacity-100 group-hover:scale-110"
+                            }`}
+                          />
+
+                          {/* Video - Shows on hover if exists */}
+                          {item.video_url && (
+                            <video
+                              src={getImageUrl(item.video_url)}
+                              className={`absolute inset-0 w-full h-[150px] md:h-[280px] lg:h-[360px] object-cover transition-all duration-500 ${
+                                isHovered
+                                  ? "opacity-100 scale-110"
+                                  : "opacity-0 scale-100 pointer-events-none"
+                              }`}
+                              autoPlay={isHovered}
+                              loop
+                              muted
+                              playsInline
+                            />
+                          )}
+
+                        </div>
                       </div>
 
                       <div className="w-full flex flex-col md:flex-row justify-between items-start text-white gap-2">

@@ -12,6 +12,7 @@ import {
   Package,
   Truck,
   ShieldCheck,
+  Loader,
 } from "lucide-react";
 import { CartContext } from "../../Context/UseCartContext";
 
@@ -20,22 +21,24 @@ export default function CheckOut() {
 
   // ✅ Get cart data from context
   const {
-    cart, // Cart items array
-    totalPrice, // Total price from context
-    totalItems, // Total items count
-    clearCart, // Clear cart after order
-    loading, // Loading state
-    error, // Error state
-    cartLength, // Number of unique items
+    cart,
+    totalPrice,
+    totalItems,
+    clearCart,
+    loading: cartLoading,
+    error,
   } = useContext(CartContext);
 
-  console.log("checkout", cart);
-
   const [currentStep, setCurrentStep] = useState(1);
-  const [selectedAddressId, setSelectedAddressId] = useState(1);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [showNewAddress, setShowNewAddress] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
 
-  // Form Data
+  // Backend URL
+  const BACKEND_URL = import.meta.env.VITE_API_URL;
+
+  // ✅ Form Data
   const [userDetails, setUserDetails] = useState({
     firstName: "",
     lastName: "",
@@ -47,13 +50,15 @@ export default function CheckOut() {
     type: "home",
     address: "",
     area: "",
-    city: "",
+    landmark: "",
+    town_city: "",
     state: "",
+    country: "India",
     pincode: "",
   });
 
   const [paymentData, setPaymentData] = useState({
-    method: "card",
+    method: "cod",
     cardNumber: "",
     cardName: "",
     expiry: "",
@@ -62,43 +67,158 @@ export default function CheckOut() {
   });
 
   const [errors, setErrors] = useState({});
+  const [savedAddresses, setSavedAddresses] = useState([]);
 
-  // Saved addresses
-  const savedAddresses = [
-    {
-      id: 1,
-      type: "home",
-      name: "John Doe",
-      phone: "9876543210",
-      address: "123, MG Road",
-      area: "Koramangala",
-      city: "Bangalore",
-      state: "Karnataka",
-      pincode: "560034",
-    },
-    {
-      id: 2,
-      type: "office",
-      name: "John Doe",
-      phone: "9876543211",
-      address: "Tech Park, Block A",
-      area: "Whitefield",
-      city: "Bangalore",
-      state: "Karnataka",
-      pincode: "560066",
-    },
-  ];
-
-  // ✅ Check if cart is empty on component mount
+  // ✅ Fetch User Details from Checkout API
   useEffect(() => {
-    if (!loading && cart.length === 0) {
-      alert("Your cart is empty!");
-      navigate("/cart"); // Redirect to cart page
-    }
-  }, [cart, loading, navigate]);
+    const fetchUserDetails = async () => {
+      const token = localStorage.getItem("token");
 
-  // ✅ Calculate totals using cart from context
-  const subtotal = totalPrice; // Already calculated in context
+      if (!token) {
+        // If no token, try to load from localStorage
+        const savedUserData = localStorage.getItem("userData");
+        if (savedUserData) {
+          const userData = JSON.parse(savedUserData);
+          populateUserDetails(userData);
+        }
+        setProfileLoading(false);
+        return;
+      }
+
+      try {
+        setProfileLoading(true);
+
+        // ✅ Use checkout API endpoint
+        const response = await fetch(
+          `${BACKEND_URL}/api/checkout/user-details`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch user details");
+        }
+
+        const data = await response.json();
+        console.log("User details from checkout API:", data);
+
+        // ✅ Auto-populate user details
+        if (data.user || data.userDetails) {
+          const user = data.user || data.userDetails;
+          populateUserDetails(user);
+        } else if (data.success && data.data) {
+          populateUserDetails(data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+
+        // Fallback to localStorage
+        const savedUserData = localStorage.getItem("userData");
+        if (savedUserData) {
+          const userData = JSON.parse(savedUserData);
+          populateUserDetails(userData);
+        }
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    fetchUserDetails();
+  }, []);
+
+  // ✅ Helper function to populate user details
+  const populateUserDetails = (userData) => {
+    const nameParts = userData.name ? userData.name.split(" ") : ["", ""];
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
+
+    setUserDetails({
+      firstName: firstName || userData.firstName || "",
+      lastName: lastName || userData.lastName || "",
+      email: userData.email || "",
+      phone: userData.phone || "",
+    });
+  };
+
+  // ✅ Fetch Addresses from Checkout API
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+
+        // ✅ Use checkout addresses API endpoint
+        const response = await fetch(`${BACKEND_URL}/api/checkout/addresses`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch addresses");
+        }
+
+        const data = await response.json();
+        console.log("Addresses from checkout API:", data);
+
+        // ✅ Handle different response formats
+        let addressList = [];
+        if (data.addresses) {
+          addressList = data.addresses;
+        } else if (data.data) {
+          addressList = data.data;
+        } else if (Array.isArray(data)) {
+          addressList = data;
+        }
+
+        if (addressList.length > 0) {
+          setSavedAddresses(addressList);
+
+          // ✅ Auto-select default address
+          const defaultAddress = addressList.find(
+            (addr) => addr.isDefault || addr.is_default || addr.default
+          );
+
+          if (defaultAddress) {
+            setSelectedAddressId(defaultAddress.id || defaultAddress._id);
+          } else {
+            // Select first address if no default
+            setSelectedAddressId(addressList[0].id || addressList[0]._id);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching addresses:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAddresses();
+  }, []);
+
+  // ✅ Check if cart is empty
+  useEffect(() => {
+    if (!cartLoading && cart.length === 0) {
+      alert("Your cart is empty!");
+      navigate("/cart");
+    }
+  }, [cart, cartLoading, navigate]);
+
+  // ✅ Calculate totals
+  const subtotal = totalPrice;
   const shipping = subtotal > 0 ? 99 : 0;
   const tax = subtotal * 0.18;
   const total = subtotal + shipping + tax;
@@ -108,25 +228,75 @@ export default function CheckOut() {
     const newErrors = {};
 
     if (currentStep === 1) {
-      if (!userDetails.firstName) newErrors.firstName = "Required";
-      if (!userDetails.lastName) newErrors.lastName = "Required";
-      if (!userDetails.email) newErrors.email = "Required";
-      if (!userDetails.phone) newErrors.phone = "Required";
+      if (!userDetails.firstName.trim())
+        newErrors.firstName = "First name is required";
+      if (!userDetails.email.trim()) newErrors.email = "Email is required";
+      if (!userDetails.phone.trim())
+        newErrors.phone = "Phone number is required";
+
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (userDetails.email && !emailRegex.test(userDetails.email)) {
+        newErrors.email = "Invalid email format";
+      }
+
+      // Phone validation
+      const phoneRegex = /^[0-9]{10}$/;
+      if (
+        userDetails.phone &&
+        !phoneRegex.test(userDetails.phone.replace(/\s/g, ""))
+      ) {
+        newErrors.phone = "Invalid phone number (10 digits required)";
+      }
     }
 
-    if (currentStep === 2 && showNewAddress) {
-      if (!newAddress.address) newErrors.address = "Required";
-      if (!newAddress.area) newErrors.area = "Required";
-      if (!newAddress.city) newErrors.city = "Required";
-      if (!newAddress.state) newErrors.state = "Required";
-      if (!newAddress.pincode) newErrors.pincode = "Required";
+    if (currentStep === 2) {
+      // If no address is selected and not adding new address
+      if (!selectedAddressId && !showNewAddress) {
+        newErrors.address = "Please select or add an address";
+      }
+
+      // Validate new address form if visible
+      if (showNewAddress) {
+        if (!newAddress.area.trim()) newErrors.area = "Area is required";
+        if (!newAddress.town_city.trim())
+          newErrors.town_city = "City is required";
+        if (!newAddress.state.trim()) newErrors.state = "State is required";
+        if (!newAddress.country.trim())
+          newErrors.country = "Country is required";
+        if (!newAddress.pincode.trim())
+          newErrors.pincode = "Pincode is required";
+
+        // Pincode validation
+        if (newAddress.pincode && !/^[0-9]{6}$/.test(newAddress.pincode)) {
+          newErrors.pincode = "Invalid pincode (6 digits required)";
+        }
+      }
     }
 
-    if (currentStep === 3 && paymentData.method === "card") {
-      if (!paymentData.cardNumber) newErrors.cardNumber = "Required";
-      if (!paymentData.cardName) newErrors.cardName = "Required";
-      if (!paymentData.expiry) newErrors.expiry = "Required";
-      if (!paymentData.cvv) newErrors.cvv = "Required";
+    if (currentStep === 3) {
+      if (paymentData.method === "card") {
+        if (!paymentData.cardNumber.trim())
+          newErrors.cardNumber = "Card number is required";
+        if (!paymentData.cardName.trim())
+          newErrors.cardName = "Cardholder name is required";
+        if (!paymentData.expiry.trim()) newErrors.expiry = "Expiry is required";
+        if (!paymentData.cvv.trim()) newErrors.cvv = "CVV is required";
+
+        // Card validation
+        if (
+          paymentData.cardNumber &&
+          !/^[0-9]{16}$/.test(paymentData.cardNumber.replace(/\s/g, ""))
+        ) {
+          newErrors.cardNumber = "Invalid card number (16 digits required)";
+        }
+
+        if (paymentData.cvv && !/^[0-9]{3,4}$/.test(paymentData.cvv)) {
+          newErrors.cvv = "Invalid CVV (3-4 digits required)";
+        }
+      } else if (paymentData.method === "upi") {
+        if (!paymentData.upiId.trim()) newErrors.upiId = "UPI ID is required";
+      }
     }
 
     setErrors(newErrors);
@@ -137,28 +307,45 @@ export default function CheckOut() {
     if (validateStep()) {
       if (currentStep < 4) {
         setCurrentStep(currentStep + 1);
+        setErrors({});
       } else {
         handlePlaceOrder();
       }
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
   const handlePrevious = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
+      setErrors({});
     }
   };
 
-  // ✅ Updated handlePlaceOrder function
+  // ✅ Handle Place Order
   const handlePlaceOrder = async () => {
     try {
+      setLoading(true);
+
+      // Get selected address
+      let deliveryAddress;
+      if (selectedAddressId) {
+        deliveryAddress = savedAddresses.find(
+          (a) => (a.id || a._id) === selectedAddressId
+        );
+      } else if (showNewAddress) {
+        deliveryAddress = newAddress;
+      }
+
       const orderData = {
-        user: userDetails,
-        address: selectedAddressId
-          ? savedAddresses.find((a) => a.id === selectedAddressId)
-          : newAddress,
+        user: {
+          ...userDetails,
+          fullName: `${userDetails.firstName} ${userDetails.lastName}`,
+        },
+        address: deliveryAddress,
         payment: paymentData,
-        items: cart, // ✅ Cart items from context
+        items: cart,
         subtotal,
         shipping,
         tax,
@@ -168,8 +355,6 @@ export default function CheckOut() {
 
       console.log("Order Data:", orderData);
 
-      // ✅ Optional: Send order to backend
-      const BACKEND_URL = import.meta.env.VITE_API_URL;
       const token = localStorage.getItem("token");
 
       const response = await fetch(`${BACKEND_URL}/api/orders/create`, {
@@ -182,23 +367,26 @@ export default function CheckOut() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to place order");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to place order");
       }
 
       const result = await response.json();
 
       if (result.success) {
-        // ✅ Clear cart after successful order
         await clearCart();
-
         alert("Order placed successfully!");
         navigate("/order-success", {
-          state: { orderId: result.orderId },
+          state: { orderId: result.orderId || result.order_id },
         });
+      } else {
+        throw new Error(result.message || "Failed to place order");
       }
     } catch (error) {
       console.error("Error placing order:", error);
-      alert("Failed to place order. Please try again.");
+      alert(error.message || "Failed to place order. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -210,10 +398,13 @@ export default function CheckOut() {
   ];
 
   // ✅ Show loading state
-  if (loading) {
+  if (profileLoading || (cartLoading && cart.length === 0)) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white text-xl">Loading checkout...</div>
+      <div className="min-h-screen bg-black flex items-center justify-center mt-20">
+        <div className="text-center">
+          <Loader className="w-12 h-12 text-white animate-spin mx-auto mb-4" />
+          <p className="text-gray-400 text-lg font-body">Loading checkout...</p>
+        </div>
       </div>
     );
   }
@@ -221,8 +412,16 @@ export default function CheckOut() {
   // ✅ Show error if any
   if (error) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-red-500 text-xl">Error: {error}</div>
+      <div className="min-h-screen bg-black flex items-center justify-center mt-20">
+        <div className="text-center">
+          <div className="text-red-500 text-xl mb-4">Error: {error}</div>
+          <button
+            onClick={() => navigate("/cart")}
+            className="bg-[#8E6740] text-white px-6 py-3 rounded-lg hover:bg-[#6b4e2f]"
+          >
+            Go to Cart
+          </button>
+        </div>
       </div>
     );
   }
@@ -237,7 +436,6 @@ export default function CheckOut() {
           </h1>
           <p className="text-gray-400 text-sm md:text-base">
             Complete your purchase in few simple steps
-            {/* ✅ Show total items */}
             <span className="ml-2 text-[#8E6740]">
               ({totalItems} {totalItems === 1 ? "item" : "items"})
             </span>
@@ -245,7 +443,7 @@ export default function CheckOut() {
         </div>
 
         {/* Progress Steps */}
-        <div className=" mb-12">
+        <div className="mb-12">
           <div className="flex items-center justify-between max-w-3xl mx-auto md:px-4">
             {steps.map((step, index) => {
               const Icon = step.icon;
@@ -300,7 +498,7 @@ export default function CheckOut() {
           {/* Left Side - Form */}
           <div className="lg:col-span-2">
             <div className="bg-gradient-to-br from-gray-900 to-black rounded-3xl shadow-2xl p-6 md:p-10 border border-gray-800 transition-all duration-500">
-              {/* Step 1: User Details - SAME AS BEFORE */}
+              {/* Step 1: User Details */}
               {currentStep === 1 && (
                 <div className="space-y-6 animate-slideInLeft">
                   <div className="flex items-center gap-3 mb-6">
@@ -311,6 +509,17 @@ export default function CheckOut() {
                       Personal Information
                     </h2>
                   </div>
+
+                  {/* ✅ Show info if auto-populated */}
+                  {userDetails.email && (
+                    <div className="bg-[#8E6740]/10 border border-[#8E6740]/30 rounded-xl p-4 mb-4">
+                      <p className="text-[#8E6740] text-sm flex items-center gap-2">
+                        <Check size={16} />
+                        Your information has been auto-filled from your profile.
+                        You can edit if needed.
+                      </p>
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="group">
@@ -343,7 +552,7 @@ export default function CheckOut() {
 
                     <div className="group">
                       <label className="block text-sm font-medium text-gray-300 mb-2 transition-colors group-focus-within:text-[#8E6740]">
-                        Last Name *
+                        Last Name (Optional)
                       </label>
                       <input
                         type="text"
@@ -354,12 +563,7 @@ export default function CheckOut() {
                             lastName: e.target.value,
                           })
                         }
-                        className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
-                      ${
-                        errors.lastName
-                          ? "border-red-500 shake"
-                          : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
-                      }`}
+                        className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300 border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20`}
                         placeholder="Enter last name"
                       />
                       {errors.lastName && (
@@ -428,7 +632,7 @@ export default function CheckOut() {
                 </div>
               )}
 
-              {/* Step 2: Address - SAME AS BEFORE */}
+              {/* Step 2: Address */}
               {currentStep === 2 && (
                 <div className="space-y-6 animate-slideInLeft">
                   <div className="flex items-center gap-3 mb-6">
@@ -440,66 +644,113 @@ export default function CheckOut() {
                     </h2>
                   </div>
 
+                  {/* ✅ Show error if no address selected */}
+                  {errors.address && (
+                    <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-4">
+                      <p className="text-red-400 text-sm flex items-center gap-2">
+                        ⚠️ {errors.address}
+                      </p>
+                    </div>
+                  )}
+
                   {!showNewAddress ? (
                     <>
-                      {/* Saved Addresses */}
-                      <div className="grid grid-cols-1 gap-4">
-                        {savedAddresses.map((addr) => (
-                          <div
-                            key={addr.id}
-                            onClick={() => setSelectedAddressId(addr.id)}
-                            className={`group p-5 border-2 rounded-2xl cursor-pointer transition-all duration-300 transform hover:scale-[1.02]
-                          ${
-                            selectedAddressId === addr.id
-                              ? "border-[#8E6740] bg-gradient-to-br from-[#8E6740]/10 to-transparent shadow-lg shadow-[#8E6740]/20"
-                              : "border-gray-700 bg-black/30 hover:border-gray-600"
-                          }`}
-                          >
-                            <div className="flex items-start justify-between mb-3">
-                              <div className="flex items-center gap-3">
-                                <div
-                                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors
-                              ${
-                                selectedAddressId === addr.id
-                                  ? "bg-[#8E6740] text-white"
-                                  : "bg-gray-800 text-gray-400"
-                              }`}
-                                >
-                                  <Home size={18} />
-                                </div>
-                                <div>
-                                  <span className="font-semibold capitalize text-white text-lg">
-                                    {addr.type}
-                                  </span>
-                                  <p className="text-xs text-gray-400 mt-0.5">
-                                    Default address
-                                  </p>
-                                </div>
-                              </div>
-                              {selectedAddressId === addr.id && (
-                                <div className="w-8 h-8 rounded-full bg-[#8E6740] flex items-center justify-center animate-scaleIn">
-                                  <Check size={16} className="text-white" />
-                                </div>
-                              )}
-                            </div>
-                            <div className="ml-13 space-y-1">
-                              <p className="text-sm font-medium text-gray-200">
-                                {addr.name}
-                              </p>
-                              <p className="text-sm text-gray-400">
-                                {addr.address}, {addr.area}
-                              </p>
-                              <p className="text-sm text-gray-400">
-                                {addr.city}, {addr.state} - {addr.pincode}
-                              </p>
-                              <p className="text-sm text-gray-400 mt-2 flex items-center gap-2">
-                                <span className="text-[#8E6740]">📞</span>
-                                {addr.phone}
-                              </p>
-                            </div>
+                      {/* ✅ Saved Addresses */}
+                      {savedAddresses.length > 0 ? (
+                        <>
+                          <div className="bg-[#8E6740]/10 border border-[#8E6740]/30 rounded-xl p-4 mb-4">
+                            <p className="text-[#8E6740] text-sm flex items-center gap-2">
+                              <Check size={16} />
+                              {savedAddresses.length} saved{" "}
+                              {savedAddresses.length === 1
+                                ? "address"
+                                : "addresses"}{" "}
+                              found
+                            </p>
                           </div>
-                        ))}
-                      </div>
+
+                          <div className="grid grid-cols-1 gap-4">
+                            {savedAddresses.map((addr) => {
+                              const addressId = addr.id || addr._id;
+                              const isDefault =
+                                addr.isDefault ||
+                                addr.is_default ||
+                                addr.default;
+
+                              return (
+                                <div
+                                  key={addressId}
+                                  onClick={() =>
+                                    setSelectedAddressId(addressId)
+                                  }
+                                  className={`group p-5 border-2 rounded-2xl cursor-pointer transition-all duration-300 transform hover:scale-[1.02]
+                            ${
+                              selectedAddressId === addressId
+                                ? "border-[#8E6740] bg-gradient-to-br from-[#8E6740]/10 to-transparent shadow-lg shadow-[#8E6740]/20"
+                                : "border-gray-700 bg-black/30 hover:border-gray-600"
+                            }`}
+                                >
+                                  <div className="flex items-start justify-between mb-3">
+                                    <div className="flex items-center gap-3">
+                                      <div
+                                        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors
+                                ${
+                                  selectedAddressId === addressId
+                                    ? "bg-[#8E6740] text-white"
+                                    : "bg-gray-800 text-gray-400"
+                                }`}
+                                      >
+                                        <Home size={18} />
+                                      </div>
+                                      <div>
+                                        <span className="font-semibold capitalize text-white text-lg">
+                                          {addr.type || "Home"}
+                                        </span>
+                                        {isDefault && (
+                                          <p className="text-xs text-gray-400 mt-0.5">
+                                            Default address
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
+                                    {selectedAddressId === addressId && (
+                                      <div className="w-8 h-8 rounded-full bg-[#8E6740] flex items-center justify-center animate-scaleIn">
+                                        <Check
+                                          size={16}
+                                          className="text-white"
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="ml-13 space-y-1">
+                                    <p className="text-sm text-gray-400">
+                                      {addr.area && `${addr.area}, `}
+                                      {addr.landmark && `${addr.landmark}, `}
+                                      {addr.town_city && `${addr.town_city}, `}
+                                      {addr.state && `${addr.state}, `}
+                                      {addr.country && `${addr.country} - `}
+                                      {addr.pincode}
+                                    </p>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-8 text-center">
+                          <MapPin
+                            className="mx-auto text-gray-500 mb-3"
+                            size={48}
+                          />
+                          <p className="text-gray-400 text-lg mb-2">
+                            No saved addresses found
+                          </p>
+                          <p className="text-gray-500 text-sm">
+                            Add a new address to continue
+                          </p>
+                        </div>
+                      )}
 
                       <button
                         onClick={() => setShowNewAddress(true)}
@@ -527,120 +778,172 @@ export default function CheckOut() {
                       </div>
 
                       <div className="flex gap-4">
-                        <label className="flex-1 relative">
-                          <input
-                            type="radio"
-                            name="type"
-                            value="home"
-                            checked={newAddress.type === "home"}
-                            onChange={(e) =>
-                              setNewAddress({
-                                ...newAddress,
-                                type: e.target.value,
-                              })
-                            }
-                            className="peer sr-only"
-                          />
-                          <div className="flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all duration-300 peer-checked:border-[#8E6740] peer-checked:bg-[#8E6740]/10 border-gray-700 bg-black/30 hover:border-gray-600">
-                            <Home size={18} className="text-gray-400" />
-                            <span className="text-gray-300 font-medium">
-                              Home
-                            </span>
-                          </div>
-                        </label>
+                        {["home", "work", "other"].map((type) => (
+                          <label key={type} className="flex-1 relative">
+                            <input
+                              type="radio"
+                              name="type"
+                              value={type}
+                              checked={newAddress.type === type}
+                              onChange={(e) =>
+                                setNewAddress({
+                                  ...newAddress,
+                                  type: e.target.value,
+                                })
+                              }
+                              className="peer sr-only"
+                            />
+                            <div className="flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all duration-300 peer-checked:border-[#8E6740] peer-checked:bg-[#8E6740]/10 border-gray-700 bg-black/30 hover:border-gray-600">
+                              <Home size={18} className="text-gray-400" />
+                              <span className="text-gray-300 font-medium capitalize">
+                                {type}
+                              </span>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="Area / Locality *"
+                          value={newAddress.area}
+                          onChange={(e) =>
+                            setNewAddress({
+                              ...newAddress,
+                              area: e.target.value,
+                            })
+                          }
+                          className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
+                        ${
+                          errors.area
+                            ? "border-red-500"
+                            : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
+                        }`}
+                        />
+                        {errors.area && (
+                          <span className="text-red-400 text-xs mt-1 block">
+                            {errors.area}
+                          </span>
+                        )}
                       </div>
 
                       <input
                         type="text"
-                        placeholder="House/Flat/Building"
-                        value={newAddress.address}
+                        placeholder="Landmark (Optional)"
+                        value={newAddress.landmark}
                         onChange={(e) =>
                           setNewAddress({
                             ...newAddress,
-                            address: e.target.value,
+                            landmark: e.target.value,
                           })
                         }
-                        className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
-                      ${
-                        errors.address
-                          ? "border-red-500"
-                          : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
-                      }`}
+                        className="w-full px-5 py-3.5 bg-black/50 border-2 border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300"
                       />
 
-                      <input
-                        type="text"
-                        placeholder="Area/Street/Locality"
-                        value={newAddress.area}
-                        onChange={(e) =>
-                          setNewAddress({ ...newAddress, area: e.target.value })
-                        }
-                        className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
-                      ${
-                        errors.area
-                          ? "border-red-500"
-                          : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
-                      }`}
-                      />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <input
+                            type="text"
+                            placeholder="Town / City *"
+                            value={newAddress.town_city}
+                            onChange={(e) =>
+                              setNewAddress({
+                                ...newAddress,
+                                town_city: e.target.value,
+                              })
+                            }
+                            className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
+                          ${
+                            errors.town_city
+                              ? "border-red-500"
+                              : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
+                          }`}
+                          />
+                          {errors.town_city && (
+                            <span className="text-red-400 text-xs mt-1 block">
+                              {errors.town_city}
+                            </span>
+                          )}
+                        </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <input
-                          type="text"
-                          placeholder="City"
-                          value={newAddress.city}
-                          onChange={(e) =>
-                            setNewAddress({
-                              ...newAddress,
-                              city: e.target.value,
-                            })
-                          }
-                          className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
-                        ${
-                          errors.city
-                            ? "border-red-500"
-                            : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
-                        }`}
-                        />
+                        <div>
+                          <input
+                            type="text"
+                            placeholder="State *"
+                            value={newAddress.state}
+                            onChange={(e) =>
+                              setNewAddress({
+                                ...newAddress,
+                                state: e.target.value,
+                              })
+                            }
+                            className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
+                          ${
+                            errors.state
+                              ? "border-red-500"
+                              : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
+                          }`}
+                          />
+                          {errors.state && (
+                            <span className="text-red-400 text-xs mt-1 block">
+                              {errors.state}
+                            </span>
+                          )}
+                        </div>
+                      </div>
 
-                        <select
-                          value={newAddress.state}
-                          onChange={(e) =>
-                            setNewAddress({
-                              ...newAddress,
-                              state: e.target.value,
-                            })
-                          }
-                          className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white focus:outline-none focus:border-[#8E6740] transition-all duration-300
-                        ${
-                          errors.state
-                            ? "border-red-500"
-                            : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
-                        }`}
-                        >
-                          <option value="">Select State</option>
-                          <option value="Tamil Nadu">Tamil Nadu</option>
-                          <option value="Karnataka">Karnataka</option>
-                          <option value="Kerala">Kerala</option>
-                        </select>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <input
+                            type="text"
+                            placeholder="Country *"
+                            value={newAddress.country}
+                            onChange={(e) =>
+                              setNewAddress({
+                                ...newAddress,
+                                country: e.target.value,
+                              })
+                            }
+                            className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
+                          ${
+                            errors.country
+                              ? "border-red-500"
+                              : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
+                          }`}
+                          />
+                          {errors.country && (
+                            <span className="text-red-400 text-xs mt-1 block">
+                              {errors.country}
+                            </span>
+                          )}
+                        </div>
 
-                        <input
-                          type="text"
-                          placeholder="Pincode"
-                          maxLength="6"
-                          value={newAddress.pincode}
-                          onChange={(e) =>
-                            setNewAddress({
-                              ...newAddress,
-                              pincode: e.target.value,
-                            })
-                          }
-                          className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
-                        ${
-                          errors.pincode
-                            ? "border-red-500"
-                            : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
-                        }`}
-                        />
+                        <div>
+                          <input
+                            type="text"
+                            placeholder="Pincode *"
+                            maxLength="6"
+                            value={newAddress.pincode}
+                            onChange={(e) =>
+                              setNewAddress({
+                                ...newAddress,
+                                pincode: e.target.value,
+                              })
+                            }
+                            className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
+                          ${
+                            errors.pincode
+                              ? "border-red-500"
+                              : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
+                          }`}
+                          />
+                          {errors.pincode && (
+                            <span className="text-red-400 text-xs mt-1 block">
+                              {errors.pincode}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -790,11 +1093,11 @@ export default function CheckOut() {
                           })
                         }
                         className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
-                      ${
-                        errors.cardNumber
-                          ? "border-red-500"
-                          : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
-                      }`}
+                  ${
+                    errors.cardNumber
+                      ? "border-red-500"
+                      : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
+                  }`}
                       />
 
                       <input
@@ -808,11 +1111,11 @@ export default function CheckOut() {
                           })
                         }
                         className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
-                      ${
-                        errors.cardName
-                          ? "border-red-500"
-                          : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
-                      }`}
+                  ${
+                    errors.cardName
+                      ? "border-red-500"
+                      : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
+                  }`}
                       />
 
                       <div className="grid grid-cols-2 gap-4">
@@ -827,11 +1130,11 @@ export default function CheckOut() {
                             })
                           }
                           className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
-                        ${
-                          errors.expiry
-                            ? "border-red-500"
-                            : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
-                        }`}
+                    ${
+                      errors.expiry
+                        ? "border-red-500"
+                        : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
+                    }`}
                         />
 
                         <input
@@ -846,11 +1149,11 @@ export default function CheckOut() {
                             })
                           }
                           className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
-                        ${
-                          errors.cvv
-                            ? "border-red-500"
-                            : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
-                        }`}
+                    ${
+                      errors.cvv
+                        ? "border-red-500"
+                        : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
+                    }`}
                         />
                       </div>
                     </div>
@@ -1031,7 +1334,7 @@ export default function CheckOut() {
                 </div>
               )}
 
-              {/* Navigation Buttons - SAME AS BEFORE */}
+              {/* Navigation Buttons */}
               <div className="flex justify-between items-center mt-10 gap-4">
                 <button
                   onClick={handlePrevious}
@@ -1052,12 +1355,17 @@ export default function CheckOut() {
                   disabled={loading}
                   className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#8E6740] to-[#6b4e2f] text-white rounded-xl font-semibold hover:from-[#6b4e2f] hover:to-[#8E6740] transition-all duration-300 shadow-lg shadow-[#8E6740]/50 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading
-                    ? "Processing..."
-                    : currentStep === 4
-                    ? "Place Order"
-                    : "Next"}
-                  <ChevronRight size={20} />
+                  {loading ? (
+                    <>
+                      <Loader size={20} className="animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      {currentStep === 4 ? "Place Order" : "Next"}
+                      <ChevronRight size={20} />
+                    </>
+                  )}
                 </button>
               </div>
             </div>

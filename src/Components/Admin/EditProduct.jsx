@@ -52,7 +52,7 @@ export default function EditProduct() {
     "Designer Saree",
   ];
 
-  const halfSareeSizeOptions = ["Stitched", "Unstitched"];
+  const halfSareeSizeOptions = ["Stitched","Semi-stitched", "Unstitched"];
   const normalSizeOptions = ["S", "M", "L", "XL", "XXL", "XXXL"];
   const kidsSizeOptions = [
     "1-2",
@@ -895,12 +895,6 @@ export default function EditProduct() {
                   value="trending"
                 >
                   Trending
-                </option>
-                <option
-                  className="bg-transparent font-body text-black"
-                  value="new arrival"
-                >
-                  New Arrival
                 </option>
               </select>
             </div>

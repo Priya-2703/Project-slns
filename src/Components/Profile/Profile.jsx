@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import {
   User,
   Package,
+  Eye,
   Heart,
   MapPin,
   Settings,
@@ -18,6 +19,8 @@ import {
   LogIn,
   CircleUserRound,
   Loader,
+  EyeOff,
+  Lock,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -27,7 +30,8 @@ const Profile = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showAuthPopup, setShowAuthPopup] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showAddAddressPopup, setShowAddAddressPopup] = useState(false); // ✅ ADD THIS
+  const [saving, setSaving] = useState(false); // ✅ ADD THIS - separate state for saving
+  const [showAddAddressPopup, setShowAddAddressPopup] = useState(false);
   const [newAddress, setNewAddress] = useState({
     area: "",
     landmark: "",
@@ -50,6 +54,17 @@ const Profile = () => {
     pincode: "",
     type: "Home",
     isDefault: false,
+  });
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState({
+    current: false,
+    new: false,
+    confirm: false,
   });
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -232,8 +247,22 @@ const Profile = () => {
 
       const data = await response.json();
 
-      console.log("address", data);
-      setAddresses(data.addresses || []);
+      const formattedAddresses = (data.addresses || []).map((addr) => ({
+        id: addr.id,
+        type: addr.type || "Home",
+        isDefault: addr.isDefault || false,
+        // ✅ Extract from full_details
+        area: addr.full_details?.area || "",
+        landmark: addr.full_details?.landmark || "",
+        town_city: addr.full_details?.town_city || "",
+        state: addr.full_details?.state || "",
+        country: addr.full_details?.country || "India",
+        pincode: addr.full_details?.pincode || "",
+        house_no: addr.full_details?.house_no || "",
+      }));
+
+      console.log("formatted Addresses", formattedAddresses);
+      setAddresses(formattedAddresses || []);
     } catch (error) {
       console.error("Error fetching addresses:", error);
       setAddresses([]);
@@ -297,41 +326,50 @@ const Profile = () => {
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to update address");
-      }
-
+      
       const data = await response.json();
-      console.log("Address updated:", data);
 
-      if (data.success) {
-        // Update the addresses array
-        setAddresses(
-          addresses.map((addr) =>
-            (addr.id || addr._id) === (editingAddress.id || editingAddress._id)
-              ? data.address
-              : addr
-          )
-        );
-        setShowEditAddressPopup(false);
-        setEditingAddress(null);
-        showToast("Address updated successfully!", "success");
+      if (!response.ok) {
+        const errorMessage = data.message || data.error || "Error occurred";
+        showToast(errorMessage, "error" || "Failed to update address");
+        return; 
+      }      
+      // ✅ Handle different backend response formats
+      const updatedAddress = data.address || data.data || editAddressData;
 
-        // Reset form
-        setEditAddressData({
-          area: "",
-          landmark: "",
-          town_city: "",
-          state: "",
-          country: "India",
-          pincode: "",
-          type: "Home",
-          isDefault: false,
-        });
-      }
+      // ✅ Update the addresses array immediately
+      setAddresses((prevAddresses) =>
+        prevAddresses.map((addr) =>
+          (addr.id || addr._id) === (editingAddress.id || editingAddress._id)
+            ? { ...updatedAddress, id: addr.id, _id: addr._id }
+            : addr
+        )
+      );
+
+      // ✅ Close popup
+      setShowEditAddressPopup(false);
+      setEditingAddress(null);
+
+      // ✅ Show success message
+      showToast("Address updated successfully!", "success");
+
+      // ✅ Reset form
+      setEditAddressData({
+        area: "",
+        landmark: "",
+        town_city: "",
+        state: "",
+        country: "India",
+        pincode: "",
+        type: "Home",
+        isDefault: false,
+      });
     } catch (error) {
       console.error("Error updating address:", error);
-      showToast("Failed to update address. Please try again.", "error");
+      showToast(
+        error.message || "Failed to update address. Please try again.",
+        "error"
+      );
     } finally {
       setSavingAddress(false);
     }
@@ -356,6 +394,7 @@ const Profile = () => {
   // ✅ Update Profile
   const handleSave = async () => {
     try {
+      setSaving(true);
       const token = localStorage.getItem("token");
 
       const response = await fetch(`${BACKEND_URL}/api/profile`, {
@@ -367,42 +406,52 @@ const Profile = () => {
         body: JSON.stringify(editData),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to update profile");
-      }
-
       const data = await response.json();
-      console.log("api/update", data);
 
-      if (data.success) {
-        // ✅ Use backend response if available, otherwise use editData
-        const backendUser = data.user || data.data || editData;
-
-        setUserData(backendUser);
-        setEditData(backendUser);
-
-        console.log("updatedData", backendUser);
-
-        localStorage.setItem("userData", JSON.stringify(backendUser));
-
-        alert("Profile updated successfully!");
+      if (!response.ok) {
+        const errorMessage = data.message || data.error || "Error occurred";
+        showToast(errorMessage, "error");
+        return; 
       }
-      setIsEditing(false);
 
-      console.log("isediting", isEditing);
+      if (data.user) {
+        const updatedUserData = {
+          ...data.user,
+          picture: userData.picture || getDefaultAvatar(data.user.name),
+        };
+        setUserData(updatedUserData);
+        setEditData(updatedUserData);
+        localStorage.setItem("userData", JSON.stringify(updatedUserData));
+        setIsEditing(false);
+
+        showToast(data.message || "Profile updated successfully!", "success");
+      } else {
+        throw new Error("No user data received from server");
+      }
     } catch (error) {
-      console.error("Error updating profile:", error);
-      alert("Failed to update profile. Please try again.");
+      console.error("❌ Error updating profile:", error);
+      showToast(
+        error.message || "Failed to update profile. Please try again.",
+        "error"
+      );
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleEdit = () => {
     setIsEditing(true);
-    setEditData({ ...userData });
+    setEditData({
+      ...userData,
+      picture: userData.picture || getDefaultAvatar(userData.name),
+    });
   };
 
   const handleCancel = () => {
-    setEditData({ ...userData });
+    setEditData({
+      ...userData,
+      picture: userData.picture || getDefaultAvatar(userData.name),
+    });
     setIsEditing(false);
   };
 
@@ -427,7 +476,9 @@ const Profile = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete address");
+        const errorMessage = data.message || data.error || "Error occurred";
+        showToast(errorMessage, "error");
+        return; 
       }
 
       setAddresses(addresses.filter((addr) => addr.id !== id));
@@ -490,32 +541,42 @@ const Profile = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to add address");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to add address");
       }
 
       const data = await response.json();
-      console.log("Address added:", data);
+      console.log("Address added - Full Response:", data);
 
-      if (data.success) {
-        setAddresses([...addresses, data.address]);
-        setShowAddAddressPopup(false);
-        showToast("Address added successfully!", "success");
+      // ✅ Handle different backend response formats
+      const savedAddress = data.address || data.data || data;
 
-        // Reset form
-        setNewAddress({
-          area: "",
-          landmark: "",
-          town_city: "",
-          state: "",
-          country: "India",
-          pincode: "",
-          type: "Home",
-          isDefault: false,
-        });
-      }
+      // ✅ Update addresses array immediately
+      setAddresses((prevAddresses) => [...prevAddresses, savedAddress]);
+
+      // ✅ Close popup
+      setShowAddAddressPopup(false);
+
+      // ✅ Show success message
+      showToast("Address added successfully!", "success");
+
+      // ✅ Reset form
+      setNewAddress({
+        area: "",
+        landmark: "",
+        town_city: "",
+        state: "",
+        country: "India",
+        pincode: "",
+        type: "Home",
+        isDefault: false,
+      });
     } catch (error) {
       console.error("Error adding address:", error);
-      showToast("Failed to add address. Please try again.", "error");
+      showToast(
+        error.message || "Failed to add address. Please try again.",
+        "error"
+      );
     } finally {
       setSavingAddress(false);
     }
@@ -568,6 +629,114 @@ const Profile = () => {
       console.error("Error setting default address:", error);
       alert("Failed to update default address. Please try again.");
     }
+  };
+
+  // ✅ Handle Password Input Change
+  const handlePasswordInputChange = (e) => {
+    setPasswordData({
+      ...passwordData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  // ✅ Toggle Password Visibility
+  const togglePasswordVisibility = (field) => {
+    setShowPassword({
+      ...showPassword,
+      [field]: !showPassword[field],
+    });
+  };
+
+  // ✅ Change Password
+  const handleChangePassword = async () => {
+    try {
+      // Validation
+      if (
+        !passwordData.currentPassword ||
+        !passwordData.newPassword ||
+        !passwordData.confirmPassword
+      ) {
+        showToast("Please fill all password fields", "error");
+        return;
+      }
+
+      if (passwordData.newPassword.length < 8) {
+        showToast("New password must be at least 8 characters long", "error");
+        return;
+      }
+
+      if (passwordData.newPassword !== passwordData.confirmPassword) {
+        showToast("New passwords do not match", "error");
+        return;
+      }
+
+      if (passwordData.currentPassword === passwordData.newPassword) {
+        showToast(
+          "New password must be different from current password",
+          "error"
+        );
+        return;
+      }
+
+      setChangingPassword(true);
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `${BACKEND_URL}/api/profile/change-password`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            currentPassword: passwordData.currentPassword,
+            newPassword: passwordData.newPassword,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to change password");
+      }
+
+      if (data.success) {
+        showToast("Password changed successfully!", "success");
+
+        // Reset form
+        setPasswordData({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+      } else {
+        throw new Error(data.message || "Failed to change password");
+      }
+    } catch (error) {
+      console.error("Error changing password:", error);
+      showToast(
+        error.message || "Failed to change password. Please try again.",
+        "error"
+      );
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
+  // ✅ Cancel Password Change
+  const handleCancelPasswordChange = () => {
+    setPasswordData({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+    setShowPassword({
+      current: false,
+      new: false,
+      confirm: false,
+    });
   };
 
   const handleSignInRedirect = () => {
@@ -981,10 +1150,10 @@ const Profile = () => {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={handleSave}
-                                disabled={loading}
+                                disabled={saving}
                                 className="flex items-center gap-2 text-[12px] md:text-[16px] bg-green-600 px-3 md:px-4 py-2 rounded-lg hover:bg-green-700 transition-all duration-300 disabled:opacity-50"
                               >
-                                {loading ? (
+                                {saving ? (
                                   <Loader
                                     size={mobileView ? 14 : 18}
                                     className="animate-spin"
@@ -1347,7 +1516,7 @@ const Profile = () => {
                     </motion.div>
                   )}
 
-                  {/* Settings Tab - SAME AS BEFORE */}
+                  {/* Change Password Tab */}
                   {activeTab === "changePassword" && (
                     <motion.div
                       key="changePassword"
@@ -1355,11 +1524,288 @@ const Profile = () => {
                       initial="hidden"
                       animate="visible"
                       exit="exit"
-                      className="bg-black rounded-[20px] p-4 md:p-8 border border-gray-800 font-body"
+                      className="bg-black rounded-[20px] p-6 md:p-8 border border-gray-900"
                     >
-                      <h2 className="text-2xl font-bold mb-6">
-                        Change Password
-                      </h2>
+                      <div className="flex justify-between items-center mb-6">
+                        <div>
+                          <h2 className="text-[20px] md:text-[28px] font-body font-bold">
+                            Change Password
+                          </h2>
+                          <p className="text-gray-400 text-[12px] md:text-[14px] mt-1">
+                            Keep your account secure by updating your password
+                            regularly
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="max-w-2xl space-y-6">
+                        {/* Current Password */}
+                        <motion.div
+                          variants={inputVariants}
+                          custom={0}
+                          initial="hidden"
+                          animate="visible"
+                        >
+                          <label className="text-gray-400 text-[12px] md:text-[14px] mb-2 block font-body">
+                            Current Password *
+                          </label>
+                          <div className="relative">
+                            <div className="flex items-center gap-3 bg-black px-4 py-3 font-body rounded-[60px] border border-gray-800 focus-within:border-gray-600 transition-colors">
+                              <Lock size={20} className="text-gray-400" />
+                              <input
+                                type={
+                                  showPassword.current ? "text" : "password"
+                                }
+                                name="currentPassword"
+                                value={passwordData.currentPassword}
+                                onChange={handlePasswordInputChange}
+                                placeholder="Enter current password"
+                                className="bg-transparent outline-none flex-1 text-white text-[14px] md:text-[16px]"
+                              />
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  togglePasswordVisibility("current")
+                                }
+                                className="text-gray-400 hover:text-white transition-colors"
+                              >
+                                {showPassword.current ? (
+                                  <EyeOff size={20} />
+                                ) : (
+                                  <Eye size={20} />
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        </motion.div>
+
+                        {/* New Password */}
+                        <motion.div
+                          variants={inputVariants}
+                          custom={1}
+                          initial="hidden"
+                          animate="visible"
+                        >
+                          <label className="text-gray-400 text-[12px] md:text-[14px] mb-2 block font-body">
+                            New Password *
+                          </label>
+                          <div className="relative">
+                            <div className="flex items-center gap-3 bg-black px-4 py-3 font-body rounded-[60px] border border-gray-800 focus-within:border-gray-600 transition-colors">
+                              <Lock size={20} className="text-gray-400" />
+                              <input
+                                type={showPassword.new ? "text" : "password"}
+                                name="newPassword"
+                                value={passwordData.newPassword}
+                                onChange={handlePasswordInputChange}
+                                placeholder="Enter new password (min. 8 characters)"
+                                className="bg-transparent outline-none flex-1 text-white text-[14px] md:text-[16px]"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => togglePasswordVisibility("new")}
+                                className="text-gray-400 hover:text-white transition-colors"
+                              >
+                                {showPassword.new ? (
+                                  <EyeOff size={20} />
+                                ) : (
+                                  <Eye size={20} />
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                          {/* Password Strength Indicator */}
+                          {passwordData.newPassword && (
+                            <div className="mt-2 space-y-1">
+                              <div className="flex gap-1">
+                                {[1, 2, 3, 4].map((level) => (
+                                  <div
+                                    key={level}
+                                    className={`h-1 flex-1 rounded-full transition-colors ${
+                                      passwordData.newPassword.length >=
+                                      level * 2
+                                        ? passwordData.newPassword.length < 8
+                                          ? "bg-red-500"
+                                          : passwordData.newPassword.length < 12
+                                          ? "bg-yellow-500"
+                                          : "bg-green-500"
+                                        : "bg-gray-700"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                              <p className="text-xs text-gray-400">
+                                {passwordData.newPassword.length < 8
+                                  ? "Weak password"
+                                  : passwordData.newPassword.length < 12
+                                  ? "Medium strength"
+                                  : "Strong password"}
+                              </p>
+                            </div>
+                          )}
+                        </motion.div>
+
+                        {/* Confirm New Password */}
+                        <motion.div
+                          variants={inputVariants}
+                          custom={2}
+                          initial="hidden"
+                          animate="visible"
+                        >
+                          <label className="text-gray-400 text-[12px] md:text-[14px] mb-2 block font-body">
+                            Confirm New Password *
+                          </label>
+                          <div className="relative">
+                            <div className="flex items-center gap-3 bg-black px-4 py-3 font-body rounded-[60px] border border-gray-800 focus-within:border-gray-600 transition-colors">
+                              <Lock size={20} className="text-gray-400" />
+                              <input
+                                type={
+                                  showPassword.confirm ? "text" : "password"
+                                }
+                                name="confirmPassword"
+                                value={passwordData.confirmPassword}
+                                onChange={handlePasswordInputChange}
+                                placeholder="Re-enter new password"
+                                className="bg-transparent outline-none flex-1 text-white text-[14px] md:text-[16px]"
+                              />
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  togglePasswordVisibility("confirm")
+                                }
+                                className="text-gray-400 hover:text-white transition-colors"
+                              >
+                                {showPassword.confirm ? (
+                                  <EyeOff size={20} />
+                                ) : (
+                                  <Eye size={20} />
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                          {/* Password Match Indicator */}
+                          {passwordData.confirmPassword && (
+                            <p
+                              className={`text-xs mt-2 ${
+                                passwordData.newPassword ===
+                                passwordData.confirmPassword
+                                  ? "text-green-500"
+                                  : "text-red-500"
+                              }`}
+                            >
+                              {passwordData.newPassword ===
+                              passwordData.confirmPassword
+                                ? "✓ Passwords match"
+                                : "✗ Passwords do not match"}
+                            </p>
+                          )}
+                        </motion.div>
+
+                        {/* Password Requirements */}
+                        <motion.div
+                          variants={inputVariants}
+                          custom={3}
+                          initial="hidden"
+                          animate="visible"
+                          className="bg-gray-800/30 border border-gray-800 rounded-2xl p-4"
+                        >
+                          <h4 className="text-sm font-semibold mb-3 text-gray-300">
+                            Password Requirements:
+                          </h4>
+                          <ul className="space-y-2 text-xs text-gray-400">
+                            <li className="flex items-center gap-2">
+                              <div
+                                className={`w-1.5 h-1.5 rounded-full ${
+                                  passwordData.newPassword.length >= 8
+                                    ? "bg-green-500"
+                                    : "bg-gray-600"
+                                }`}
+                              />
+                              At least 8 characters long
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <div
+                                className={`w-1.5 h-1.5 rounded-full ${
+                                  /[A-Z]/.test(passwordData.newPassword)
+                                    ? "bg-green-500"
+                                    : "bg-gray-600"
+                                }`}
+                              />
+                              Contains uppercase letter
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <div
+                                className={`w-1.5 h-1.5 rounded-full ${
+                                  /[a-z]/.test(passwordData.newPassword)
+                                    ? "bg-green-500"
+                                    : "bg-gray-600"
+                                }`}
+                              />
+                              Contains lowercase letter
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <div
+                                className={`w-1.5 h-1.5 rounded-full ${
+                                  /[0-9]/.test(passwordData.newPassword)
+                                    ? "bg-green-500"
+                                    : "bg-gray-600"
+                                }`}
+                              />
+                              Contains number
+                            </li>
+                            <li className="flex items-center gap-2">
+                              <div
+                                className={`w-1.5 h-1.5 rounded-full ${
+                                  /[!@#$%^&*]/.test(passwordData.newPassword)
+                                    ? "bg-green-500"
+                                    : "bg-gray-600"
+                                }`}
+                              />
+                              Contains special character (!@#$%^&*)
+                            </li>
+                          </ul>
+                        </motion.div>
+
+                        {/* Action Buttons */}
+                        <motion.div
+                          variants={inputVariants}
+                          custom={4}
+                          initial="hidden"
+                          animate="visible"
+                          className="flex gap-3 pt-4"
+                        >
+                          <motion.button
+                            type="button"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={handleChangePassword}
+                            disabled={changingPassword}
+                            className="flex-1 bg-white text-black font-bold py-3 px-6 rounded-lg hover:bg-gray-200 transition-all duration-300 flex items-center justify-center gap-2 font-body disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {changingPassword ? (
+                              <>
+                                <Loader size={20} className="animate-spin" />
+                                Changing Password...
+                              </>
+                            ) : (
+                              <>
+                                <Save size={20} />
+                                Change Password
+                              </>
+                            )}
+                          </motion.button>
+                          <motion.button
+                            type="button"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={handleCancelPasswordChange}
+                            disabled={changingPassword}
+                            className="flex-1 bg-gray-800 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-700 transition-all duration-300 flex items-center justify-center gap-2 font-body disabled:opacity-50"
+                          >
+                            <X size={20} />
+                            Reset
+                          </motion.button>
+                        </motion.div>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
