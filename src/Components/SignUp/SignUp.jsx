@@ -4,6 +4,7 @@ import { assets } from "../../../public/assets/asset";
 import { Link } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
+import axios from "axios";
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -18,15 +19,28 @@ export default function SignUp() {
 
   // ⭐ NEW: Initialize the Google Login Hook
   const googleSignIn = useGoogleLogin({
-    onSuccess: (tokenResponse) => {
-      // The token is in tokenResponse.access_token for implicit flow
-      handleGoogleSuccess(tokenResponse);
+    onSuccess: async (tokenResponse) => {
+      // Get Google user info using the access token
+      const userInfo = await fetch(
+        "https://www.googleapis.com/oauth2/v3/userinfo",
+        {
+          headers: {
+            Authorization: `Bearer ${tokenResponse.access_token}`,
+          },
+        }
+      ).then((res) => res.json());
+
+      console.log("✅ Google user info:", userInfo);
+
+      // Send to backend
+      handleGoogleSuccess(userInfo);
     },
     onError: () => {
-      setError("Google Sign-In was unsuccessful. Please try again.");
+      setError("Google Sign-In failed. Please try again.");
     },
-    flow: "implicit",
+    flow: "implicit", // still fine
   });
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -91,40 +105,32 @@ export default function SignUp() {
     }
   };
 
-  //mock google sign in test
-  const handleGoogleSuccess = async (credentialResponse) => {
-    setLoading(true);
-    setError("");
-    setSuccess("");
+
+  const handleGoogleSuccess = async (userInfo) => {
+    const { name, email, picture, sub } = userInfo;
 
     try {
-      // 1. Decode the Google Token directly on the frontend
-      const decoded = jwtDecode(credentialResponse.credential);
-      console.log("Decoded Google User Info:", decoded); // Console-la paakunga!
+      const response = await axios.post(
+        "http://localhost:5000/api/google-auth",
+        { name, email, picture, sub },
+        { headers: { "Content-Type": "application/json" } }
+      );
 
-      // 2. Simulate storing user data (like your real backend would do)
-      const mockUserData = {
-        name: decoded.name,
-        email: decoded.email,
-        picture: decoded.picture,
-        role: "user", // Default role for testing
-      };
+      const data = response.data;
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
-      localStorage.setItem("token", "dummy-jwt-token-for-google-user"); // Dummy token
-      localStorage.setItem("user", JSON.stringify(mockUserData));
-
-      // 3. Show success message and redirect
-      setSuccess("Google login successful! Redirecting...");
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 1500);
+      setSuccess("Login successful! Redirecting...");
+      setTimeout(() => (window.location.href = "/"), 1000);
     } catch (err) {
-      console.error("Google Login decode error:", err);
-      setError("Failed to process Google login. Please try again.");
+      console.error("Google login error:", err);
+      setError(err.response?.data?.error || "Google login failed");
     } finally {
       setLoading(false);
     }
   };
+
+
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden">
@@ -241,11 +247,10 @@ export default function SignUp() {
                           <X size={14} className="text-red-400" />
                         )}
                         <span
-                          className={`text-[8px] md:text-[10px] ${
-                            passwordValidation.minLength
-                              ? "text-green-300"
-                              : "text-gray-300"
-                          }`}
+                          className={`text-[8px] md:text-[10px] ${passwordValidation.minLength
+                            ? "text-green-300"
+                            : "text-gray-300"
+                            }`}
                         >
                           At least 8 characters
                         </span>
@@ -259,11 +264,10 @@ export default function SignUp() {
                           <X size={14} className="text-red-400" />
                         )}
                         <span
-                          className={`text-[8px] md:text-[10px] ${
-                            passwordValidation.hasUpperCase
-                              ? "text-green-300"
-                              : "text-gray-300"
-                          }`}
+                          className={`text-[8px] md:text-[10px] ${passwordValidation.hasUpperCase
+                            ? "text-green-300"
+                            : "text-gray-300"
+                            }`}
                         >
                           One uppercase letter
                         </span>
@@ -277,11 +281,10 @@ export default function SignUp() {
                           <X size={14} className="text-red-400" />
                         )}
                         <span
-                          className={`text-[8px] md:text-[10px] ${
-                            passwordValidation.hasLowerCase
-                              ? "text-green-300"
-                              : "text-gray-300"
-                          }`}
+                          className={`text-[8px] md:text-[10px] ${passwordValidation.hasLowerCase
+                            ? "text-green-300"
+                            : "text-gray-300"
+                            }`}
                         >
                           One lowercase letter
                         </span>
@@ -295,11 +298,10 @@ export default function SignUp() {
                           <X size={14} className="text-red-400" />
                         )}
                         <span
-                          className={`text-[8px] md:text-[10px] ${
-                            passwordValidation.hasNumber
-                              ? "text-green-300"
-                              : "text-gray-300"
-                          }`}
+                          className={`text-[8px] md:text-[10px] ${passwordValidation.hasNumber
+                            ? "text-green-300"
+                            : "text-gray-300"
+                            }`}
                         >
                           At least one digit
                         </span>
@@ -313,11 +315,10 @@ export default function SignUp() {
                           <X size={14} className="text-red-400" />
                         )}
                         <span
-                          className={`text-[8px] md:text-[10px] ${
-                            passwordValidation.hasSpecialChar
-                              ? "text-green-300"
-                              : "text-gray-300"
-                          }`}
+                          className={`text-[8px] md:text-[10px] ${passwordValidation.hasSpecialChar
+                            ? "text-green-300"
+                            : "text-gray-300"
+                            }`}
                         >
                           One special character (!@#$%^&*)
                         </span>
