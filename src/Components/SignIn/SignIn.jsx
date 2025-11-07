@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { assets } from "../../../public/assets/asset";
 import { Link, Navigate, useNavigate } from "react-router-dom";
-
 // ⭐ NEW: Google Login Import
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+import { CartContext } from "../../Context/UseCartContext";
 
 export default function SignIn() {
   const [formData, setFormData] = useState({
@@ -18,6 +18,7 @@ export default function SignIn() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
+  const { fetchCart, syncCart } = useContext(CartContext);
 
   // ⭐ NEW: Initialize the Google Login Hook
   const googleSignIn = useGoogleLogin({
@@ -65,7 +66,9 @@ export default function SignIn() {
         localStorage.setItem("user", JSON.stringify(data.user));
         localStorage.setItem("userData", JSON.stringify(data.user));
 
-        console.log("login data saved", data.user);
+         console.log("🛒 Fetching cart after login...");
+        await fetchCart();
+        console.log("✅ Cart fetched successfully!");
 
         // ⭐ NEW: Check user role and redirect accordingly
         if (data.user.role === "admin") {

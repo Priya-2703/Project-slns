@@ -476,7 +476,7 @@ export default function EditProduct() {
         stock_quantity: parseInt(formData.stock_quantity),
         video_url: formData.video_url?.trim() || null,
         sub_category: formData.sub_category || null,
-        sizes: JSON.stringify(formData.sizes),
+        sizes: formData.sizes,
       };
 
       if (isNaN(formDataToSend.price) || formDataToSend.price < 0) {
@@ -866,7 +866,7 @@ export default function EditProduct() {
                 value={formData.discount}
                 onChange={handleChange}
                 required
-                step="0.01"
+                step="0"
                 min="0"
                 max="100"
                 className="w-full px-4 py-3 bg-black/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-[#955E30] font-body"

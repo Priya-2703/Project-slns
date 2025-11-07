@@ -39,18 +39,6 @@ export default function AddProduct() {
   const [newSubCategory, setNewSubCategory] = useState("");
   const [editingSubCategory, setEditingSubCategory] = useState(null);
 
-  // 🎯 Default Sub-category options for Sarees
-  const defaultSareeSubCategories = [
-    "Kanchipuram Saree",
-    "Mysore Silk Saree",
-    "Banarasi Saree",
-    "Pochampally Saree",
-    "Cotton Saree",
-    "Silk Saree",
-    "Pattu Saree",
-    "Designer Saree",
-  ];
-
   // 🎯 Size options
   const halfSareeSizeOptions = ["Stitched","Semi-stitched", "Unstitched"];
   const normalSizeOptions = ["S", "M", "L", "XL", "XXL", "XXXL"];
@@ -114,7 +102,6 @@ export default function AddProduct() {
 
     // Check for duplicates
     const allSubCategories = [
-      ...defaultSareeSubCategories,
       ...customSubCategories,
     ];
     if (
@@ -389,7 +376,7 @@ export default function AddProduct() {
 
   // 🎯 Get all sub-categories (default + custom)
   const getAllSubCategories = () => {
-    return [...defaultSareeSubCategories, ...customSubCategories];
+    return [...customSubCategories];
   };
 
   const isSareeCategory = selectedCategoryName === "Sarees";
@@ -496,7 +483,7 @@ export default function AddProduct() {
 
                 <div className="space-y-2 max-h-[400px] overflow-y-auto">
                   {/* Default Sub-Categories */}
-                  <div className="mb-4">
+                  {/* <div className="mb-4">
                     <p className="text-white/50 text-xs font-body mb-2 uppercase tracking-wide">
                       Default (Cannot Delete)
                     </p>
@@ -513,7 +500,7 @@ export default function AddProduct() {
                         </span>
                       </div>
                     ))}
-                  </div>
+                  </div> */}
 
                   {/* Custom Sub-Categories */}
                   {customSubCategories.length > 0 && (
@@ -815,7 +802,7 @@ export default function AddProduct() {
                 >
                   Select Saree Type
                 </option>
-                <optgroup className="bg-transparent font-body text-black" label="Default Sub-Categories">
+                {/* <optgroup className="bg-transparent font-body text-black" label="Default Sub-Categories">
                   {defaultSareeSubCategories.map((subCat) => (
                     <option
                       key={subCat}
@@ -825,7 +812,7 @@ export default function AddProduct() {
                       {subCat}
                     </option>
                   ))}
-                </optgroup>
+                </optgroup> */}
                 {customSubCategories.length > 0 && (
                   <optgroup label="Custom Sub-Categories">
                     {customSubCategories.map((subCat) => (

@@ -58,30 +58,38 @@ const CartProvider = ({ children }) => {
     }
   };
 
-  // ✅ Fetch cart when component mounts
   useEffect(() => {
     fetchCart();
-  }, []); // Only run once
+  }, []);
 
   // ✅ 1. Add to Cart - OPTIMISTIC UPDATE (UI first, backend second)
   const addToCart = async (product) => {
     const token = getToken();
 
+    // ✅ Extract selected size
+    const selectedSize = product.selectedSize || null;
+
     // ✅ IMMEDIATE UI UPDATE (Optimistic)
     setCart((prevCart) => {
       const existingItem = prevCart.find(
-        (item) => item.product_id === product.product_id
+        (item) =>
+          item.product_id === product.product_id &&
+          item.selectedSize === selectedSize
       );
 
       let updatedCart;
       if (existingItem) {
         updatedCart = prevCart.map((item) =>
-          item.product_id === product.product_id
+          item.product_id === product.product_id &&
+          item.selectedSize === selectedSize
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       } else {
-        updatedCart = [...prevCart, { ...product, quantity: 1 }];
+        updatedCart = [
+          ...prevCart,
+          { ...product, quantity: 1, selectedSize: selectedSize },
+        ];
       }
 
       localStorage.setItem("cart", JSON.stringify(updatedCart));
@@ -100,9 +108,7 @@ const CartProvider = ({ children }) => {
           body: JSON.stringify({
             product_id: product.product_id,
             quantity: 1,
-            price: product.price,
-            name: product.name,
-            image: product.image,
+            size: selectedSize,
           }),
         });
 
@@ -112,66 +118,98 @@ const CartProvider = ({ children }) => {
 
         const data = await response.json();
 
-        // ✅ Update with backend response if different
-        if (data.cart) {
-          setCart(data.cart);
-          localStorage.setItem("cart", JSON.stringify(data.cart));
-        }
+        await fetchCart();
       } catch (error) {
         console.error("Error syncing cart with backend:", error);
-        // UI already updated, so no rollback needed
+        // ✅ STEP 4: ROLLBACK on error (remove optimistic update)
+        setCart((prevCart) => {
+          const rollbackCart = prevCart.filter(
+            (item) =>
+              item.product_id !== product.product_id &&
+              item.selectedSize !== selectedSize
+          );
+          localStorage.setItem("cart", JSON.stringify(rollbackCart));
+          return rollbackCart;
+        });
+
+        setError(error.message);
       }
     }
   };
 
   // ✅ 2. Remove from Cart - OPTIMISTIC UPDATE
-  const removeFromCart = async (itemId) => {
+  const removeFromCart = async (cartItem) => {
     const token = getToken();
+
+    const { product_id, selectedSize } = cartItem;
 
     // ✅ IMMEDIATE UI UPDATE
     setCart((prevCart) => {
-      const updatedCart = prevCart.filter((item) => item.product_id !== itemId);
+      const updatedCart = prevCart.filter((item) => {
+        // Match by both product_id AND selectedSize
+        return !(
+          item.product_id === product_id && item.selectedSize === selectedSize
+        );
+      });
+
       localStorage.setItem("cart", JSON.stringify(updatedCart));
       return updatedCart;
     });
 
+    console.log("updatedCart", updatedCart);
+
     // ✅ Sync with backend
     if (token) {
       try {
-        const response = await fetch(
-          `${BACKEND_URL}/api/cart/remove/${itemId}`,
-          {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const response = await fetch(`${BACKEND_URL}/api/cart/remove`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            product_id: product_id,
+            size: selectedSize,
+          }),
+        });
 
         if (!response.ok) {
-          console.error("Failed to remove from backend");
+          throw new Error("Failed to remove from backend");
         }
+
+        // ✅ Re-fetch to confirm
+        await fetchCart();
       } catch (error) {
         console.error("Error removing from cart:", error);
+
+        // ✅ Rollback on error
+        setCart((prevCart) => {
+          const rollbackCart = [...prevCart, cartItem];
+          localStorage.setItem("cart", JSON.stringify(rollbackCart));
+          return rollbackCart;
+        });
       }
     }
   };
 
   // ✅ 3. Update Cart Item Quantity - OPTIMISTIC UPDATE
-  const updateCartItemQuantity = async (id, amount) => {
+  const updateCartItemQuantity = async (cartItem, amount) => {
     const token = getToken();
+    const { product_id, selectedSize } = cartItem;
 
-    // ✅ IMMEDIATE UI UPDATE
+    // ✅ IMMEDIATE UI UPDATE - Match by product_id AND size
     setCart((prevCart) => {
       const updatedCart = prevCart
         .map((item) => {
-          if (item.product_id === id) {
+          // Match specific item (product_id + size)
+          if (
+            item.product_id === product_id &&
+            item.selectedSize === selectedSize
+          ) {
             const newQuantity = item.quantity + amount;
 
             // Remove if quantity <= 0
             if (newQuantity <= 0) {
-              removeFromCart(id); // This will handle backend deletion
               return null;
             }
 
@@ -188,13 +226,19 @@ const CartProvider = ({ children }) => {
     // ✅ Sync with backend
     if (token) {
       try {
-        const currentItem = cart.find((item) => item.product_id === id);
+        const currentItem = cart.find(
+          (item) =>
+            item.product_id === product_id && item.selectedSize === selectedSize
+        );
+
         if (!currentItem) return;
 
         const newQuantity = currentItem.quantity + amount;
 
+        // If quantity becomes 0, remove the item
         if (newQuantity <= 0) {
-          return; // Already handled by removeFromCart above
+          await removeFromCart(cartItem);
+          return;
         }
 
         const response = await fetch(`${BACKEND_URL}/api/cart/update`, {
@@ -204,14 +248,18 @@ const CartProvider = ({ children }) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            product_id: id,
+            product_id: product_id,
+            size: selectedSize,
             quantity: newQuantity,
           }),
         });
 
         if (!response.ok) {
-          console.error("Failed to update backend");
+          throw new Error("Failed to update backend");
         }
+
+        // Re-fetch to confirm
+        await fetchCart();
       } catch (error) {
         console.error("Error updating cart:", error);
       }

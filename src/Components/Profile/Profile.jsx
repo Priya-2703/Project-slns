@@ -326,25 +326,16 @@ const Profile = () => {
         }
       );
 
-      
       const data = await response.json();
 
       if (!response.ok) {
         const errorMessage = data.message || data.error || "Error occurred";
         showToast(errorMessage, "error" || "Failed to update address");
-        return; 
-      }      
-      // ✅ Handle different backend response formats
-      const updatedAddress = data.address || data.data || editAddressData;
+        return;
+      }
 
-      // ✅ Update the addresses array immediately
-      setAddresses((prevAddresses) =>
-        prevAddresses.map((addr) =>
-          (addr.id || addr._id) === (editingAddress.id || editingAddress._id)
-            ? { ...updatedAddress, id: addr.id, _id: addr._id }
-            : addr
-        )
-      );
+      // 2️⃣ Database latest data fetching
+      await fetchUserAddresses(token);
 
       // ✅ Close popup
       setShowEditAddressPopup(false);
@@ -411,7 +402,7 @@ const Profile = () => {
       if (!response.ok) {
         const errorMessage = data.message || data.error || "Error occurred";
         showToast(errorMessage, "error");
-        return; 
+        return;
       }
 
       if (data.user) {
@@ -478,7 +469,7 @@ const Profile = () => {
       if (!response.ok) {
         const errorMessage = data.message || data.error || "Error occurred";
         showToast(errorMessage, "error");
-        return; 
+        return;
       }
 
       setAddresses(addresses.filter((addr) => addr.id !== id));
@@ -541,18 +532,16 @@ const Profile = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to add address");
+        const errorMessage =
+          data.message || data.error || "Failed to add address";
+        showToast(errorMessage, "error");
+        return;
       }
 
       const data = await response.json();
-      console.log("Address added - Full Response:", data);
 
-      // ✅ Handle different backend response formats
-      const savedAddress = data.address || data.data || data;
-
-      // ✅ Update addresses array immediately
-      setAddresses((prevAddresses) => [...prevAddresses, savedAddress]);
+      // 2️⃣ Database latest data fetching
+      await fetchUserAddresses(token);
 
       // ✅ Close popup
       setShowAddAddressPopup(false);
