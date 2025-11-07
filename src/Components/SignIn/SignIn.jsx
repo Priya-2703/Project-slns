@@ -22,15 +22,28 @@ export default function SignIn() {
 
   // ⭐ NEW: Initialize the Google Login Hook
   const googleSignIn = useGoogleLogin({
-    onSuccess: (tokenResponse) => {
-      console.log("🔍 Token Response:", tokenResponse);
-      handleGoogleSuccess(tokenResponse);
+    onSuccess: async (tokenResponse) => {
+      // Get Google user info using the access token
+      const userInfo = await fetch(
+        "https://www.googleapis.com/oauth2/v3/userinfo",
+        {
+          headers: {
+            Authorization: `Bearer ${tokenResponse.access_token}`,
+          },
+        }
+      ).then((res) => res.json());
+
+      console.log("✅ Google user info:", userInfo);
+
+      // Send to backend
+      handleGoogleSuccess(userInfo);
     },
     onError: () => {
-      setError("Google Sign-In was unsuccessful. Please try again.");
+      setError("Google Sign-In failed. Please try again.");
     },
-    flow: "implicit",
+    flow: "implicit", // still fine
   });
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -95,102 +108,32 @@ export default function SignIn() {
     }
   };
 
-  //mock google sign in test
-  const handleGoogleSuccess = async (tokenResponse) => {
-    setLoading(true);
-    setError("");
-    setSuccess("");
+
+  // ⭐ NEW: Google Login Success Handler
+  const handleGoogleSuccess = async (userInfo) => {
+    const { name, email, picture, sub } = userInfo;
 
     try {
-      console.log("🔍 Full Token Response:", tokenResponse);
-
-      // ✅ With implicit flow, we get access_token, NOT credential
-      const accessToken = tokenResponse.access_token;
-
-      if (!accessToken) {
-        throw new Error("No access token received from Google");
-      }
-
-      console.log("✅ Access Token:", accessToken);
-
-      // ✅ Fetch user info from Google API using access token
-      const userInfoResponse = await axios.get(
-        "https://www.googleapis.com/oauth2/v3/userinfo",
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
+      const response = await axios.post(
+        "http://localhost:5000/api/google-auth",
+        { name, email, picture, sub },
+        { headers: { "Content-Type": "application/json" } }
       );
 
-      const googleUser = userInfoResponse.data;
-      console.log("✅ Google User Info:", googleUser);
+      const data = response.data;
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
-      // Create user data object
-      const mockUserData = {
-        name: googleUser.name,
-        email: googleUser.email,
-        picture: googleUser.picture,
-        role: "user",
-        phone: "",
-        dob: "",
-        gender: "",
-      };
-
-      // Store data
-      const mockToken = "google-oauth-token-" + Date.now();
-      localStorage.setItem("token", mockToken);
-      localStorage.setItem("userData", JSON.stringify(mockUserData));
-      localStorage.setItem("user", JSON.stringify(mockUserData));
-
-      console.log("✅ Google login data saved:", mockUserData);
-
-      setSuccess("Google login successful! Redirecting to profile...");
-      setTimeout(() => {
-        navigate("/profile");
-      }, 1500);
+      setSuccess("Login successful! Redirecting...");
+      setTimeout(() => (window.location.href = "/"), 1000);
     } catch (err) {
-      console.error("❌ Google Login error:", err);
-      console.error("Error details:", err.response?.data || err.message);
-      setError("Failed to process Google login. Please try again.");
+      console.error("Google login error:", err);
+      setError(err.response?.data?.error || "Google login failed");
     } finally {
       setLoading(false);
     }
   };
 
-  // ⭐ NEW: Google Login Success Handler
-  // const handleGoogleSuccess = async (credentialResponse) => {
-  //   const googleToken = credentialResponse.credential;
-  //   setLoading(true);
-  //   setError("");
-  //   setSuccess("");
-
-  //   try {
-  //     const response = await axios.post(
-  //       "http://localhost:5000/api/auth/google-login",
-  //       { token: googleToken }
-  //     );
-  //     const data = response.data;
-
-  //     localStorage.setItem("token", data.appToken); // Assuming backend sends 'appToken'
-  //     localStorage.setItem("user", JSON.stringify(data.user));
-
-  //     if (data.user.role === "admin") {
-  //       setSuccess("Admin login successful! Redirecting to dashboard...");
-  //       setTimeout(() => (window.location.href = "/admin/dashboard"), 1000);
-  //     } else {
-  //       setSuccess("Login successful! Redirecting...");
-  //       setTimeout(() => (window.location.href = "/"), 1000);
-  //     }
-  //   } catch (err) {
-  //     console.error("Google Login error:", err);
-  //     setError(
-  //       err.response?.data?.message || "Google login failed. Please try again."
-  //     );
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center overflow-hidden">
