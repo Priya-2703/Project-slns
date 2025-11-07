@@ -8,7 +8,7 @@ const WishlistProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   // Backend API base URL
-  const BACKEND_URL = import.meta.env.VITE_API_URL
+  const BACKEND_URL = import.meta.env.VITE_API_URL;
 
   // Get token for authentication if exists
   const token = localStorage.getItem("token");
@@ -32,14 +32,14 @@ const WishlistProvider = ({ children }) => {
       const data = await response.json();
       setWishlist(data.wishlist || []);
 
-      console.log(data.wishlist)
-      
+      console.log(data.wishlist);
+
       // Save to localStorage for offline support
       localStorage.setItem("wishlist", JSON.stringify(data.wishlist || []));
     } catch (error) {
       console.error("Error fetching wishlist:", error);
       setError(error.message);
-      
+
       // If backend fails, load from localStorage
       const saved = localStorage.getItem("wishlist");
       if (saved) {
@@ -92,7 +92,7 @@ const WishlistProvider = ({ children }) => {
       if (data.success) {
         // If updated wishlist comes from backend
         if (data.wishlist) {
-          console.log("add wishlist",data.wishlist)
+          console.log("add wishlist", data.wishlist);
           setWishlist(data.wishlist);
           localStorage.setItem("wishlist", JSON.stringify(data.wishlist));
         } else {
@@ -102,7 +102,7 @@ const WishlistProvider = ({ children }) => {
               (item) => item.product_id === product.product_id
             );
             if (exists) return prev; // Avoid duplicates
-            
+
             const updatedWishlist = [...prev, product];
             localStorage.setItem("wishlist", JSON.stringify(updatedWishlist));
             return updatedWishlist;
@@ -119,7 +119,7 @@ const WishlistProvider = ({ children }) => {
           (item) => item.product_id === product.product_id
         );
         if (exists) return prev;
-        
+
         const updatedWishlist = [...prev, product];
         localStorage.setItem("wishlist", JSON.stringify(updatedWishlist));
         return updatedWishlist;
@@ -160,9 +160,7 @@ const WishlistProvider = ({ children }) => {
       setError(error.message);
 
       // Local remove as fallback
-      const updatedWishlist = wishlist.filter(
-        (item) => item.product_id !== id
-      );
+      const updatedWishlist = wishlist.filter((item) => item.product_id !== id);
       setWishlist(updatedWishlist);
       localStorage.setItem("wishlist", JSON.stringify(updatedWishlist));
     } finally {

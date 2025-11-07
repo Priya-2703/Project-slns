@@ -4,10 +4,10 @@ import { FaCircleArrowLeft } from "react-icons/fa6";
 import { useContext, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { IoBusiness } from "react-icons/io5";
-import { CartContext } from "../../Context/UseCartContext";
 import { GoHeart } from "react-icons/go";
 import { WishlistContext } from "../../Context/UseWishListContext";
 import { ToastContext } from "../../Context/UseToastContext";
+import { CartContext } from "../../Context/UseCartContext";
 
 const Navbar = () => {
   const { cart } = useContext(CartContext);

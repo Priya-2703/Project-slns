@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { CartContext } from "../../Context/UseCartContext";
 import { motion } from "framer-motion";
 import { getImageUrl } from "../../utils/imageHelper";
+import SizeChangeModal from "../SizeChangeModal";
 
 function Cart() {
   const {
@@ -16,8 +17,28 @@ function Cart() {
   } = useContext(CartContext);
 
   useEffect(() => {
-  document.title = `Cart (${cart.length}) - SLNS Sarees`;
-}, [cart.length]);
+    document.title = `Cart (${cart.length}) - SLNS Sarees`;
+  }, [cart.length]);
+
+  const [sizeModalOpen, setSizeModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  // ✅ Open Size Change Modal
+  const handleSizeClick = (item) => {
+    setSelectedProduct(item);
+    setSizeModalOpen(true);
+  };
+
+  // ✅ Handle Size Change
+  const handleSizeChange = (newSize) => {
+    if (selectedProduct) {
+      changeCartItemSize(
+        selectedProduct.product_id,
+        selectedProduct.selectedSize,
+        newSize
+      );
+    }
+  };
 
   // Math
   const currency = (n) =>
@@ -28,7 +49,7 @@ function Cart() {
     [cart]
   );
 
-  console.log('cart page data',cart)
+  console.log("cart page data", cart);
 
   // Optional: basic delivery fee logic (edit/Remove if not needed)
   const shipping = subtotal > 1000 && subtotal < 7000 ? 0 : 100;
@@ -241,7 +262,7 @@ function Cart() {
                           className="flex items-center gap-4"
                         >
                           <motion.img
-                            src={it.image_url}
+                            src={getImageUrl(it.primary_image)}
                             alt={it.product_name}
                             className="h-[100px] w-[60px] rounded-lg object-cover ring-1 ring-neutral-800"
                             whileHover={{
@@ -261,16 +282,32 @@ function Cart() {
                             transition={{ delay: index * 0.1 + 0.3 }}
                             className="w-full"
                           >
-                            <p className="font-medium font-body w-full max-w-[150px] md:max-w-[200px] text-white leading-5 line-clamp-2 ">
+                            <p className="font-medium text-[12px] max-w-60 font-body text-white leading-5 line-clamp-2 ">
                               {it.product_name}
                             </p>
-                            <p className="text-sm font-body text-neutral-400">
+                            <p className="text-[8px] font-body text-neutral-400 mt-1">
                               {it.category_name}
                             </p>
+                            {/* ✅ SIZE DISPLAY - Mobile */}
+                            {it.selectedSize && (
+                              <motion.button
+                                onClick={() => handleSizeClick(it)}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="mt-2 inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-md px-2 py-1 transition-colors"
+                              >
+                                <span className="text-gray-400 text-[8px] font-body">
+                                  Size:
+                                </span>
+                                <span className="text-white font-bold text-[8px] font-body">
+                                  {it.selectedSize}
+                                </span>
+                              </motion.button>
+                            )}
                           </motion.div>
                           <div className="w-full flex justify-between items-center">
                             <motion.div
-                              className="text-center font-body font-medium tabular-nums"
+                              className="text-center font-body text-[12px] font-medium tabular-nums"
                               initial={{ opacity: 0 }}
                               animate={{ opacity: 1 }}
                               transition={{ delay: index * 0.1 + 0.4 }}
@@ -280,7 +317,7 @@ function Cart() {
 
                             <div className="flex justify-center items-center mx-3">
                               <motion.button
-                                onClick={() => removeFromCart(it.product_id)}
+                                onClick={() => removeFromCart(it)}
                                 className="h-5 w-5 inline-flex items-center justify-center rounded-full hover:bg-neutral-800 text-neutral-300"
                                 aria-label="Remove item"
                                 whileHover={{
@@ -306,7 +343,9 @@ function Cart() {
                           transition={{ delay: index * 0.1 + 0.3 }}
                         >
                           <motion.button
-                            onClick={() => updateCartItemQuantity(it.product_id, -1)}
+                            onClick={() =>
+                              updateCartItemQuantity(it.product_id, -1)
+                            }
                             className="h-3 w-3 inline-flex items-center justify-center rounded-full hover:bg-neutral-800"
                             aria-label="Decrease"
                             whileHover={{ scale: 1.4 }}
@@ -329,7 +368,9 @@ function Cart() {
                             transition={{ duration: 0.3 }}
                           />
                           <motion.button
-                            onClick={() => updateCartItemQuantity(it.product_id, 1)}
+                            onClick={() =>
+                              updateCartItemQuantity(it.product_id, 1)
+                            }
                             className="h-3 w-3 inline-flex items-center justify-center rounded-full hover:bg-neutral-800"
                             aria-label="Increase"
                             whileHover={{ scale: 1.4 }}
@@ -358,8 +399,9 @@ function Cart() {
                 variants={headerTableVariants}
                 className="lg:w-full grid grid-cols-12 px-4 py-4 text-[12px] font-body uppercase text-neutral-400"
               >
-                <div className="col-span-6">Product</div>
-                <div className="col-span-3 text-center">Quantity</div>
+                <div className="col-span-5">Product</div>
+                <div className="col-span-2 text-center">Size</div>
+                <div className="col-span-2 text-center">Quantity</div>
                 <div className="col-span-2 text-center">Total</div>
                 <div className="col-span-1 text-right">Action</div>
               </motion.div>
@@ -388,7 +430,8 @@ function Cart() {
                       }}
                       className="w-full grid grid-cols-12 items-center gap-10 px-5 py-4"
                     >
-                      <div className="col-span-6 flex items-center gap-4">
+                      {/* product info */}
+                      <div className="col-span-5 flex items-center gap-4">
                         <Link
                           to={`/product/${it.product_id}`}
                           className="flex items-center gap-4"
@@ -396,7 +439,7 @@ function Cart() {
                           <motion.img
                             src={getImageUrl(it.primary_image)}
                             alt={it.product_name}
-                            className="max-w-14 max-h-20 rounded-lg object-cover ring-1 ring-neutral-800"
+                            className="max-w-18 max-h-20 rounded-lg object-cover ring-1 ring-neutral-800"
                             whileHover={{
                               scale: 1.15,
                               rotate: 5,
@@ -416,17 +459,41 @@ function Cart() {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: index * 0.1 + 0.2 }}
                           >
-                            <p className="font-bold font-body text-white leading-5 line-clamp-1">
+                            <p className="font-bold font-body text-[13px] text-white leading-5 line-clamp-2">
                               {it.product_name}
                             </p>
-                            <p className="text-[12px] uppercase font-body text-neutral-400">
+                            <p className="text-[10px] uppercase font-body text-neutral-400 mt-1">
                               {it.category_name}
                             </p>
                           </motion.div>
                         </Link>
                       </div>
 
-                      <div className="col-span-3 flex justify-center">
+                      {/* size info */}
+                      <div className="col-span-2 flex justify-center">
+                        {it.selectedSize ? (
+                          <motion.button
+                            onClick={() => handleSizeClick(it)}
+                            whileHover={{ scale: 1.05, borderColor: "#815a37" }}
+                            whileTap={{ scale: 0.95 }}
+                            className="inline-flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 rounded-full px-4 py-2 transition-all group"
+                          >
+                            <span className="text-gray-400 text-[12px] font-body group-hover:text-white">
+                              Size:
+                            </span>
+                            <span className="text-white font-bold text-[12px] font-body">
+                              {it.selectedSize}
+                            </span>
+                          </motion.button>
+                        ) : (
+                          <span className="text-gray-500 text-sm font-body">
+                            N/A
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Quantity */}
+                      <div className="col-span-2 flex justify-center">
                         <motion.div
                           className="inline-flex items-center gap-2 rounded-full border border-neutral-700 bg-neutral-900 px-2 py-1"
                           initial={{ opacity: 0, scale: 0.8 }}
@@ -438,7 +505,9 @@ function Cart() {
                           }}
                         >
                           <motion.button
-                            onClick={() => updateCartItemQuantity(it.product_id, -1)}
+                            onClick={() =>
+                              updateCartItemQuantity(it, -1)
+                            }
                             className="h-5 w-5 inline-flex items-center justify-center rounded-full hover:bg-neutral-800"
                             aria-label="Decrease"
                             whileHover={{
@@ -464,7 +533,9 @@ function Cart() {
                             transition={{ duration: 0.3 }}
                           />
                           <motion.button
-                            onClick={() => updateCartItemQuantity(it.product_id, 1)}
+                            onClick={() =>
+                              updateCartItemQuantity(it, 1)
+                            }
                             className="h-5 w-5 inline-flex items-center justify-center rounded-full hover:bg-neutral-800"
                             aria-label="Increase"
                             whileHover={{
@@ -479,6 +550,7 @@ function Cart() {
                         </motion.div>
                       </div>
 
+                      {/* Total info */}
                       <motion.div
                         className="col-span-2 text-center font-body font-medium tabular-nums"
                         initial={{ opacity: 0 }}
@@ -488,9 +560,10 @@ function Cart() {
                         {currency(line)}
                       </motion.div>
 
+                      {/* Action info */}
                       <div className="col-span-1 flex justify-center items-center">
                         <motion.button
-                          onClick={() => removeFromCart(it.product_id)}
+                          onClick={() => removeFromCart(it)}
                           className="h-5 w-5 inline-flex items-center justify-center rounded-full hover:bg-neutral-800 text-neutral-300"
                           aria-label="Remove item"
                           whileHover={{
@@ -583,8 +656,21 @@ function Cart() {
           </aside>
         </div>
       </div>
+
+      <SizeChangeModal
+        isOpen={sizeModalOpen}
+        onClose={() => {
+          setSizeModalOpen(false);
+          setSelectedProduct(null);
+        }}
+        currentSize={selectedProduct?.selectedSize}
+        availableSizes={selectedProduct?.sizes || []}
+        onSizeChange={handleSizeChange}
+        productName={selectedProduct?.product_name}
+      />
     </motion.div>
   );
+
 }
 
 /* UI helpers */

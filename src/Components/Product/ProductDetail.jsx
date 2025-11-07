@@ -19,7 +19,6 @@ import { X } from "lucide-react";
 import DarkVeil from "../DarkVeil";
 import Trending from "../pages/Trending";
 
-const img = [`${assets.dhosti1}`, `${assets.dhosti2}`, `${assets.dhosti3}`];
 const images = [
   {
     img: "https://framerusercontent.com/images/vPcvfK8IU12P4Vgp663O0iRQd6M.jpg",
@@ -90,8 +89,8 @@ const ProductDetail = () => {
   const { showToast } = useContext(ToastContext);
   const location = useLocation();
   const [reviewsToShow, setReviewsToShow] = useState(4);
-  // Add this state near the top with other useState declarations
   const [similarProducts, setSimilarProducts] = useState([]);
+  const [selectedSize, setSelectedSize] = useState(null);
 
   // ✅ Dynamic title set pannu
   useEffect(() => {
@@ -116,13 +115,6 @@ const ProductDetail = () => {
         const response = await fetch(`${BACKEND_URL}/api/products`);
         const data = await response.json();
 
-        console.log("All Products:", data.products);
-        console.log(
-          "Current Product Category:",
-          product.category_id,
-          product.category_name
-        );
-
         // ✅ Client-side la same category products ah filter pannu
         const filtered = data.products
           .filter((p) => {
@@ -140,7 +132,6 @@ const ProductDetail = () => {
           })
           .slice(0, 5); // Only first 5 products
 
-        console.log("Filtered Similar Products:", filtered);
         setSimilarProducts(filtered);
       } catch (error) {
         console.error("Error fetching similar products:", error);
@@ -221,7 +212,7 @@ const ProductDetail = () => {
         const response = await fetch(`${BACKEND_URL}/api/products/${id}`);
         const data = await response.json();
 
-        console.log("Full Product Data:", data.product.gender); // ✅ Ippo images array varum
+        console.log("Full Product Data:", data.product); // ✅ Ippo images array varum
         setProduct(data.product);
       } catch (error) {
         console.error("Error fetching product:", error);
@@ -244,7 +235,20 @@ const ProductDetail = () => {
     return `${BACKEND_URL}${imagePath}`;
   };
 
-  console.log("productdetails", product);
+  // ✅ Handle Size Selection
+  const handleSizeSelect = (size) => {
+    setSelectedSize(size);
+  };
+
+  // ✅ Check if can add to cart (size selected)
+  const canAddToCart = useMemo(() => {
+    // If product has sizes, size must be selected
+    if (product.sizes && product.sizes.length > 0) {
+      return selectedSize !== null;
+    }
+    // If no sizes, can add directly
+    return true;
+  }, [product.sizes, selectedSize]);
 
   // Use useMemo to compute isInCart safely
   const isInCart = useMemo(() => {
@@ -252,8 +256,22 @@ const ProductDetail = () => {
     return cart.some((item) => item.product_id === product.product_id);
   }, [cart, product]);
 
-  const { getProductReviews, reviews, totalReviews } =
-    useContext(ReviewContext);
+  const {
+    getProductReviews,
+    fetchProductReviews,
+    loading: reviewsLoading,
+  } = useContext(ReviewContext);
+
+  useEffect(() => {
+    const loadReviews = async () => {
+      if (id) {
+        await fetchProductReviews(id);
+      }
+    };
+
+    loadReviews();
+  }, [id, fetchProductReviews]);
+
   // Direct call without state
   const productReviews = getProductReviews(id);
 
@@ -264,8 +282,22 @@ const ProductDetail = () => {
 
   //add to cart
   const handleAddToCart = async () => {
-    await addToCart(product);
+    if (!canAddToCart) {
+      showToast("Please select a size first! 📏", "error");
+      return;
+    }
+
+    // ✅ Add product with selected size
+    await addToCart({
+      ...product,
+      selectedSize: selectedSize, // ✅ Include selected size
+    });
   };
+
+  // ✅ Reset selected size when product changes
+  useEffect(() => {
+    setSelectedSize(null);
+  }, [id, product.product_id]);
 
   // Get displayed reviews
   const displayedReviews = productReviews.slice(0, reviewsToShow);
@@ -578,32 +610,80 @@ const ProductDetail = () => {
               </div>
             )}
             <div className="flex flex-wrap md:flex-nowrap items-center mt-4 md:mt-7 gap-1">
-              {product?.sizes?.map((size, id) => (
-                <div
-                  key={id}
-                  className="bg-accet capitalize rounded-sm min-w-[60px] px-2 py-1 flex justify-center items-center font-body text-white text-[14px] font-medium hover:bg-accet/80 transition-all duration-200 cursor-pointer"
-                >
-                  {size}
+              {/* Size Selection */}
+              {product.sizes && product.sizes.length > 0 && (
+                <div className="flex flex-col gap-3 mt-4 md:mt-7">
+                  <h3 className="text-white text-[14px] font-body tracking-wide">
+                    Select Size:{" "}
+                    {selectedSize && (
+                      <span className="text-green-400 ml-2">
+                        ✓ {selectedSize}
+                      </span>
+                    )}
+                  </h3>
+
+                  <div className="flex flex-wrap md:flex-nowrap items-center gap-2">
+                    {product.sizes.map((size, id) => (
+                      <button
+                        key={id}
+                        onClick={() => handleSizeSelect(size)}
+                        className={`capitalize rounded-lg min-w-[60px] px-4 py-2 flex justify-center items-center font-body text-[14px] font-normal transition-all duration-200 cursor-pointer ${
+                          selectedSize === size
+                            ? "bg-green-700/20 text-green-500  border border-green-500 scale-110 shadow-lg" // ✅ Selected style
+                            : "bg-accet/20 text-white border border-accet hover:bg-[#bb5e00]/80" // ✅ Unselected style
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* ✅ Size not selected warning */}
+                  {!selectedSize && (
+                    <p className="text-yellow-400 text-[12px] font-body flex items-center gap-2">
+                      <span>⚠️</span> Please select a size to continue
+                    </p>
+                  )}
                 </div>
-              ))}
+              )}
             </div>
 
             <div className="flex w-full flex-col py-8 md:mt-5 gap-3">
-              <button className="text-[16px] text-black px-3 py-4 font-medium font-body rounded-lg w-full bg-white hover:scale-[1.02] transition-all">
-                Purchase Now
+              {/* Purchase Now Button */}
+              <button
+                onClick={() => {
+                  if (!canAddToCart) {
+                    showToast("Please select a size first! 📏", "error");
+                    return;
+                  }
+                  // Handle purchase logic here
+                  showToast("Proceeding to checkout...", "success");
+                  // navigate('/checkout');
+                }}
+                disabled={!canAddToCart}
+                className={`text-[16px] px-3 py-4 font-medium font-body rounded-lg w-full transition-all ${
+                  canAddToCart
+                    ? "bg-white text-black hover:scale-[1.02] cursor-pointer"
+                    : "bg-gray-600 text-gray-400 cursor-not-allowed opacity-50"
+                }`}
+              >
+                {canAddToCart ? "Purchase Now" : "Select Size to Purchase"}
               </button>
 
-              <Link to={"/cart"}>
-                <button
-                  onClick={() => {
-                    handleAddToCart();
-                    handleCart();
-                  }}
-                  className="text-[16px] text-white px-3 py-4 font-body rounded-[8px] w-full bg-accet hover:scale-[1.02] transition-all"
-                >
-                  Add to Cart
-                </button>
-              </Link>
+              <button
+                onClick={() => {
+                  handleAddToCart();
+                  handleCart();
+                }}
+                disabled={!canAddToCart}
+                className={`text-[16px] px-3 py-4 font-body rounded-[8px] w-full transition-all ${
+                  canAddToCart
+                    ? "bg-accet text-white hover:scale-[1.02] cursor-pointer"
+                    : "bg-gray-700 text-gray-500 cursor-not-allowed opacity-50"
+                }`}
+              >
+                {canAddToCart ? "Add to Cart" : "Select Size to Add"}
+              </button>
 
               {/* Virtual Try-On Button */}
               <motion.button
@@ -820,7 +900,9 @@ const ProductDetail = () => {
 
           {/* Display reviews */}
           <div className="grid grid-cols-1 lg:grid-cols-2 items-start md:space-y-2">
-            {displayedReviews.length > 0 ? (
+            {reviewsLoading ? (
+              <div className="loading">Loading reviews...</div>
+            ) : displayedReviews.length > 0 ? (
               displayedReviews.map((review) => (
                 <div
                   key={review.id}

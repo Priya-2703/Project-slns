@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 const ProductReviewForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addReview, totalReviews } = useContext(ReviewContext);
+  const { addReview, loading } = useContext(ReviewContext);
   const { showToast } = useContext(ToastContext);
 
   const [formData, setFormData] = useState({
@@ -27,25 +27,39 @@ const ProductReviewForm = () => {
     setFormData({ ...formData, quality });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation
+
     if (!formData.name || !formData.rating || !formData.review) {
       showToast("Please fill all required fields", "error");
       return;
     }
 
-    // Add review
-    addReview(id, formData);
-    showToast("Review submitted successfully!", "success");
+   try {
+      // ✅ Submit review to backend
+      const result = await addReview(id, {
+        name: formData.name,
+        email: formData.email,
+        rating: formData.rating,
+        review: formData.review,
+        quality: formData.quality || null,
+      });
 
-    // Navigate back to product page
-    navigate(`/product/${id}`, {
-      state: {
-        showCelebration: true,
-      },
-    });
+      if (result.success) {
+        showToast("Review submitted successfully! 🎉", "success");
+
+        // Navigate back with celebration flag
+        navigate(`/product/${id}`, {
+          state: { showCelebration: true },
+        });
+      } else {
+        showToast(result.error || "Failed to submit review", "error");
+      }
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      showToast("Something went wrong. Please try again.", "error");
+    }
   };
 
   return (
