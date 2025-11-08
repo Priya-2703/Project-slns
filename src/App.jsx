@@ -6,6 +6,7 @@ import {
   Routes,
   Route,
 } from "react-router-dom";
+import { AuthProvider } from "./Context/UseAuthContext";
 import Navbar from "./Components/Navbar/Navbar";
 import Footer from "./Components/Footer/Footer";
 import ScrollToTop from "./Components/ScrollToTop";
@@ -268,18 +269,20 @@ function AppContent() {
 const App = () => {
   return (
     <>
-      <ReviewProvider>
-        <ToastProvider>
-          <WishlistProvider>
-            <CartProvider>
-              <Router>
-                <AppContent />
-                <BackToTopButton />
-              </Router>
-            </CartProvider>
-          </WishlistProvider>
-        </ToastProvider>
-      </ReviewProvider>
+      <Router>
+        <ReviewProvider>
+          <ToastProvider>
+            <AuthProvider>
+              <WishlistProvider>
+                <CartProvider>
+                  <AppContent />
+                  <BackToTopButton />
+                </CartProvider>
+              </WishlistProvider>
+            </AuthProvider>
+          </ToastProvider>
+        </ReviewProvider>
+      </Router>
     </>
   );
 };

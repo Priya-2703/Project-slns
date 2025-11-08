@@ -24,7 +24,7 @@ const ProductCard = ({ product }) => {
       showToast("Item removed in Wishlist", "success");
     } else {
       addToWishlist(product);
-      showToast("Item added in Wishlist", "success");
+      // showToast("Item added in Wishlist", "success");
     }
   };
 

@@ -11,7 +11,7 @@ function Cart() {
   const {
     cart,
     totalPrice,
-    totalItems,
+    changeCartItemSize,
     removeFromCart,
     updateCartItemQuantity,
   } = useContext(CartContext);
@@ -28,6 +28,8 @@ function Cart() {
     setSelectedProduct(item);
     setSizeModalOpen(true);
   };
+
+  console.log("cart",cart)
 
   // ✅ Handle Size Change
   const handleSizeChange = (newSize) => {
@@ -471,7 +473,7 @@ function Cart() {
 
                       {/* size info */}
                       <div className="col-span-2 flex justify-center">
-                        {it.selectedSize ? (
+                        {it.selectedSize && it.selectedSize !== "One Size" ? (
                           <motion.button
                             onClick={() => handleSizeClick(it)}
                             whileHover={{ scale: 1.05, borderColor: "#815a37" }}
@@ -486,8 +488,8 @@ function Cart() {
                             </span>
                           </motion.button>
                         ) : (
-                          <span className="text-gray-500 text-sm font-body">
-                            N/A
+                          <span className="text-gray-500 text-[10px] font-body">
+                              {it.selectedSize === "One Size" ? "N/A" : "N/A"}
                           </span>
                         )}
                       </div>

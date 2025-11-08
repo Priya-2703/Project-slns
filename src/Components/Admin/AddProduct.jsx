@@ -11,7 +11,6 @@ export default function AddProduct() {
 
   const BACKEND_URL = import.meta.env.VITE_API_URL;
 
-
   const [formData, setFormData] = useState({
     product_name: "",
     description: "",
@@ -40,9 +39,18 @@ export default function AddProduct() {
   const [editingSubCategory, setEditingSubCategory] = useState(null);
 
   // 🎯 Size options
-  const halfSareeSizeOptions = ["Stitched","Semi-stitched", "Unstitched"];
+  const halfSareeSizeOptions = ["Stitched", "Semi-stitched", "Unstitched"];
   const normalSizeOptions = ["S", "M", "L", "XL", "XXL", "XXXL"];
-  const kidsSizeOptions = ["1-2", "3-4", "5-6", "7-8", "9-10", "11-12","13-14","15-16"];
+  const kidsSizeOptions = [
+    "1-2",
+    "3-4",
+    "5-6",
+    "7-8",
+    "9-10",
+    "11-12",
+    "13-14",
+    "15-16",
+  ];
 
   useEffect(() => {
     fetchCategories();
@@ -101,9 +109,7 @@ export default function AddProduct() {
     }
 
     // Check for duplicates
-    const allSubCategories = [
-      ...customSubCategories,
-    ];
+    const allSubCategories = [...customSubCategories];
     if (
       allSubCategories.some(
         (sub) => sub.toLowerCase() === newSubCategory.toLowerCase()
@@ -249,10 +255,10 @@ export default function AddProduct() {
 
   const handleSelectAllSizes = () => {
     const allSizes = isKidsCategory
-    ? kidsSizeOptions
-    : isHalfSareeCategory
-    ? halfSareeSizeOptions
-    : normalSizeOptions;
+      ? kidsSizeOptions
+      : isHalfSareeCategory
+      ? halfSareeSizeOptions
+      : normalSizeOptions;
 
     if (formData.sizes.length === allSizes.length) {
       setFormData((prev) => ({ ...prev, sizes: [] }));
@@ -388,7 +394,7 @@ export default function AddProduct() {
   const getSizeOptions = () => {
     if (isHalfSareeCategory) {
       return halfSareeSizeOptions;
-    }else if(isKidsCategory){
+    } else if (isKidsCategory) {
       return kidsSizeOptions;
     } else {
       return normalSizeOptions;
@@ -459,7 +465,7 @@ export default function AddProduct() {
                         handleAddSubCategory();
                       }
                     }}
-                    className="flex-1 px-4 py-3 bg-black/30 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-[#955E30] font-body"
+                    className="flex-1 px-4 py-3 bg-black/30 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-[#955E30] capitalize font-body"
                     placeholder="e.g., Kanjeevaram Saree"
                   />
                   <button
@@ -718,7 +724,12 @@ export default function AddProduct() {
                 required
                 className="w-full px-4 py-3 bg-black/10 border border-white/20 rounded-lg text-white focus:outline-none focus:border-[#955E30] font-body"
               >
-                <option className="bg-transparent font-body text-black" value="">Select Category</option>
+                <option
+                  className="bg-transparent font-body text-black"
+                  value=""
+                >
+                  Select Category
+                </option>
                 {categories.map((cat) => (
                   <option
                     key={cat.category_id}
@@ -802,8 +813,8 @@ export default function AddProduct() {
                 >
                   Select Saree Type
                 </option>
-                {/* <optgroup className="bg-transparent font-body text-black" label="Default Sub-Categories">
-                  {defaultSareeSubCategories.map((subCat) => (
+                {customSubCategories.length > 0 &&
+                  customSubCategories.map((subCat) => (
                     <option
                       key={subCat}
                       className="bg-transparent font-body text-black capitalize"
@@ -812,20 +823,6 @@ export default function AddProduct() {
                       {subCat}
                     </option>
                   ))}
-                </optgroup> */}
-                {customSubCategories.length > 0 && (
-                  <optgroup label="Custom Sub-Categories">
-                    {customSubCategories.map((subCat) => (
-                      <option
-                        key={subCat}
-                        className="bg-transparent font-body text-black capitalize"
-                        value={subCat}
-                      >
-                        {subCat} ⭐
-                      </option>
-                    ))}
-                  </optgroup>
-                )}
               </select>
               <p className="text-white/50 text-xs font-body mt-1">
                 Select type of Saree or add custom sub-category
