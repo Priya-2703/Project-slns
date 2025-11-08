@@ -15,6 +15,7 @@ import {
   Loader,
 } from "lucide-react";
 import { CartContext } from "../../Context/UseCartContext";
+import { getImageUrl } from "../../utils/imageHelper";
 
 export default function CheckOut() {
   const navigate = useNavigate();
@@ -26,7 +27,6 @@ export default function CheckOut() {
     totalItems,
     clearCart,
     loading: cartLoading,
-    error,
   } = useContext(CartContext);
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -34,6 +34,7 @@ export default function CheckOut() {
   const [showNewAddress, setShowNewAddress] = useState(false);
   const [loading, setLoading] = useState(false);
   const [profileLoading, setProfileLoading] = useState(true);
+
 
   // Backend URL
   const BACKEND_URL = import.meta.env.VITE_API_URL;
@@ -105,7 +106,6 @@ export default function CheckOut() {
         }
 
         const data = await response.json();
-        console.log("User details from checkout API:", data);
 
         // ✅ Auto-populate user details
         if (data.user || data.userDetails) {
@@ -172,7 +172,6 @@ export default function CheckOut() {
         }
 
         const data = await response.json();
-        console.log("Addresses from checkout API:", data);
 
         // ✅ Handle different response formats
         let addressList = [];
@@ -353,8 +352,6 @@ export default function CheckOut() {
         totalItems,
       };
 
-      console.log("Order Data:", orderData);
-
       const token = localStorage.getItem("token");
 
       const response = await fetch(`${BACKEND_URL}/api/orders/create`, {
@@ -409,22 +406,6 @@ export default function CheckOut() {
     );
   }
 
-  // ✅ Show error if any
-  if (error) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center mt-20">
-        <div className="text-center">
-          <div className="text-red-500 text-xl mb-4">Error: {error}</div>
-          <button
-            onClick={() => navigate("/cart")}
-            className="bg-[#8E6740] text-white px-6 py-3 rounded-lg hover:bg-[#6b4e2f]"
-          >
-            Go to Cart
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-black font-body py-12 px-4 mt-20">
@@ -1210,17 +1191,20 @@ export default function CheckOut() {
                         >
                           <div className="flex items-center gap-4">
                             <img
-                              src={item.image_url}
+                              src={getImageUrl(item.primary_image)}
                               alt={item.product_name}
                               className="w-16 h-16 rounded-lg object-cover"
                             />
                             <div className="w-full max-w-[80%] overflow-hidden">
-                              <span className="text-gray-200 w-full font-medium line-clamp-1">
+                              <span className="text-gray-200 w-full font-medium leading-none line-clamp-1">
                                 {item.product_name}
                               </span>
-                              <span className="text-gray-500 text-sm">
-                                × {item.quantity}
+                              <span className="text-gray-500 text-[12px] leading-none">
+                               QTY : {item.quantity}
                               </span>
+                              <div className="text-gray-500 font-body text-[12px] leading-none ">
+                               Size : {item.size || item.selectedSize}
+                              </div>
                             </div>
                           </div>
                           <span className="font-semibold text-white">
@@ -1387,17 +1371,15 @@ export default function CheckOut() {
                       key={item.product_id}
                       className="flex justify-between items-start p-3 bg-black/30 rounded-xl"
                     >
-                      <div className="flex gap-3">
-                        {item.image && (
+                      <div className="flex gap-2">
                           <img
-                            src={item.image}
+                            src={getImageUrl(item.primary_image)}
                             alt={item.name}
-                            className="w-12 h-12 rounded-lg object-cover"
+                            className="w-10 h-10 rounded-lg object-cover"
                           />
-                        )}
                         <div>
-                          <p className="text-gray-200 font-medium text-sm">
-                            {item.name}
+                          <p className="max-w-40 text-gray-200 font-medium text-[12px] line-clamp-1">
+                            {item.product_name}
                           </p>
                           <p className="text-gray-500 text-xs">
                             Qty: {item.quantity}
@@ -1428,7 +1410,7 @@ export default function CheckOut() {
                   </div>
                 </div>
 
-                <div className="flex justify-between items-center pt-4">
+                <div className="flex justify-between font-body items-center pt-4">
                   <span className="text-white font-bold text-lg">Total</span>
                   <span className="text-[#8E6740] font-bold text-2xl">
                     ₹{total.toFixed(0)}

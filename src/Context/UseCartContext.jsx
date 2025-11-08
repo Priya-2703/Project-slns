@@ -39,6 +39,7 @@ const CartProvider = ({ children }) => {
 
     try {
       setLoading(true);
+      setError(null);
 
       if (!token) {
         const saved = localStorage.getItem("cart");
@@ -69,6 +70,9 @@ const CartProvider = ({ children }) => {
           cart_id: cartId, // ✅ Use whatever field exists
           selectedSize:
             item.selectedSize || item.size || item.product_size || null,
+          product_name: item.product_name || item.name || "Unknown",
+          price: parseFloat(item.price) || 0,
+          quantity: parseInt(item.quantity) || 1,
         };
       });
 
@@ -81,7 +85,23 @@ const CartProvider = ({ children }) => {
       // Fallback to localStorage
       const savedCart = localStorage.getItem("cart");
       if (savedCart) {
-        setCart(JSON.parse(savedCart));
+        try {
+          const parsedCart = JSON.parse(savedCart);
+          setCart(parsedCart);
+
+          if (parsedCart.length === 0) {
+            setError(error.message);
+          } else {
+            console.warn("Using local cart data due to sync error");
+          }
+        } catch (parseError) {
+          console.error("❌ Error parsing localStorage:", parseError);
+          setCart([]);
+          setError(error.message);
+        }
+      } else {
+        setCart([]);
+        setError(error.message);
       }
     } finally {
       setLoading(false);
@@ -124,13 +144,7 @@ const CartProvider = ({ children }) => {
     }
 
     // ✅ Extract selected size
-    const selectedSize = product.selectedSize ||product.size || null;
-
-    console.log("🛒 Adding to cart:", {
-    product_id: product.product_id,
-    name: product.product_name,
-    size: selectedSize
-  });
+    const selectedSize = product.selectedSize || product.size || null;
 
     // ✅ IMMEDIATE UI UPDATE (Optimistic)
     setCart((prevCart) => {
@@ -151,9 +165,12 @@ const CartProvider = ({ children }) => {
       } else {
         updatedCart = [
           ...prevCart,
-          { ...product, quantity: 1, selectedSize: selectedSize,
-            size : selectedSize,
-           },
+          {
+            ...product,
+            quantity: 1,
+            selectedSize: selectedSize,
+            size: selectedSize,
+          },
         ];
       }
 

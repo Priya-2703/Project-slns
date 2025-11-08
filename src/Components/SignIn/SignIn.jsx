@@ -35,7 +35,6 @@ export default function SignIn() {
         }
       ).then((res) => res.json());
 
-      console.log("✅ Google user info:", userInfo);
 
       // Send to backend
       handleGoogleSuccess(userInfo);

@@ -26,7 +26,6 @@ const WishList = () => {
 
   // ✅ Smart Add to Cart Handler
   const handleAddToCartClick = async (item) => {
-    console.log("🎯 Adding to cart from wishlist:", item);
 
     setLoading(true);
 
@@ -43,7 +42,6 @@ const WishList = () => {
       const data = await response.json();
       const fullProduct = data.product || data;
 
-      console.log("📦 Full product:", fullProduct);
 
       // ✅ Check if product has sizes
       const hasSizes =
@@ -52,7 +50,6 @@ const WishList = () => {
         fullProduct.sizes.length > 0;
 
       if (hasSizes) {
-        console.log("📏 Product has sizes:", fullProduct.sizes);
 
         // Merge wishlist item with full product details
         setSelectedProduct({
@@ -62,7 +59,6 @@ const WishList = () => {
         });
         setSizeModalOpen(true);
       } else {
-        console.log("📦 No sizes, adding directly");
 
         // ✅ Add without size (null, not "One Size")
         const cartItem = {
@@ -79,8 +75,6 @@ const WishList = () => {
           quantity: 1,
           price: parseFloat(item.price || fullProduct.price || 0),
         };
-
-        console.log("🛒 Adding to cart:", cartItem);
 
         await addToCart(cartItem);
         showToast(`${cartItem.product_name} added to Cart`, "success");
@@ -111,7 +105,6 @@ const WishList = () => {
         ),
       };
 
-      console.log("📏 Adding with size:", cartItem);
 
       await addToCart(cartItem);
       showToast(`Added to Cart with size ${selectedSize}`, "success");
@@ -129,7 +122,6 @@ const WishList = () => {
     }
   };
 
-  console.log("Wishlist", wishlist);
   const mobileView = window.innerWidth < 480;
 
   // 🎨 Animation Variants

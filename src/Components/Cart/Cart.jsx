@@ -49,8 +49,6 @@ function Cart() {
     [cart]
   );
 
-  console.log("cart page data", cart);
-
   // Optional: basic delivery fee logic (edit/Remove if not needed)
   const shipping = subtotal > 1000 && subtotal < 7000 ? 0 : 100;
 
