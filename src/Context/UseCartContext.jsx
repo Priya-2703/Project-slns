@@ -381,38 +381,38 @@ const CartProvider = ({ children }) => {
   };
 
   // ✅ NEW: Change Cart Item Size
-  const changeCartItemSize = (productId, oldSize, newSize) => {
-    setCart((prevCart) => {
-      // Check if new size already exists
-      const existingNewSizeIndex = prevCart.findIndex(
-        (item) => item.product_id === productId && item.selectedSize === newSize
-      );
+  // const changeCartItemSize = (productId, oldSize, newSize) => {
+  //   setCart((prevCart) => {
+  //     // Check if new size already exists
+  //     const existingNewSizeIndex = prevCart.findIndex(
+  //       (item) => item.product_id === productId && item.selectedSize === newSize
+  //     );
 
-      const oldSizeIndex = prevCart.findIndex(
-        (item) => item.product_id === productId && item.selectedSize === oldSize
-      );
+  //     const oldSizeIndex = prevCart.findIndex(
+  //       (item) => item.product_id === productId && item.selectedSize === oldSize
+  //     );
 
-      if (oldSizeIndex === -1) return prevCart;
+  //     if (oldSizeIndex === -1) return prevCart;
 
-      const updatedCart = [...prevCart];
+  //     const updatedCart = [...prevCart];
 
-      if (existingNewSizeIndex > -1) {
-        // New size already exists - merge quantities
-        updatedCart[existingNewSizeIndex].quantity +=
-          updatedCart[oldSizeIndex].quantity;
-        // Remove old size item
-        updatedCart.splice(oldSizeIndex, 1);
-      } else {
-        // Just update the size
-        updatedCart[oldSizeIndex] = {
-          ...updatedCart[oldSizeIndex],
-          selectedSize: newSize,
-        };
-      }
+  //     if (existingNewSizeIndex > -1) {
+  //       // New size already exists - merge quantities
+  //       updatedCart[existingNewSizeIndex].quantity +=
+  //         updatedCart[oldSizeIndex].quantity;
+  //       // Remove old size item
+  //       updatedCart.splice(oldSizeIndex, 1);
+  //     } else {
+  //       // Just update the size
+  //       updatedCart[oldSizeIndex] = {
+  //         ...updatedCart[oldSizeIndex],
+  //         selectedSize: newSize,
+  //       };
+  //     }
 
-      return updatedCart;
-    });
-  };
+  //     return updatedCart;
+  //   });
+  // };
 
   // ✅ Calculate values (memoized for performance)
   const getCartItems = () => cart;
@@ -453,7 +453,7 @@ const CartProvider = ({ children }) => {
         error,
         fetchCart,
         isInCart,
-        changeCartItemSize,
+        // changeCartItemSize,
         getItemQuantity,
       }}
     >

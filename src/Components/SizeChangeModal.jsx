@@ -15,7 +15,6 @@ const SizeChangeModal = ({
   // Update selected size when current size changes
   useEffect(() => {
     setSelectedSize(currentSize);
-    console.log("available size", availableSizes);
   }, [currentSize]);
 
   const handleConfirm = () => {
