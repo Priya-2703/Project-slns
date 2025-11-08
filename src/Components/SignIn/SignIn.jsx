@@ -78,10 +78,6 @@ export default function SignIn() {
         // ✅ Success: Store token and user data
         login(data.user, data.token);
 
-        console.log("🛒 Fetching cart after login...");
-        await fetchCart();
-        console.log("✅ Cart fetched successfully!");
-
         // ⭐ NEW: Check user role and redirect accordingly
         if (data.user.role === "admin") {
           setSuccess("Admin login successful! Redirecting to dashboard...");

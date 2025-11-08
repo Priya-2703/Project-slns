@@ -8,8 +8,10 @@ import { GoHeart } from "react-icons/go";
 import { WishlistContext } from "../../Context/UseWishListContext";
 import { ToastContext } from "../../Context/UseToastContext";
 import { CartContext } from "../../Context/UseCartContext";
+import { AuthContext } from "../../Context/UseAuthContext";
 
 const Navbar = () => {
+  const { logout} = useContext(AuthContext)
   const { cart } = useContext(CartContext);
   const { wishlist } = useContext(WishlistContext);
   const { showToast } = useContext(ToastContext);
@@ -53,8 +55,10 @@ const Navbar = () => {
   // ⭐ NEW: Logout function
   const handleLogout = () => {
     // Clear all stored data
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+
+    logout()
+    // localStorage.removeItem("token");
+    // localStorage.removeItem("user");
 
     // Update state
     setUser(null);
