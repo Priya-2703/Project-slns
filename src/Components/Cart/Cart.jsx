@@ -1,17 +1,15 @@
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo } from "react";
 import { FaArrowLeft, FaMinus, FaPlus } from "react-icons/fa";
 import { FaTrashCan } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 import { CartContext } from "../../Context/UseCartContext";
 import { motion } from "framer-motion";
 import { getImageUrl } from "../../utils/imageHelper";
-import SizeChangeModal from "../SizeChangeModal";
 
 function Cart() {
   const {
     cart,
     totalPrice,
-    changeCartItemSize,
     removeFromCart,
     updateCartItemQuantity,
   } = useContext(CartContext);
@@ -20,25 +18,25 @@ function Cart() {
     document.title = `Cart (${cart.length}) - SLNS Sarees`;
   }, [cart.length]);
 
-  const [sizeModalOpen, setSizeModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  // const [sizeModalOpen, setSizeModalOpen] = useState(false);
+  // const [selectedProduct, setSelectedProduct] = useState(null);
 
-  // ✅ Open Size Change Modal
-  const handleSizeClick = (item) => {
-    setSelectedProduct(item);
-    setSizeModalOpen(true);
-  };
+  // // ✅ Open Size Change Modal
+  // const handleSizeClick = (item) => {
+  //   setSelectedProduct(item);
+  //   setSizeModalOpen(true);
+  // };
 
   // ✅ Handle Size Change
-  const handleSizeChange = (newSize) => {
-    if (selectedProduct) {
-      changeCartItemSize(
-        selectedProduct.product_id,
-        selectedProduct.selectedSize,
-        newSize
-      );
-    }
-  };
+  // const handleSizeChange = (newSize) => {
+  //   if (selectedProduct) {
+  //     changeCartItemSize(
+  //       selectedProduct.product_id,
+  //       selectedProduct.selectedSize,
+  //       newSize
+  //     );
+  //   }
+  // };
 
   // Math
   const currency = (n) =>
@@ -471,7 +469,6 @@ function Cart() {
                       <div className="col-span-2 flex justify-center">
                         {it.selectedSize && it.selectedSize !== "One Size" ? (
                           <motion.button
-                            onClick={() => handleSizeClick(it)}
                             whileHover={{ scale: 1.05, borderColor: "#815a37" }}
                             whileTap={{ scale: 0.95 }}
                             className="inline-flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 rounded-full px-4 py-2 transition-all group"
@@ -645,7 +642,7 @@ function Cart() {
                         : "0 10px 40px rgba(129, 90, 55, 0.4)",
                   }}
                   whileTap={{ scale: cart.length === 0 ? 1 : 0.95 }}
-                  transition={{ type: "spring", stiffness: 400 }}
+                  Transition={{ type: "spring", stiffness: 400 }}
                 >
                   Checkout Now
                 </motion.button>
@@ -654,7 +651,7 @@ function Cart() {
           </aside>
         </div>
       </div>
-
+{/* 
       <SizeChangeModal
         isOpen={sizeModalOpen}
         onClose={() => {
@@ -665,7 +662,7 @@ function Cart() {
         availableSizes={selectedProduct?.sizes || []}
         onSizeChange={handleSizeChange}
         productName={selectedProduct?.product_name}
-      />
+      /> */}
     </motion.div>
   );
 }
