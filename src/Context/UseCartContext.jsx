@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 export const CartContext = createContext();
 
 const CartProvider = ({ children }) => {
-  const { isAuthenticated, user } = useContext(AuthContext);
+  const { isAuthenticated } = useContext(AuthContext);
   const navigate = useNavigate();
   const [cart, setCart] = useState(() => {
     if (isAuthenticated) {
@@ -39,6 +39,7 @@ const CartProvider = ({ children }) => {
 
     try {
       setLoading(true);
+      setError(null);
 
       if (!token) {
         const saved = localStorage.getItem("cart");
@@ -59,7 +60,21 @@ const CartProvider = ({ children }) => {
       }
 
       const data = await response.json();
-      const cartData = data.cart || [];
+      const cartData = (data.cart || []).map((item) => {
+        // Check multiple possible field names for cart ID
+        const cartId =
+          item.cart_id || item.id || item.cartId || item.cart_item_id;
+
+        return {
+          ...item,
+          cart_id: cartId, // ✅ Use whatever field exists
+          selectedSize:
+            item.selectedSize || item.size || item.product_size || null,
+          product_name: item.product_name || item.name || "Unknown",
+          price: parseFloat(item.price) || 0,
+          quantity: parseInt(item.quantity) || 1,
+        };
+      });
 
       setCart(cartData);
       localStorage.setItem("cart", JSON.stringify(cartData));
@@ -70,7 +85,23 @@ const CartProvider = ({ children }) => {
       // Fallback to localStorage
       const savedCart = localStorage.getItem("cart");
       if (savedCart) {
-        setCart(JSON.parse(savedCart));
+        try {
+          const parsedCart = JSON.parse(savedCart);
+          setCart(parsedCart);
+
+          if (parsedCart.length === 0) {
+            setError(error.message);
+          } else {
+            console.warn("Using local cart data due to sync error");
+          }
+        } catch (parseError) {
+          console.error("❌ Error parsing localStorage:", parseError);
+          setCart([]);
+          setError(error.message);
+        }
+      } else {
+        setCart([]);
+        setError(error.message);
       }
     } finally {
       setLoading(false);
@@ -80,10 +111,10 @@ const CartProvider = ({ children }) => {
   useEffect(() => {
     if (isAuthenticated) {
       fetchCart();
-    }else{
-      const saved = localStorage.getItem("cart")
-      setCart(saved ? JSON.parse(saved) : [])
-      setLoading(false)
+    } else {
+      const saved = localStorage.getItem("cart");
+      setCart(saved ? JSON.parse(saved) : []);
+      setLoading(false);
     }
   }, [isAuthenticated]);
 
@@ -106,14 +137,14 @@ const CartProvider = ({ children }) => {
 
     const token = getToken();
 
-    if(!token){
-      showToast("Please Sign in to Add to cart")
-      navigate("/")
-      return
+    if (!token) {
+      showToast("Please Sign in to Add to cart");
+      navigate("/");
+      return;
     }
 
     // ✅ Extract selected size
-    const selectedSize = product.selectedSize || null;
+    const selectedSize = product.selectedSize || product.size || null;
 
     // ✅ IMMEDIATE UI UPDATE (Optimistic)
     setCart((prevCart) => {
@@ -127,14 +158,19 @@ const CartProvider = ({ children }) => {
       if (existingItem) {
         updatedCart = prevCart.map((item) =>
           item.product_id === product.product_id &&
-          item.selectedSize === selectedSize
+          (item.selectedSize || item.size) === selectedSize
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       } else {
         updatedCart = [
           ...prevCart,
-          { ...product, quantity: 1, selectedSize: selectedSize },
+          {
+            ...product,
+            quantity: 1,
+            selectedSize: selectedSize,
+            size: selectedSize,
+          },
         ];
       }
 
@@ -170,7 +206,7 @@ const CartProvider = ({ children }) => {
           const rollbackCart = prevCart.filter(
             (item) =>
               item.product_id !== product.product_id &&
-              item.selectedSize !== selectedSize
+              (item.selectedSize || item.size) !== selectedSize
           );
           localStorage.setItem("cart", JSON.stringify(rollbackCart));
           return rollbackCart;
@@ -185,12 +221,19 @@ const CartProvider = ({ children }) => {
   const removeFromCart = async (cartItem) => {
     const token = getToken();
 
-    const { product_id, selectedSize } = cartItem;
+    const { product_id, selectedSize, size, cart_id, product_size } = cartItem;
+
+    const itemSize = selectedSize || size || product_size || null;
 
     // ✅ IMMEDIATE UI UPDATE
     setCart((prevCart) => {
       const updatedCart = prevCart.filter((item) => {
         // Match by both product_id AND selectedSize
+
+        if (cart_id && item.cart_id) {
+          return item.cart_id !== cart_id;
+        }
+
         return !(
           item.product_id === product_id && item.selectedSize === selectedSize
         );
@@ -221,6 +264,7 @@ const CartProvider = ({ children }) => {
 
         // ✅ Re-fetch to confirm
         await fetchCart();
+        showToast("Removed from cart", "success");
       } catch (error) {
         console.error("Error removing from cart:", error);
 

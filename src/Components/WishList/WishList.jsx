@@ -9,6 +9,7 @@ import { motion, AnimatePresence, useInView } from "framer-motion";
 import SizeChangeModal from "../SizeChangeModal";
 
 const WishList = () => {
+  const BACKEND_URL = import.meta.env.VITE_API_URL;
   const { wishlist, removeFromWishlist } = useContext(WishlistContext);
   const { cart, addToCart } = useContext(CartContext);
   const { showToast } = useContext(ToastContext);
@@ -16,42 +17,96 @@ const WishList = () => {
   // ✅ Size Modal States
   const [sizeModalOpen, setSizeModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [loading, setLoading] = useState(false);
+
 
   useEffect(() => {
     document.title = `Wishlist (${wishlist.length}) - SLNS Sarees`;
   }, [wishlist.length]);
 
   // ✅ Smart Add to Cart Handler
-  const handleAddToCartClick = (item) => {
-    // Check: Sizes available ah?
-    const hasSizes = item.sizes && Array.isArray(item.sizes) && item.sizes.length > 0;
+  const handleAddToCartClick = async (item) => {
 
-    if (hasSizes) {
-      // Sizes irundha - Modal open pannu
-      setSelectedProduct(item);
-      setSizeModalOpen(true);
-    } else {
-      // ✅ Sizes illa na - Direct cart ku add pannu (Sarees case)
-      const cartItem = {
-        ...item,
-        selectedSize: "One Size",
-        quantity: 1
-      };
-      addToCart(cartItem);
-      showToast(`${item.product_name} added to Cart`, "success");
+    setLoading(true);
+
+    try {
+      // ✅ Fetch full product details
+      const response = await fetch(
+        `${BACKEND_URL}/api/products/${item.product_id}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch product details");
+      }
+
+      const data = await response.json();
+      const fullProduct = data.product || data;
+
+
+      // ✅ Check if product has sizes
+      const hasSizes =
+        fullProduct.sizes &&
+        Array.isArray(fullProduct.sizes) &&
+        fullProduct.sizes.length > 0;
+
+      if (hasSizes) {
+
+        // Merge wishlist item with full product details
+        setSelectedProduct({
+          ...item,
+          ...fullProduct,
+          sizes: fullProduct.sizes,
+        });
+        setSizeModalOpen(true);
+      } else {
+
+        // ✅ Add without size (null, not "One Size")
+        const cartItem = {
+          ...item,
+          ...fullProduct,
+          product_id: item.product_id || item.id,
+          product_name: item.product_name || item.name || fullProduct.name,
+          primary_image:
+            item.primary_image || item.image_url || fullProduct.primary_image,
+          image_url:
+            item.image_url || item.primary_image || fullProduct.primary_image,
+          selectedSize: null, // ✅ null for products without sizes
+          size: null,
+          quantity: 1,
+          price: parseFloat(item.price || fullProduct.price || 0),
+        };
+
+        await addToCart(cartItem);
+        showToast(`${cartItem.product_name} added to Cart`, "success");
+      }
+    } catch (error) {
+      console.error("❌ Error:", error);
+      showToast("Failed to add to cart. Please try again.", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // ✅ Handle Size Selection & Add to Cart
-  const handleSizeSelect = (selectedSize) => {
+  // ✅ Handle Size Selection
+  const handleSizeSelect = async (selectedSize) => {
     if (selectedProduct && selectedSize) {
       const cartItem = {
         ...selectedProduct,
+        product_id: selectedProduct.product_id || selectedProduct.id,
+        product_name: selectedProduct.product_name || selectedProduct.name,
+        primary_image:
+          selectedProduct.primary_image || selectedProduct.image_url,
+        image_url: selectedProduct.image_url || selectedProduct.primary_image,
         selectedSize: selectedSize,
+        size: selectedSize,
         quantity: 1,
+        price: parseFloat(
+          selectedProduct.price || selectedProduct.selling_price || 0
+        ),
       };
 
-      addToCart(cartItem);
+
+      await addToCart(cartItem);
       showToast(`Added to Cart with size ${selectedSize}`, "success");
 
       setSizeModalOpen(false);
@@ -67,7 +122,6 @@ const WishList = () => {
     }
   };
 
-  console.log("Wishlist", wishlist);
   const mobileView = window.innerWidth < 480;
 
   // 🎨 Animation Variants
@@ -246,7 +300,7 @@ const WishList = () => {
                     mobileView={mobileView}
                     removeFromWishlist={removeFromWishlist}
                     onAddToCart={() => {
-                      handleAddToCartClick(item)
+                      handleAddToCartClick(item);
                     }}
                     handleCart={handleCart}
                   />

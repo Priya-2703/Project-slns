@@ -1,11 +1,21 @@
-import React, { createContext, useState, useCallback } from "react";
+import React, { createContext, useState, useCallback, useEffect } from "react";
 
 export const ReviewContext = createContext();
 
 export const ReviewProvider = ({ children }) => {
   const BACKEND_URL = import.meta.env.VITE_API_URL;
 
-  const [reviews, setReviews] = useState([]);
+  const [reviews, setReviews] = useState(() => {
+    // ✅ Load from localStorage on init
+    try {
+      const stored = localStorage.getItem("productReviews");
+      return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      console.error("Error loading reviews from localStorage:", error);
+      return [];
+    }
+  });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -33,33 +43,41 @@ export const ReviewProvider = ({ children }) => {
         }
 
         const data = await response.json();
-        console.log("Fetched reviews:", data);
 
-        const productReviews = data.reviews || [];
+        const productReviews = Array.isArray(data.reviews) ? data.reviews : [];
 
-        // ✅ Update local state for this product
         setReviews((prevReviews) => {
           // Remove old reviews for this product
           const filtered = prevReviews.filter(
             (r) => r.productId !== parseInt(productId)
           );
           // Add new reviews
-          return [...filtered, ...productReviews];
+          const updated = [...filtered, ...productReviews];
+
+          // ✅ Save to localStorage
+          localStorage.setItem("productReviews", JSON.stringify(updated));
+
+          return updated;
         });
 
         return productReviews;
       } catch (error) {
-        console.error("Error fetching reviews:", error);
+        console.error("❌ Error fetching reviews:", error);
         setError(error.message);
 
         // ✅ Fallback to localStorage
         const storedReviews = localStorage.getItem("productReviews");
         if (storedReviews) {
-          const allReviews = JSON.parse(storedReviews);
-          const productReviews = allReviews.filter(
-            (r) => r.productId === parseInt(productId)
-          );
-          return productReviews;
+          try {
+            const allReviews = JSON.parse(storedReviews);
+            const productReviews = allReviews.filter(
+              (r) => r.productId === parseInt(productId)
+            );
+            return productReviews;
+          } catch (e) {
+            console.error("Error parsing stored reviews:", e);
+            return [];
+          }
         }
 
         return [];
@@ -84,7 +102,7 @@ export const ReviewProvider = ({ children }) => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            ...(token && { Authorization: `Bearer ${token}` }), // Optional auth
+            ...(token && { Authorization: `Bearer ${token}` }),
           },
           body: JSON.stringify({
             name: reviewData.name,
@@ -102,29 +120,13 @@ export const ReviewProvider = ({ children }) => {
       }
 
       const data = await response.json();
-      console.log("Review submitted:", data);
 
-      // ✅ Add to local state immediately (optimistic update)
-      const newReview = data.review || {
-        id: data.review_id || Date.now(),
-        productId: parseInt(productId),
-        ...reviewData,
-        date: new Date().toISOString(),
-        verified: true,
-      };
+      // ✅ Re-fetch to get updated reviews from backend
+      const updatedReviews = await fetchProductReviews(productId);
 
-      setReviews((prevReviews) => [...prevReviews, newReview]);
-
-      // ✅ Also save to localStorage as backup
-      const updatedReviews = [...reviews, newReview];
-      localStorage.setItem("productReviews", JSON.stringify(updatedReviews));
-
-      // ✅ Re-fetch to sync with backend
-      await fetchProductReviews(productId);
-
-      return { success: true, review: newReview };
+      return { success: true, reviews: updatedReviews };
     } catch (error) {
-      console.error("Error adding review:", error);
+      console.error("❌ Error adding review:", error);
       setError(error.message);
 
       // ✅ Fallback: Add to localStorage only
@@ -133,7 +135,7 @@ export const ReviewProvider = ({ children }) => {
         productId: parseInt(productId),
         ...reviewData,
         date: new Date().toISOString(),
-        verified: true,
+        verified: false, // Not verified if backend failed
       };
 
       setReviews((prevReviews) => {
@@ -149,28 +151,40 @@ export const ReviewProvider = ({ children }) => {
   };
 
   // ✅ Get reviews for a specific product (from local state)
-  const getProductReviews = (productId) => {
-    if (!productId) return [];
-    const pid = parseInt(productId);
-    return reviews.filter((review) => review.productId === pid);
-  };
+  const getProductReviews = useCallback(
+    (productId) => {
+      if (!productId) return [];
+      const pid = parseInt(productId);
+      const filtered = reviews.filter((review) => review.productId === pid);
+      console.log(`📋 Getting reviews for product ${pid}:`, filtered); // Debug log
+      return filtered;
+    },
+    [reviews]
+  );
+
 
   // ✅ Get total review count for a product
-  const getProductReviewCount = (productId) => {
-    return getProductReviews(productId).length;
-  };
+  const getProductReviewCount = useCallback(
+    (productId) => {
+      return getProductReviews(productId).length;
+    },
+    [getProductReviews]
+  );
 
   // ✅ Get average rating for a product
-  const getProductAverageRating = (productId) => {
-    const productReviews = getProductReviews(productId);
-    if (productReviews.length === 0) return 0;
+  const getProductAverageRating = useCallback(
+    (productId) => {
+      const productReviews = getProductReviews(productId);
+      if (productReviews.length === 0) return 0;
 
-    const totalRating = productReviews.reduce(
-      (sum, review) => sum + (review.rating || 0),
-      0
-    );
-    return (totalRating / productReviews.length).toFixed(1);
-  };
+      const totalRating = productReviews.reduce(
+        (sum, review) => sum + (review.rating || 0),
+        0
+      );
+      return (totalRating / productReviews.length).toFixed(1);
+    },
+    [getProductReviews]
+  );
 
   return (
     <ReviewContext.Provider

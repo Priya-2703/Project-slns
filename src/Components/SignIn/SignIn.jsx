@@ -35,7 +35,6 @@ export default function SignIn() {
         }
       ).then((res) => res.json());
 
-      console.log("✅ Google user info:", userInfo);
 
       // Send to backend
       handleGoogleSuccess(userInfo);
@@ -77,10 +76,6 @@ export default function SignIn() {
       if (response.ok) {
         // ✅ Success: Store token and user data
         login(data.user, data.token);
-
-        console.log("🛒 Fetching cart after login...");
-        await fetchCart();
-        console.log("✅ Cart fetched successfully!");
 
         // ⭐ NEW: Check user role and redirect accordingly
         if (data.user.role === "admin") {

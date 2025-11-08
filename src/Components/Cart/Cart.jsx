@@ -29,8 +29,6 @@ function Cart() {
     setSizeModalOpen(true);
   };
 
-  console.log("cart",cart)
-
   // ✅ Handle Size Change
   const handleSizeChange = (newSize) => {
     if (selectedProduct) {
@@ -50,8 +48,6 @@ function Cart() {
     () => cart.reduce((sum, it) => sum + it.price * it.quantity, 0),
     [cart]
   );
-
-  console.log("cart page data", cart);
 
   // Optional: basic delivery fee logic (edit/Remove if not needed)
   const shipping = subtotal > 1000 && subtotal < 7000 ? 0 : 100;
@@ -489,7 +485,7 @@ function Cart() {
                           </motion.button>
                         ) : (
                           <span className="text-gray-500 text-[10px] font-body">
-                              {it.selectedSize === "One Size" ? "N/A" : "N/A"}
+                            {it.selectedSize === "One Size" ? "N/A" : "N/A"}
                           </span>
                         )}
                       </div>
@@ -507,9 +503,7 @@ function Cart() {
                           }}
                         >
                           <motion.button
-                            onClick={() =>
-                              updateCartItemQuantity(it, -1)
-                            }
+                            onClick={() => updateCartItemQuantity(it, -1)}
                             className="h-5 w-5 inline-flex items-center justify-center rounded-full hover:bg-neutral-800"
                             aria-label="Decrease"
                             whileHover={{
@@ -535,9 +529,7 @@ function Cart() {
                             transition={{ duration: 0.3 }}
                           />
                           <motion.button
-                            onClick={() =>
-                              updateCartItemQuantity(it, 1)
-                            }
+                            onClick={() => updateCartItemQuantity(it, 1)}
                             className="h-5 w-5 inline-flex items-center justify-center rounded-full hover:bg-neutral-800"
                             aria-label="Increase"
                             whileHover={{
@@ -565,7 +557,11 @@ function Cart() {
                       {/* Action info */}
                       <div className="col-span-1 flex justify-center items-center">
                         <motion.button
-                          onClick={() => removeFromCart(it)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            removeFromCart(it);
+                          }}
                           className="h-5 w-5 inline-flex items-center justify-center rounded-full hover:bg-neutral-800 text-neutral-300"
                           aria-label="Remove item"
                           whileHover={{
@@ -672,7 +668,6 @@ function Cart() {
       />
     </motion.div>
   );
-
 }
 
 /* UI helpers */

@@ -149,53 +149,6 @@ const ProductDetail = () => {
     product.category,
   ]);
 
-  // after submit review effect
-  useEffect(() => {
-    if (location.state?.showCelebration) {
-      // Define all custom shapes
-      var count = 200;
-      var defaults = {
-        origin: { y: 0.7 },
-      };
-
-      function fire(particleRatio, opts) {
-        confetti({
-          ...defaults,
-          ...opts,
-          particleCount: Math.floor(count * particleRatio),
-        });
-      }
-
-      fire(0.25, {
-        spread: 26,
-        startVelocity: 55,
-      });
-      fire(0.2, {
-        spread: 60,
-      });
-      fire(0.35, {
-        spread: 100,
-        decay: 0.91,
-        scalar: 0.8,
-      });
-      fire(0.1, {
-        spread: 120,
-        startVelocity: 25,
-        decay: 0.92,
-        scalar: 1.2,
-      });
-      fire(0.1, {
-        spread: 120,
-        startVelocity: 45,
-      });
-
-      showToast(
-        "🎉 Review Added Successfully! Thank you for your feedback!",
-        "success"
-      );
-    }
-  }, [location]);
-
   const handleCart = () => {
     if (isInCart) {
       showToast("Item already added in Cart", "success");
@@ -210,7 +163,6 @@ const ProductDetail = () => {
         const response = await fetch(`${BACKEND_URL}/api/products/${id}`);
         const data = await response.json();
 
-        console.log("Full Product Data:", data.product); // ✅ Ippo images array varum
         setProduct(data.product);
       } catch (error) {
         console.error("Error fetching product:", error);
@@ -255,23 +207,68 @@ const ProductDetail = () => {
   }, [cart, product]);
 
   const {
-    getProductReviews,
     fetchProductReviews,
     loading: reviewsLoading,
   } = useContext(ReviewContext);
+  const [productReviews, setProductReviews] = useState([]);
 
   useEffect(() => {
     const loadReviews = async () => {
-      if (id) {
-        await fetchProductReviews(id);
-      }
+      const reviews = await fetchProductReviews(id);
+      setProductReviews(reviews);
     };
 
-    loadReviews();
+    if (id) {
+      loadReviews();
+    }
   }, [id, fetchProductReviews]);
 
-  // Direct call without state
-  const productReviews = getProductReviews(id);
+    // after submit review effect
+  useEffect(() => {
+    if (location.state?.showCelebration) {
+      // Define all custom shapes
+      var count = 200;
+      var defaults = {
+        origin: { y: 0.7 },
+      };
+
+      function fire(particleRatio, opts) {
+        confetti({
+          ...defaults,
+          ...opts,
+          particleCount: Math.floor(count * particleRatio),
+        });
+      }
+
+      fire(0.25, {
+        spread: 26,
+        startVelocity: 55,
+      });
+      fire(0.2, {
+        spread: 60,
+      });
+      fire(0.35, {
+        spread: 100,
+        decay: 0.91,
+        scalar: 0.8,
+      });
+      fire(0.1, {
+        spread: 120,
+        startVelocity: 25,
+        decay: 0.92,
+        scalar: 1.2,
+      });
+      fire(0.1, {
+        spread: 120,
+        startVelocity: 45,
+      });
+
+      showToast(
+        "🎉 Review Added Successfully! Thank you for your feedback!",
+        "success"
+      );
+    }
+  }, [location, fetchProductReviews]);
 
   // Add this handler function
   const handleLoadMoreReviews = () => {
@@ -900,8 +897,8 @@ const ProductDetail = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 items-start md:space-y-2">
             {reviewsLoading ? (
               <div className="loading">Loading reviews...</div>
-            ) : displayedReviews.length > 0 ? (
-              displayedReviews.map((review) => (
+            ) : productReviews.length > 0 ? (
+              productReviews.map((review) => (
                 <div
                   key={review.id}
                   className="flex items-start py-3 gap-4 md:gap-4 w-full"
