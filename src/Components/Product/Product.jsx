@@ -2,9 +2,16 @@ import { Link } from "react-router-dom";
 import UseFetchData from "../../Hooks/UseFetchData";
 import ProductCard from "./ProductCard";
 import { motion, AnimatePresence, useInView } from "framer-motion";
-import { Search, X, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Search,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { assets } from "../../../public/assets/asset";
+import axios from "axios";
 
 const categories = [
   {
@@ -29,7 +36,6 @@ const categories = [
   },
 ];
 
-// 🎨 Banner Data
 const banners = [
   {
     id: 1,
@@ -44,7 +50,8 @@ const banners = [
     title: "Traditional Elegance",
     subtitle: "Premium Half Sarees",
     description: "Shop Now & Save Big",
-    image: "https://i.pinimg.com/1200x/e9/f4/95/e9f495c0fa12709a31d5350bea2f0b68.jpg",
+    image:
+      "https://i.pinimg.com/1200x/e9/f4/95/e9f495c0fa12709a31d5350bea2f0b68.jpg",
     bgGradient: "from-blue-600/30 via-cyan-600/30 to-teal-600/30",
   },
   {
@@ -52,7 +59,8 @@ const banners = [
     title: "Festive Special",
     subtitle: "Designer Chudidhars",
     description: "Limited Time Offer",
-    image: "https://framerusercontent.com/images/Wa9VEYx9s6XaxR5umPBFrfvfyY.jpg",
+    image:
+      "https://framerusercontent.com/images/Wa9VEYx9s6XaxR5umPBFrfvfyY.jpg",
     bgGradient: "from-orange-600/30 via-amber-600/30 to-yellow-600/30",
   },
   {
@@ -126,7 +134,6 @@ const BannerCarousel = () => {
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {/* Banner Slides */}
       <AnimatePresence initial={false} custom={direction}>
         <motion.div
           key={currentIndex}
@@ -142,21 +149,18 @@ const BannerCarousel = () => {
           }}
           className="absolute w-full h-full"
         >
-          {/* Background Image with Overlay */}
           <div className="absolute inset-0">
             <img
               src={banners[currentIndex].image}
               alt={banners[currentIndex].title}
               className="w-full h-full object-cover"
             />
-            {/* Gradient Overlay */}
             <div
               className={`absolute inset-0 bg-gradient-to-r ${banners[currentIndex].bgGradient} backdrop-blur-[2px]`}
             />
             <div className="absolute inset-0 bg-black/40" />
           </div>
 
-          {/* Content */}
           <div className="relative h-full flex items-center px-6 md:px-12 lg:px-16">
             <motion.div
               initial={{ opacity: 0, x: -50 }}
@@ -164,7 +168,6 @@ const BannerCarousel = () => {
               transition={{ delay: 0.2, duration: 0.6 }}
               className="max-w-2xl"
             >
-              {/* Subtitle */}
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -174,7 +177,6 @@ const BannerCarousel = () => {
                 {banners[currentIndex].subtitle}
               </motion.p>
 
-              {/* Title */}
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -184,7 +186,6 @@ const BannerCarousel = () => {
                 {banners[currentIndex].title}
               </motion.h1>
 
-              {/* Description */}
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -198,7 +199,6 @@ const BannerCarousel = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Navigation Arrows */}
       <motion.button
         whileHover={{ scale: 1.1, x: -5 }}
         whileTap={{ scale: 0.9 }}
@@ -217,7 +217,6 @@ const BannerCarousel = () => {
         <ChevronRight className="w-4 h-4 md:w-6 md:h-6 text-white" />
       </motion.button>
 
-      {/* Dot Indicators */}
       <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 flex gap-2 md:gap-3 z-10">
         {banners.map((_, index) => (
           <motion.button
@@ -227,7 +226,6 @@ const BannerCarousel = () => {
             whileTap={{ scale: 0.9 }}
             className="relative group"
           >
-            {/* Outer Ring */}
             <motion.div
               initial={false}
               animate={{
@@ -236,19 +234,18 @@ const BannerCarousel = () => {
               }}
               className="absolute inset-0 rounded-full border-2 border-accet -m-1"
             />
-            
-            {/* Dot */}
+
             <motion.div
               initial={false}
               animate={{
                 width: currentIndex === index ? "32px" : "8px",
-                backgroundColor: currentIndex === index ? "#955E30" : "rgba(255,255,255,0.5)",
+                backgroundColor:
+                  currentIndex === index ? "#955E30" : "rgba(255,255,255,0.5)",
               }}
               transition={{ duration: 0.3 }}
               className="h-2 rounded-full"
             />
 
-            {/* Progress Bar for Active Slide */}
             {currentIndex === index && !isPaused && (
               <motion.div
                 initial={{ scaleX: 0 }}
@@ -261,7 +258,6 @@ const BannerCarousel = () => {
         ))}
       </div>
 
-      {/* Pause Indicator */}
       <AnimatePresence>
         {isPaused && (
           <motion.div
@@ -270,7 +266,9 @@ const BannerCarousel = () => {
             exit={{ opacity: 0, scale: 0.8 }}
             className="absolute top-4 right-4 bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-full z-10"
           >
-            <p className="text-white text-[10px] md:text-xs font-['Poppins']">Paused</p>
+            <p className="text-white text-[10px] md:text-xs font-['Poppins']">
+              Paused
+            </p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -279,6 +277,7 @@ const BannerCarousel = () => {
 };
 
 const Product = () => {
+  const BACKEND_URL = import.meta.env.VITE_API_URL;
   const { data, loading } = UseFetchData();
   const [search, setSearch] = useState("");
   const [products, setProducts] = useState([]);
@@ -287,20 +286,51 @@ const Product = () => {
   const dropdownRef = useRef(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
 
-  //dynamic title
+  // 🎯 NEW: Subcategory states
+  const [subcategories, setSubcategories] = useState([]);
+  const [selectedSubcategory, setSelectedSubcategory] = useState(null);
+  const [visibleSubcategories, setVisibleSubcategories] = useState(15);
+  const [showSubcategories, setShowSubcategories] = useState(false);
+  const [loadingSubcategories, setLoadingSubcategories] = useState(false);
+
   useEffect(() => {
     document.title = `Shop Now - SLNS Sarees`;
   }, []);
 
-  // 🔄 Filter products locally for search
+  // 🎯 NEW: Fetch subcategories from backend
+  const fetchSubcategories = async () => {
+    setLoadingSubcategories(true);
+    try {
+      // Replace with your actual API endpoint
+      const response = await axios.get(`${BACKEND_URL}/api/subcategories`);
+      const subCat = response.data;
+      setSubcategories(subCat.subcategories);
+    } catch (error) {
+      console.error("Error fetching subcategories:", error);
+      setSubcategories([]);
+    } finally {
+      setLoadingSubcategories(false);
+    }
+  };
+
+  // 🔄 Filter products
   const displayProducts = products.filter((item) => {
     const matchCategory = selectedCategory
       ? item.category_name === selectedCategory
       : true;
+
+    // 🎯 NEW: Filter by subcategory
+    const matchSubcategory = selectedSubcategory
+      ? item.sub_category === selectedSubcategory ||
+        item.saree_type === selectedSubcategory ||
+        item.product_type === selectedSubcategory
+      : true;
+
     const matchSearch = search
       ? item.product_name.toLowerCase().includes(search.toLowerCase())
       : true;
-    return matchSearch && matchCategory;
+
+    return matchSearch && matchCategory && matchSubcategory;
   });
 
   const handleSearch = (e) => {
@@ -316,7 +346,6 @@ const Product = () => {
     setProducts(data);
   }, [data]);
 
-  // Close dropdown if clicked outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -348,6 +377,43 @@ const Product = () => {
     setProducts(sorted);
     setSelected(option);
     setIsOpen(false);
+  };
+
+  // 🎯 NEW: Handle category click
+  const handleCategoryClick = async (categoryName) => {
+    if (categoryName === "Sarees") {
+      if (selectedCategory === "Sarees") {
+        // Toggle subcategories
+        setShowSubcategories(!showSubcategories);
+      } else {
+        // Set new category and fetch subcategories
+        setSelectedCategory(categoryName);
+        setShowSubcategories(true);
+        setSelectedSubcategory(null);
+        setVisibleSubcategories(15);
+        await fetchSubcategories(categoryName);
+      }
+    } else {
+      // For other categories, hide subcategories
+      setSelectedCategory(categoryName);
+      setShowSubcategories(false);
+      setSelectedSubcategory(null);
+      setSubcategories([]);
+      setVisibleSubcategories(15);
+    }
+  };
+
+  // 🎯 NEW: Handle subcategory click
+  const handleSubcategoryClick = (subcategory) => {
+    if (selectedSubcategory === subcategory) {
+      setSelectedSubcategory(null);
+    } else {
+      setSelectedSubcategory(subcategory);
+    }
+  };
+  // 🎯 NEW: Load more subcategories
+  const loadMoreSubcategories = () => {
+    setVisibleSubcategories((prev) => prev + 10);
   };
 
   const options = [
@@ -411,6 +477,52 @@ const Product = () => {
     }),
   };
 
+  // 🎯 NEW: Subcategory animation variants
+  // const subcategoryContainerVariants = {
+  //   hidden: {
+  //     opacity: 0,
+  //     height: 0,
+  //     marginTop: 0,
+  //   },
+  //   visible: {
+  //     opacity: 1,
+  //     height: "auto",
+  //     marginTop: 20,
+  //     transition: {
+  //       duration: 0.5,
+  //       ease: [0.22, 1, 0.36, 1],
+  //       staggerChildren: 0.03,
+  //       delayChildren: 0.1,
+  //     },
+  //   },
+  //   exit: {
+  //     opacity: 0,
+  //     height: 0,
+  //     marginTop: 0,
+  //     transition: {
+  //       duration: 0.4,
+  //       ease: [0.22, 1, 0.36, 1],
+  //     },
+  //   },
+  // };
+
+  // const subcategoryItemVariants = {
+  //   hidden: {
+  //     opacity: 0,
+  //     y: -10,
+  //     scale: 0.8,
+  //   },
+  //   visible: {
+  //     opacity: 1,
+  //     y: 0,
+  //     scale: 1,
+  //     transition: {
+  //       duration: 0.3,
+  //       ease: [0.22, 1, 0.36, 1],
+  //     },
+  //   },
+  // };
+
   const getColumnDelay = (index) => {
     const isMobile = window.innerWidth < 768;
     const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
@@ -420,7 +532,6 @@ const Product = () => {
     else if (isTablet) columns = 3;
 
     const columnPosition = index % columns;
-
     return columnPosition * 0.05;
   };
 
@@ -460,7 +571,6 @@ const Product = () => {
       variants={pageVariants}
       className="w-full mx-auto py-6 mt-16 md:mt-28"
     >
-      {/* 🎯 BANNER CAROUSEL - NEW */}
       <div className="mb-6">
         <BannerCarousel />
       </div>
@@ -479,7 +589,6 @@ const Product = () => {
           </p>
         </motion.div>
 
-        {/* search bar */}
         <motion.div
           variants={searchBarVariants}
           className="flex justify-center items-center w-[200px] md:w-[300px] gap-1 md:gap-4 border border-accet overflow-hidden rounded-l-full"
@@ -513,7 +622,7 @@ const Product = () => {
           <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="bg-accet px-3 h-full py-2"
+            className="bg-accet px-3 h-full py-2 cursor-pointer"
             onClick={handleSearch}
           >
             <Search color="white" size={mobileView ? 14 : 20} />
@@ -521,56 +630,58 @@ const Product = () => {
         </motion.div>
       </div>
 
-      {/* Category & Sort Section */}
+      {/* Category & Subcategory Section */}
       <motion.div
         variants={itemVariants}
-        className="w-[90%] mx-auto flex flex-col md:flex-row md:justify-between md:items-end lg:px-4 py-3 gap-5"
+        className="w-[90%] mx-auto flex flex-col md:flex-row md:justify-between md:items-start lg:px-4 py-3 gap-5"
       >
-        {/* Categories */}
-        <div className="flex justify-center items-center gap-4 lg:gap-8">
-          {categories.map((item, index) => (
-            <motion.div
-              key={item.name}
-              custom={index}
-              initial="hidden"
-              animate="visible"
-              variants={categoryVariants}
-              whileHover={{ scale: 1.05, y: -5 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setSelectedCategory(item.name)}
-              className={`flex flex-col justify-center items-center cursor-pointer transition-all duration-300 ${
-                selectedCategory === item.name
-                  ? "scale-120 gap-1 text-accet"
-                  : "scale-100 gap-2 text-white"
-              }`}
-            >
-              <div
-                className={`md:w-[70px] w-[50px] h-[50px] md:h-[70px] rounded-full border-2 border-white/5 overflow-hidden transition-transform duration-300 ${
+        <div className="flex-1">
+          {/* Categories */}
+          <div className="flex justify-center md:justify-start items-center gap-4 lg:gap-8">
+            {categories.map((item, index) => (
+              <motion.div
+                key={item.name}
+                custom={index}
+                initial="hidden"
+                animate="visible"
+                variants={categoryVariants}
+                whileHover={{ scale: 1.05, y: -5 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleCategoryClick(item.name)}
+                className={`flex flex-col justify-center items-center cursor-pointer transition-all duration-300 ${
                   selectedCategory === item.name
-                    ? "drop-shadow-[0px_0px_20px] drop-shadow-accet"
-                    : "drop-shadow-[0px_0px_0px] drop-shadow-accet"
+                    ? "scale-110 gap-1 text-accet"
+                    : "scale-100 gap-2 text-white"
                 }`}
               >
-                <img
-                  src={item.img}
-                  alt="category"
-                  loading="lazy"
-                  className="object-cover"
-                />
-              </div>
-              <h1 className="text-[8px] md:text-[10px] text-center font-['Poppins']">
-                {item.name}
-              </h1>
-            </motion.div>
-          ))}
+                <div
+                  className={`md:w-[70px] w-[50px] h-[50px] md:h-[70px] rounded-full border-2 border-white/5 overflow-hidden transition-transform duration-300 ${
+                    selectedCategory === item.name
+                      ? "drop-shadow-[0px_0px_20px] drop-shadow-accet"
+                      : "drop-shadow-[0px_0px_0px] drop-shadow-accet"
+                  }`}
+                >
+                  <img
+                    src={item.img}
+                    alt="category"
+                    loading="lazy"
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+                <h1 className="text-[8px] md:text-[10px] text-center font-['Poppins']">
+                  {item.name}
+                </h1>
+              </motion.div>
+            ))}
+          </div>
         </div>
 
-        {/* sort by */}
+        {/* Sort By */}
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.7, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="flex relative mb-0 md:mb-2 lg:mb-0 self-end"
+          className="flex relative self-end md:self-start"
           ref={dropdownRef}
         >
           <motion.button
@@ -600,7 +711,6 @@ const Product = () => {
             </motion.svg>
           </motion.button>
 
-          {/* Dropdown menu */}
           <AnimatePresence>
             {isOpen && (
               <motion.div
@@ -632,19 +742,92 @@ const Product = () => {
         </motion.div>
       </motion.div>
 
-      {/* products */}
+      {/* 🎯 NEW: Subcategories Section */}
+      <AnimatePresence mode="wait">
+        {selectedCategory === "Sarees" && showSubcategories && (
+          <motion.div
+            // variants={subcategoryContainerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="w-[90%] mx-auto py-1"
+          >
+            {loadingSubcategories ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex justify-center items-center py-4"
+              >
+                <div className="w-6 h-6 border-2 border-accet border-t-transparent rounded-full animate-spin" />
+              </motion.div>
+            ) : (
+              <>
+                <div className="w-full flex flex-wrap gap-1">
+                  {subcategories
+                    .slice(0, visibleSubcategories)
+                    .map((subcategory, index) => (
+                      <motion.button
+                        key={`${subcategory}-${index}`}
+                        custom={index}
+                        // variants={subcategoryItemVariants}
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleSubcategoryClick(subcategory)}
+                        className={`px-2 md:px-3 py-1.5 rounded-full text-[10px] md:text-[12px] font-body transition-all duration-300 ${
+                          selectedSubcategory === subcategory
+                            ? "bg-accet text-white shadow-lg shadow-accet/50"
+                            : "bg-white/10 text-white hover:bg-white/20 border border-white/20"
+                        }`}
+                      >
+                        {subcategory}
+                      </motion.button>
+                    ))}
+
+                  {/* More Button */}
+                  {visibleSubcategories < subcategories.length && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={loadMoreSubcategories}
+                      className="px-2 md:px-3 py-1.5 bg-accet/20 hover:bg-accet/30 border border-accet rounded-full text-white text-[10px] md:text-[12px] font-['Poppins'] transition-all duration-300"
+                    >
+                      More ({subcategories.length - visibleSubcategories})...
+                    </motion.button>
+                  )}
+
+                  {/* show less */}
+                  {visibleSubcategories > 15 && (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setVisibleSubcategories(15)}
+                      className="px-2 md:px-3 py-1.5 bg-accet/20 hover:bg-accet/30 border border-accet rounded-full text-white text-[10px] md:text-[12px] font-['Poppins'] transition-all duration-300"
+                    >
+                      Show Less
+                    </motion.button>
+                  )}
+                </div>
+              </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Products */}
       <motion.div
         variants={itemVariants}
         className="w-[90%] mx-auto grid grid-cols-1 py-6"
       >
-        {displayProducts.length == 0 ? (
-          <>
-            <div className="w-full flex justify-center items-center">
-              <p className="text-white font-body text-[20px] font-medium">
-                No product found
-              </p>
-            </div>
-          </>
+        {displayProducts.length === 0 ? (
+          <div className="w-full flex justify-center items-center py-20">
+            <motion.p
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-white font-body text-[16px] md:text-[20px] font-medium"
+            >
+              No product found
+            </motion.p>
+          </div>
         ) : (
           <motion.div
             layout
@@ -667,7 +850,6 @@ const Product = () => {
   );
 };
 
-// 🎯 Separate Component for Product Card with useInView
 const ProductCardWrapper = ({ item, index, variants }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, {

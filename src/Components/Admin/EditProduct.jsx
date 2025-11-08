@@ -41,18 +41,7 @@ export default function EditProduct() {
     sizes: [],
   });
 
-  const defaultSareeSubCategories = [
-    "Kanchipuram Saree",
-    "Mysore Silk Saree",
-    "Banarasi Saree",
-    "Pochampally Saree",
-    "Cotton Saree",
-    "Silk Saree",
-    "Pattu Saree",
-    "Designer Saree",
-  ];
-
-  const halfSareeSizeOptions = ["Stitched","Semi-stitched", "Unstitched"];
+  const halfSareeSizeOptions = ["Stitched", "Semi-stitched", "Unstitched"];
   const normalSizeOptions = ["S", "M", "L", "XL", "XXL", "XXXL"];
   const kidsSizeOptions = [
     "1-2",
@@ -209,7 +198,6 @@ export default function EditProduct() {
     }
 
     const allSubCategories = [
-      ...defaultSareeSubCategories,
       ...customSubCategories,
     ];
     if (
@@ -574,7 +562,7 @@ export default function EditProduct() {
   };
 
   const getAllSubCategories = () => {
-    return [...defaultSareeSubCategories, ...customSubCategories];
+    return [...customSubCategories];
   };
 
   const isSareeCategory = selectedCategoryName === "Sarees";
@@ -683,25 +671,6 @@ export default function EditProduct() {
                 </h3>
 
                 <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                  <div className="mb-4">
-                    <p className="text-white/50 text-xs font-body mb-2 uppercase tracking-wide">
-                      Default (Cannot Delete)
-                    </p>
-                    {defaultSareeSubCategories.map((subCat) => (
-                      <div
-                        key={subCat}
-                        className="flex items-center justify-between bg-black/30 border border-white/10 rounded-lg p-3 mb-2"
-                      >
-                        <span className="text-white font-body capitalize">
-                          {subCat}
-                        </span>
-                        <span className="bg-blue-500/20 text-blue-400 text-xs px-2 py-1 rounded font-body">
-                          Default
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-
                   {customSubCategories.length > 0 && (
                     <div>
                       <p className="text-white/50 text-xs font-body mb-2 uppercase tracking-wide">
@@ -999,8 +968,8 @@ export default function EditProduct() {
                 >
                   Select Saree Type
                 </option>
-                <optgroup label="Default Sub-Categories">
-                  {defaultSareeSubCategories.map((subCat) => (
+                {customSubCategories.length > 0 &&
+                  customSubCategories.map((subCat) => (
                     <option
                       key={subCat}
                       className="bg-transparent font-body text-black capitalize"
@@ -1009,20 +978,6 @@ export default function EditProduct() {
                       {subCat}
                     </option>
                   ))}
-                </optgroup>
-                {customSubCategories.length > 0 && (
-                  <optgroup label="Custom Sub-Categories">
-                    {customSubCategories.map((subCat) => (
-                      <option
-                        key={subCat}
-                        className="bg-transparent font-body text-black capitalize"
-                        value={subCat}
-                      >
-                        {subCat} ⭐
-                      </option>
-                    ))}
-                  </optgroup>
-                )}
               </select>
               <p className="text-white/50 text-xs font-body mt-1">
                 Select type of Saree or add custom sub-category

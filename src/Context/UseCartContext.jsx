@@ -1,29 +1,48 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { AuthContext } from "./UseAuthContext";
+import { ToastContext } from "./UseToastContext";
+import { useNavigate } from "react-router-dom";
 
 export const CartContext = createContext();
 
 const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState([]);
-  const [loading, setLoading] = useState(true); // Only for initial load
+  const { isAuthenticated, user } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const [cart, setCart] = useState(() => {
+    if (isAuthenticated) {
+      const saveCart = localStorage.getItem("cart");
+      return saveCart ? JSON.parse(saveCart) : [];
+    }
+    return [];
+  });
+  const { showToast } = useContext(ToastContext);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Backend API base URL
   const BACKEND_URL = import.meta.env.VITE_API_URL;
 
-  // ✅ Get token dynamically (not static)
   const getToken = () => localStorage.getItem("token");
 
-  // ✅ Fetch cart data from backend (Initial load only)
+  useEffect(() => {
+    if (isAuthenticated) {
+      localStorage.setItem("cart", JSON.stringify(cart));
+    }
+  }, [cart, isAuthenticated]);
+
   const fetchCart = async () => {
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
+
     const token = getToken();
 
     try {
       setLoading(true);
 
       if (!token) {
-        // No token, load from localStorage
-        const savedCart = localStorage.getItem("cart");
-        setCart(savedCart ? JSON.parse(savedCart) : []);
+        const saved = localStorage.getItem("cart");
+        setCart(saved ? JSON.parse(saved) : []);
         return;
       }
 
@@ -59,12 +78,39 @@ const CartProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchCart();
-  }, []);
+    if (isAuthenticated) {
+      fetchCart();
+    }else{
+      const saved = localStorage.getItem("cart")
+      setCart(saved ? JSON.parse(saved) : [])
+      setLoading(false)
+    }
+  }, [isAuthenticated]);
+
+  const requireAuth = (actionName = "add to cart") => {
+    if (!isAuthenticated) {
+      showToast(`Please Sign in to ${actionName}`, "Warning");
+      return false;
+    }
+    return true;
+  };
 
   // ✅ 1. Add to Cart - OPTIMISTIC UPDATE (UI first, backend second)
   const addToCart = async (product) => {
+    if (!requireAuth("add to cart")) {
+      setTimeout(() => {
+        navigate("/signin");
+      }, 1500);
+      return false;
+    }
+
     const token = getToken();
+
+    if(!token){
+      showToast("Please Sign in to Add to cart")
+      navigate("/")
+      return
+    }
 
     // ✅ Extract selected size
     const selectedSize = product.selectedSize || null;
@@ -116,8 +162,6 @@ const CartProvider = ({ children }) => {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data = await response.json();
-
         await fetchCart();
       } catch (error) {
         console.error("Error syncing cart with backend:", error);
@@ -155,8 +199,6 @@ const CartProvider = ({ children }) => {
       localStorage.setItem("cart", JSON.stringify(updatedCart));
       return updatedCart;
     });
-
-    console.log("updatedCart", updatedCart);
 
     // ✅ Sync with backend
     if (token) {
@@ -294,37 +336,38 @@ const CartProvider = ({ children }) => {
     }
   };
 
-  // ✅ 5. Sync cart with backend
-  const syncCart = async () => {
-    const token = getToken();
+  // ✅ NEW: Change Cart Item Size
+  const changeCartItemSize = (productId, oldSize, newSize) => {
+    setCart((prevCart) => {
+      // Check if new size already exists
+      const existingNewSizeIndex = prevCart.findIndex(
+        (item) => item.product_id === productId && item.selectedSize === newSize
+      );
 
-    try {
-      const localCart = JSON.parse(localStorage.getItem("cart") || "[]");
+      const oldSizeIndex = prevCart.findIndex(
+        (item) => item.product_id === productId && item.selectedSize === oldSize
+      );
 
-      if (localCart.length > 0 && token) {
-        const response = await fetch(`${BACKEND_URL}/api/cart/sync`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ cart: localCart }),
-        });
+      if (oldSizeIndex === -1) return prevCart;
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+      const updatedCart = [...prevCart];
 
-        const data = await response.json();
-
-        if (data.success && data.cart) {
-          setCart(data.cart);
-          localStorage.setItem("cart", JSON.stringify(data.cart));
-        }
+      if (existingNewSizeIndex > -1) {
+        // New size already exists - merge quantities
+        updatedCart[existingNewSizeIndex].quantity +=
+          updatedCart[oldSizeIndex].quantity;
+        // Remove old size item
+        updatedCart.splice(oldSizeIndex, 1);
+      } else {
+        // Just update the size
+        updatedCart[oldSizeIndex] = {
+          ...updatedCart[oldSizeIndex],
+          selectedSize: newSize,
+        };
       }
-    } catch (error) {
-      console.error("Error syncing cart:", error);
-    }
+
+      return updatedCart;
+    });
   };
 
   // ✅ Calculate values (memoized for performance)
@@ -365,8 +408,8 @@ const CartProvider = ({ children }) => {
         loading, // Only true during initial load
         error,
         fetchCart,
-        syncCart,
         isInCart,
+        changeCartItemSize,
         getItemQuantity,
       }}
     >

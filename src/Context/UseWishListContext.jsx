@@ -1,22 +1,63 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { ToastContext } from "./UseToastContext";
+import { AuthContext } from "./UseAuthContext";
+import { useNavigate } from "react-router-dom";
 
 export const WishlistContext = createContext();
 
 const WishlistProvider = ({ children }) => {
-  const [wishlist, setWishlist] = useState([]);
+  const { isAuthenticated } = useContext(AuthContext);
+  const navigate = useNavigate()
+  const [wishlist, setWishlist] = useState(() => {
+    if (isAuthenticated) {
+      const saveWishlist = localStorage.getItem("wishlist");
+      return saveWishlist ? JSON.parse(saveWishlist) : [];
+    }
+    return [];
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  // Backend API base URL
+  const { showToast } = useContext(ToastContext);
   const BACKEND_URL = import.meta.env.VITE_API_URL;
+  
+    // Get token for authentication if exists
+    const getToken =()=> localStorage.getItem("token");
 
-  // Get token for authentication if exists
-  const token = localStorage.getItem("token");
+  useEffect(() => {
+    if (isAuthenticated) {
+      localStorage.setItem("wishlist", JSON.stringify(wishlist));
+    }
+  }, [wishlist, isAuthenticated]);
+
+  const requireAuth = (actionName = "add to wishlist") => {
+    if (!isAuthenticated) {
+      showToast(`Please Sign in to ${actionName}`, 'Warning');
+      return false;
+    }
+    return true;
+  };
+
 
   // Fetch wishlist data from backend
   const fetchWishlist = async () => {
+
+    if(!isAuthenticated){
+      setLoading(false)
+      return
+    }
+
+    const token = getToken()
+
+
     try {
       setLoading(true);
+
+      if(!token){
+        const saved = localStorage.getItem("wishlist")
+        setWishlist(saved ? JOSN.parse(saved) : [])
+        return
+      }
+
       const response = await fetch(`${BACKEND_URL}/api/wishlist`, {
         method: "GET",
         headers: {
@@ -32,7 +73,6 @@ const WishlistProvider = ({ children }) => {
       const data = await response.json();
       setWishlist(data.wishlist || []);
 
-      console.log(data.wishlist);
 
       // Save to localStorage for offline support
       localStorage.setItem("wishlist", JSON.stringify(data.wishlist || []));
@@ -52,19 +92,34 @@ const WishlistProvider = ({ children }) => {
 
   // Fetch wishlist when component mounts
   useEffect(() => {
-    if (token) {
+    if (isAuthenticated) {
       fetchWishlist();
     } else {
-      // If no token, load from localStorage
       const saved = localStorage.getItem("wishlist");
       setWishlist(saved ? JSON.parse(saved) : []);
+      setLoading(false)
     }
-  }, [token]);
+  }, [isAuthenticated]);
 
   // 1. Add to Wishlist - Backend API call
   const addToWishlist = async (product) => {
+    if (!requireAuth("add to wishlist")) {
+      setTimeout(() => {
+        navigate("/signin");
+      }, 1500);
+      return false;
+    }
+
     try {
       setLoading(true);
+
+      const token = getToken()
+
+      if(!token){
+        showToast("Please Sign in to Add to Wislist")
+        navigate("/signin")
+        return
+      }
 
       // Backend API call
       const response = await fetch(`${BACKEND_URL}/api/wishlist/add`, {
@@ -108,6 +163,7 @@ const WishlistProvider = ({ children }) => {
             return updatedWishlist;
           });
         }
+        showToast("Added to wishlist", "success");
       }
     } catch (error) {
       console.error("Error adding to wishlist:", error);
@@ -173,46 +229,6 @@ const WishlistProvider = ({ children }) => {
     return wishlist.some((item) => item.product_id === productId);
   };
 
-  // 6. Sync wishlist with backend (optional)
-  const syncWishlist = async () => {
-    try {
-      const localWishlist = JSON.parse(
-        localStorage.getItem("wishlist") || "[]"
-      );
-
-      if (localWishlist.length > 0 && token) {
-        const response = await fetch(`${BACKEND_URL}/api/wishlist/sync`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ wishlist: localWishlist }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.success) {
-          setWishlist(data.wishlist);
-          localStorage.setItem("wishlist", JSON.stringify(data.wishlist));
-        }
-      }
-    } catch (error) {
-      console.error("Error syncing wishlist:", error);
-    }
-  };
-
-  // Sync wishlist when user logs in
-  useEffect(() => {
-    if (token) {
-      syncWishlist();
-    }
-  }, [token]);
-
   // Get wishlist count
   const wishlistCount = wishlist.length;
 
@@ -227,7 +243,6 @@ const WishlistProvider = ({ children }) => {
         loading,
         error,
         fetchWishlist,
-        syncWishlist,
       }}
     >
       {children}

@@ -1,14 +1,15 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { assets } from "../../../public/assets/asset";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 // ⭐ NEW: Google Login Import
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
+import { AuthContext } from "../../Context/UseAuthContext";
 import { CartContext } from "../../Context/UseCartContext";
 
 export default function SignIn() {
+  const { login } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -18,7 +19,8 @@ export default function SignIn() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
-  const { fetchCart, syncCart } = useContext(CartContext);
+  const { fetchCart } = useContext(CartContext);
+
 
   // ⭐ NEW: Initialize the Google Login Hook
   const googleSignIn = useGoogleLogin({
@@ -43,7 +45,6 @@ export default function SignIn() {
     },
     flow: "implicit", // still fine
   });
-
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -75,11 +76,9 @@ export default function SignIn() {
 
       if (response.ok) {
         // ✅ Success: Store token and user data
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        localStorage.setItem("userData", JSON.stringify(data.user));
+        login(data.user, data.token);
 
-         console.log("🛒 Fetching cart after login...");
+        console.log("🛒 Fetching cart after login...");
         await fetchCart();
         console.log("✅ Cart fetched successfully!");
 
@@ -108,7 +107,6 @@ export default function SignIn() {
     }
   };
 
-
   // ⭐ NEW: Google Login Success Handler
   const handleGoogleSuccess = async (userInfo) => {
     const { name, email, picture, sub } = userInfo;
@@ -121,11 +119,10 @@ export default function SignIn() {
       );
 
       const data = response.data;
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      login(data.user, data.token);
 
       setSuccess("Login successful! Redirecting...");
-      setTimeout(() => (window.location.href = "/"), 1000);
+      setTimeout(() => navigate("/"), 1000);
     } catch (err) {
       console.error("Google login error:", err);
       setError(err.response?.data?.error || "Google login failed");
@@ -133,7 +130,6 @@ export default function SignIn() {
       setLoading(false);
     }
   };
-
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center overflow-hidden">

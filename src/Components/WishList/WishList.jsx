@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { FaArrowLeft, FaOpencart } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { WishlistContext } from "../../Context/UseWishListContext";
@@ -6,27 +6,68 @@ import { X } from "lucide-react";
 import { CartContext } from "../../Context/UseCartContext";
 import { ToastContext } from "../../Context/UseToastContext";
 import { motion, AnimatePresence, useInView } from "framer-motion";
+import SizeChangeModal from "../SizeChangeModal";
 
 const WishList = () => {
   const { wishlist, removeFromWishlist } = useContext(WishlistContext);
   const { cart, addToCart } = useContext(CartContext);
   const { showToast } = useContext(ToastContext);
 
+  // ✅ Size Modal States
+  const [sizeModalOpen, setSizeModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
   useEffect(() => {
-  document.title = `Wishlist (${wishlist.length}) - SLNS Sarees`;
-}, [wishlist.length]);
+    document.title = `Wishlist (${wishlist.length}) - SLNS Sarees`;
+  }, [wishlist.length]);
+
+  // ✅ Smart Add to Cart Handler
+  const handleAddToCartClick = (item) => {
+    // Check: Sizes available ah?
+    const hasSizes = item.sizes && Array.isArray(item.sizes) && item.sizes.length > 0;
+
+    if (hasSizes) {
+      // Sizes irundha - Modal open pannu
+      setSelectedProduct(item);
+      setSizeModalOpen(true);
+    } else {
+      // ✅ Sizes illa na - Direct cart ku add pannu (Sarees case)
+      const cartItem = {
+        ...item,
+        selectedSize: "One Size",
+        quantity: 1
+      };
+      addToCart(cartItem);
+      showToast(`${item.product_name} added to Cart`, "success");
+    }
+  };
+
+  // ✅ Handle Size Selection & Add to Cart
+  const handleSizeSelect = (selectedSize) => {
+    if (selectedProduct && selectedSize) {
+      const cartItem = {
+        ...selectedProduct,
+        selectedSize: selectedSize,
+        quantity: 1,
+      };
+
+      addToCart(cartItem);
+      showToast(`Added to Cart with size ${selectedSize}`, "success");
+
+      setSizeModalOpen(false);
+      setSelectedProduct(null);
+    }
+  };
 
   const isInCart = cart.some((item) => item.product_id === wishlist.product_id);
 
   const handleCart = () => {
     if (isInCart) {
       showToast("Item already added in Cart", "success");
-    } else {
-      showToast("Item added in Cart", "success");
     }
   };
 
-  console.log("Wishlist",wishlist)
+  console.log("Wishlist", wishlist);
   const mobileView = window.innerWidth < 480;
 
   // 🎨 Animation Variants
@@ -204,7 +245,9 @@ const WishList = () => {
                     variants={cardVariants}
                     mobileView={mobileView}
                     removeFromWishlist={removeFromWishlist}
-                    addToCart={addToCart}
+                    onAddToCart={() => {
+                      handleAddToCartClick(item)
+                    }}
                     handleCart={handleCart}
                   />
                 ))}
@@ -213,6 +256,19 @@ const WishList = () => {
           )}
         </AnimatePresence>
       </div>
+
+      {/* ✅ Size Modal */}
+      <SizeChangeModal
+        isOpen={sizeModalOpen}
+        onClose={() => {
+          setSizeModalOpen(false);
+          setSelectedProduct(null);
+        }}
+        currentSize={null}
+        availableSizes={selectedProduct?.sizes || []}
+        onSizeChange={handleSizeSelect}
+        productName={selectedProduct?.product_name}
+      />
     </motion.div>
   );
 };
@@ -224,7 +280,7 @@ const WishlistCardWrapper = ({
   variants,
   mobileView,
   removeFromWishlist,
-  addToCart,
+  onAddToCart,
   handleCart,
 }) => {
   const ref = useRef(null);
@@ -286,7 +342,7 @@ const WishlistCardWrapper = ({
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                addToCart(item);
+                onAddToCart();
                 handleCart();
               }}
               className="w-15 h-15 flex justify-center items-center font-['Poppins'] hover:drop-shadow-[0px_0px_10px] rounded-full bg-white font-semibold text-[13px] tracking-wide text-accet hover:drop-shadow-[#bb5e00] hover:bg-[#bb5e00] hover:text-white transition-all duration-300"

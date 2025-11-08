@@ -199,8 +199,6 @@ const ProductDetail = () => {
   const handleCart = () => {
     if (isInCart) {
       showToast("Item already added in Cart", "success");
-    } else {
-      showToast("Item added in Cart", "success");
     }
   };
 
