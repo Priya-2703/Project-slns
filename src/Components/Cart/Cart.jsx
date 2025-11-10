@@ -576,7 +576,7 @@ function Cart() {
                         : "0 10px 40px rgba(129, 90, 55, 0.4)",
                   }}
                   whileTap={{ scale: cart.length === 0 ? 1 : 0.95 }}
-                  transition={{ type: "spring", stiffness: 400 }}
+                  Transition={{ type: "spring", stiffness: 400 }}
                 >
                   Checkout Now
                 </motion.button>
