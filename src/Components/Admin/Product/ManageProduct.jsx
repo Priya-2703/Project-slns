@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
-import { ToastContext } from "../../Context/UseToastContext";
+import { ToastContext } from "../../../Context/UseToastContext";
 
 export default function ManageProducts() {
   const { showToast } = useContext(ToastContext);

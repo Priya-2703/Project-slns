@@ -644,27 +644,6 @@ const ProductDetail = () => {
             </div>
 
             <div className="flex w-full flex-col py-8 md:mt-5 gap-3">
-              {/* Purchase Now Button */}
-              <button
-                onClick={() => {
-                  if (!canAddToCart) {
-                    showToast("Please select a size first! 📏", "error");
-                    return;
-                  }
-                  // Handle purchase logic here
-                  showToast("Proceeding to checkout...", "success");
-                  // navigate('/checkout');
-                }}
-                disabled={!canAddToCart}
-                className={`text-[16px] px-3 py-4 font-medium font-body rounded-lg w-full transition-all ${
-                  canAddToCart
-                    ? "bg-white text-black hover:scale-[1.02] cursor-pointer"
-                    : "bg-gray-600 text-gray-400 cursor-not-allowed opacity-50"
-                }`}
-              >
-                {canAddToCart ? "Purchase Now" : "Select Size to Purchase"}
-              </button>
-
               <button
                 onClick={() => {
                   handleAddToCart();

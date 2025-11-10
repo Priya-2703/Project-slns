@@ -1,22 +1,258 @@
-import { useContext, useEffect, useMemo } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { FaArrowLeft, FaMinus, FaPlus } from "react-icons/fa";
 import { FaTrashCan } from "react-icons/fa6";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { assets } from "../../../public/assets/asset";
 import { CartContext } from "../../Context/UseCartContext";
 import { motion } from "framer-motion";
 import { getImageUrl } from "../../utils/imageHelper";
+import { loadRazorpayScript } from "../../utils/razorpayHelper";
+import { ToastContext } from "../../Context/UseToastContext";
 
 function Cart() {
+  const navigate = useNavigate();
+  const { showToast } = useContext(ToastContext);
   const {
     cart,
     totalPrice,
     removeFromCart,
     updateCartItemQuantity,
+    clearCart,
   } = useContext(CartContext);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     document.title = `Cart (${cart.length}) - SLNS Sarees`;
   }, [cart.length]);
+
+  console.log("cart", cart);
+
+  // const handleCheckout = async () => {
+  //   try {
+  //     setIsProcessing(true);
+
+  //     // 1. Check if cart is empty
+  //     if (cart.length === 0) {
+  //       showToast("Cart is empty!");
+  //       return;
+  //     }
+
+  //     // 2. Load Razorpay Script
+  //     const scriptLoaded = await loadRazorpayScript();
+
+  //     if (!scriptLoaded) {
+  //       showToast("Razorpay SDK failed to load. Check your internet!");
+  //       setIsProcessing(false);
+  //       return;
+  //     }
+
+  //     // 3. Create Order in Backend
+  //     const orderData = await createRazorpayOrder(totalPrice);
+
+  //     if (!orderData.success) {
+  //       showToast("Failed to create order!");
+  //       setIsProcessing(false);
+  //       return;
+  //     }
+
+  //     // 4. Razorpay Options Setup
+  //     const options = {
+  //       key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+  //       amount: orderData.order.amount,
+  //       currency: orderData.order.currency,
+  //       name: "SLNS Sarees",
+  //       description: "Purchase from SLNS Sarees",
+  //       image: "/logo.png", // Optional: Unga logo path
+  //       order_id: orderData.order.id,
+
+  //       // ✅ Payment Success Handler
+  //       handler: async function (response) {
+  //         try {
+  //           // Verify payment
+  //           const verificationData = await verifyPayment({
+  //             razorpay_order_id: response.razorpay_order_id,
+  //             razorpay_payment_id: response.razorpay_payment_id,
+  //             razorpay_signature: response.razorpay_signature,
+  //           });
+
+  //           if (verificationData.success) {
+  //             showToast("Payment Successful! 🎉");
+
+  //             // ✅ Cart-a clear pannunga
+  //             clearCart();
+
+  //             // ✅ Success page ku redirect (optional)
+  //             // navigate('/order-success', {
+  //             //   state: {
+  //             //     orderId: response.razorpay_order_id,
+  //             //     paymentId: response.razorpay_payment_id
+  //             //   }
+  //             // });
+  //           } else {
+  //             showToast("Payment verification failed!");
+  //           }
+  //         } catch (error) {
+  //           console.error("Verification error:", error);
+  //           showToast("Something went wrong!");
+  //         } finally {
+  //           setIsProcessing(false);
+  //         }
+  //       },
+
+  //       // ✅ Customer Details Prefill
+  //       prefill: {
+  //         name: "Customer Name", // Database irunthu fetch pannunga
+  //         email: "customer@example.com",
+  //         contact: "9999999999",
+  //       },
+
+  //       // ✅ Notes (optional)
+  //       notes: {
+  //         cart_items: cart.length,
+  //         total_amount: totalPrice,
+  //       },
+
+  //       // ✅ Theme Customization
+  //       theme: {
+  //         color: "#815a37", // Unga brand color
+  //       },
+
+  //       // ✅ Modal Close Handler
+  //       modal: {
+  //         ondismiss: function () {
+  //           setIsProcessing(false);
+  //           showToast("Payment cancelled!");
+  //         },
+  //       },
+  //     };
+
+  //     // 5. Open Razorpay Checkout
+  //     const paymentObject = new window.Razorpay(options);
+  //     paymentObject.open();
+  //   } catch (error) {
+  //     console.error("Checkout error:", error);
+  //     showToast("Failed to initiate checkout!");
+  //     setIsProcessing(false);
+  //   }
+  // };
+
+  const handleCheckout = async () => {
+    try {
+      setIsProcessing(true);
+
+      // 1. Cart empty check
+      if (cart.length === 0) {
+        showToast("Cart is empty!");
+        setIsProcessing(false);
+        return;
+      }
+
+      // 2. Razorpay Script Load
+      const scriptLoaded = await loadRazorpayScript();
+
+      if (!scriptLoaded) {
+        showToast("Razorpay SDK failed to load. Please check your internet!");
+        setIsProcessing(false);
+        return;
+      }
+
+      const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
+
+      // ✅ Order details for success page
+      const orderDetails = {
+        items: cart,
+        subtotal: subtotal,
+        shipping: shipping,
+        total: totalPrice,
+        orderDate: new Date().toISOString(),
+      };
+
+      // 3. Razorpay Options (Backend illama direct setup)
+      const options = {
+        key: razorpayKey, // ✅ Test Key ID
+        amount: Math.round(totalPrice * 100), // ✅ Paise-la convert
+        currency: "INR",
+        name: "SLNS Sarees",
+        description: `Purchase of ${cart.length} items`,
+        image: `${assets.logo}`,
+
+        // ✅ Payment Success Handler (Temporary - verification illama)
+        handler: function (response) {
+          console.log("Payment Response:", response);
+
+          try {
+            // ✅ Create payment data with response details
+            const paymentData = {
+              ...orderDetails, // Spread order details
+              paymentId: response.razorpay_payment_id,
+              orderId: response.razorpay_order_id || `ORD-${Date.now()}`,
+              paymentStatus: "SUCCESS",
+              paymentMethod: "Razorpay",
+            };
+
+            // ✅ Success message
+            showToast(
+              `Payment Successful! 🎉\n\nPayment ID: ${response.razorpay_payment_id}`
+            );
+
+            // ✅ Processing state reset
+            setIsProcessing(false);
+
+            // ✅ Success page ku navigate with data
+            navigate("/order-success", {
+              state: paymentData,
+              replace: true, // Back button prevent
+            });
+          } catch (error) {
+            console.error("Post-payment error:", error);
+            showToast("Something went wrong!");
+            setIsProcessing(false);
+          }
+        },
+
+        // ✅ Customer prefill
+        prefill: {
+          name: "Test Customer",
+          email: "test@example.com",
+          contact: "9999999999",
+        },
+
+        // ✅ Notes
+        notes: {
+          cart_items: cart.length,
+          total_amount: totalPrice,
+        },
+
+        // ✅ Theme
+        theme: {
+          color: "#815a37",
+        },
+
+        // ✅ Modal close handler
+        modal: {
+          ondismiss: function () {
+            setIsProcessing(false);
+            showToast("Payment cancelled!");
+          },
+        },
+      };
+
+      // 4. Razorpay Checkout Open
+      const paymentObject = new window.Razorpay(options);
+
+      paymentObject.on("payment.failed", function (response) {
+        console.error("Payment Failed:", response.error);
+        showToast(`Payment Failed!\n${response.error.description}`);
+        setIsProcessing(false);
+      });
+
+      paymentObject.open();
+    } catch (error) {
+      console.error("Checkout Error:", error);
+      showToast("Failed to initiate checkout!");
+      setIsProcessing(false);
+    }
+  };
 
   // const [sizeModalOpen, setSizeModalOpen] = useState(false);
   // const [selectedProduct, setSelectedProduct] = useState(null);
@@ -627,31 +863,32 @@ function Cart() {
                   delay={0.9}
                 />
               </div>
-              <Link to={"/checkout"}>
-                <motion.button
-                  disabled={cart.length === 0}
-                  className="mt-5 w-full rounded-full cursor-pointer font-body bg-[#815a37] px-5 py-3 font-[600] text-white hover:text-black hover:bg-[#8f673f] transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1, duration: 0.5 }}
-                  whileHover={{
-                    scale: cart.length === 0 ? 1 : 1.05,
-                    boxShadow:
-                      cart.length === 0
-                        ? "none"
-                        : "0 10px 40px rgba(129, 90, 55, 0.4)",
-                  }}
-                  whileTap={{ scale: cart.length === 0 ? 1 : 0.95 }}
-                  Transition={{ type: "spring", stiffness: 400 }}
-                >
-                  Checkout Now
-                </motion.button>
-              </Link>
+
+              <motion.button
+                onClick={handleCheckout} // ✅ Itha add pannunga
+                disabled={cart.length === 0 || isProcessing}
+                className="mt-5 w-full rounded-full cursor-pointer font-body bg-[#815a37] px-5 py-3 font-semibold text-white hover:text-black hover:bg-[#8f673f] transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1, duration: 0.5 }}
+                whileHover={{
+                  scale: cart.length === 0 || isProcessing ? 1 : 1.05,
+                  boxShadow:
+                    cart.length === 0 || isProcessing
+                      ? "none"
+                      : "0 10px 40px rgba(129, 90, 55, 0.4)",
+                }}
+                whileTap={{
+                  scale: cart.length === 0 || isProcessing ? 1 : 0.95,
+                }}
+              >
+                {isProcessing ? "Processing..." : "Checkout Now"}
+              </motion.button>
             </motion.div>
           </aside>
         </div>
       </div>
-{/* 
+      {/* 
       <SizeChangeModal
         isOpen={sizeModalOpen}
         onClose={() => {

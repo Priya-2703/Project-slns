@@ -7,29 +7,31 @@ import {
   Route,
 } from "react-router-dom";
 import { AuthProvider } from "./Context/UseAuthContext";
-import Navbar from "./Components/Navbar/Navbar";
-import Footer from "./Components/Footer/Footer";
-import ScrollToTop from "./Components/ScrollToTop";
 import CartProvider from "./Context/UseCartContext";
 import WishlistProvider from "./Context/UseWishListContext";
 import { ToastProvider } from "./Context/UseToastContext";
 import { ReviewProvider } from "./Context/UseReviewContext";
+import ProtectedAdminRoute, {
+  RedirectIfAdmin,
+} from "./Components/Auth/ProtectedAdminRoute";
+import Navbar from "./Components/Navbar/Navbar";
+import Footer from "./Components/Footer/Footer";
+import ScrollToTop from "./Components/ScrollToTop";
 import YellowCursor from "./Components/YellowCursor";
 import ButterflyLottieFollower from "./Components/ButterflyLottieFollower";
 import { assets } from "../public/assets/asset";
 import BackToTopButton from "./Components/BacktoTopButton";
 import LoaderAni from "./Components/LoaderAni";
 import AdminDashboard from "./Components/Admin/AdminDashboard";
-import AddProduct from "./Components/Admin/AddProduct";
 import BulkImport from "./Components/Admin/BulkImport";
-import ProtectedAdminRoute, {
-  RedirectIfAdmin,
-} from "./Components/Auth/ProtectedAdminRoute";
-import ManageProducts from "./Components/Admin/ManageProduct";
 import ManageCategories from "./Components/Admin/Categories/ManageCategories";
+import AddProduct from "./Components/Admin/Product/AddProduct";
+import EditProduct from "./Components/Admin/Product/EditProduct";
+import ManageProduct from "./Components/Admin/Product/ManageProduct";
 import ManageOrders from "./Components/Admin/ManageOrders";
-import EditProduct from "./Components/Admin/EditProduct";
 import CustomerManagement from "./Components/Admin/CustomerManagement";
+import BannerManagement from "./Components/Admin/BannerManagement";
+import PaymentSuccess from "./Components/PaymentSuccess";
 
 const About = lazy(() => import("./Components/About/About"));
 const Faq = lazy(() => import("./Components/FAQ/Faq"));
@@ -45,7 +47,7 @@ const ForgotPassword = lazy(() =>
 const B2bSignUp = lazy(() => import("./Components/B2bSignUp/B2bSignup"));
 const B2bSignIn = lazy(() => import("./Components/B2bSignIn/B2bSignIn"));
 const Product = lazy(() => import("./Components/Product/Product"));
-const CheckOut = lazy(() => import("./Components/CheckOut/CheckOut"));
+// const CheckOut = lazy(() => import("./Components/CheckOut/CheckOut"));
 const WishList = lazy(() => import("./Components/WishList/WishList"));
 const Profile = lazy(() => import("./Components/Profile/Profile"));
 const ErrorPage = lazy(() => import("./Components/ErrorPage/ErrorPage"));
@@ -92,7 +94,7 @@ function AppContent() {
     "/profile",
     "/cart",
     "/wishlist",
-    "/checkout",
+    // "/checkout",
     "/faq",
     "/privacy-policy",
     "/terms-and-conditions",
@@ -100,6 +102,7 @@ function AppContent() {
     "/signup",
     "/b2b-signup",
     "/signin",
+    "/order-success",
     "/b2b-signin",
     "/admin/dashboard",
     "/admin/products/add",
@@ -116,6 +119,7 @@ function AppContent() {
     "/admin/products/edit/:id",
     "/admin/categories",
     "/admin/orders",
+    "/admin/banner-manage",
     "/admin/import",
   ];
 
@@ -158,11 +162,12 @@ function AppContent() {
           />
           <Route path="/cart" element={<Cart />} />
           <Route path="/wishlist" element={<WishList />} />
-          <Route path="/checkout" element={<CheckOut />} />
+          {/* <Route path="/checkout" element={<CheckOut />} /> */}
           <Route path="/faq" element={<Faq />} />
           <Route path="/privacy-policy" element={<Privacy />} />
           <Route path="/terms-and-conditions" element={<Terms />} />
           <Route path="/contact" element={<ContactForm />} />
+          <Route path="/order-success" element={<PaymentSuccess />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/b2b-signup" element={<B2bSignUp />} />
           <Route path="/signin" element={<SignIn />} />
@@ -211,7 +216,7 @@ function AppContent() {
             path="/admin/products"
             element={
               <ProtectedAdminRoute>
-                <ManageProducts />
+                <ManageProduct />
               </ProtectedAdminRoute>
             }
           />
@@ -252,6 +257,14 @@ function AppContent() {
             element={
               <ProtectedAdminRoute>
                 <BulkImport />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
+            path="/admin/banner-manage"
+            element={
+              <ProtectedAdminRoute>
+                <BannerManagement />
               </ProtectedAdminRoute>
             }
           />
