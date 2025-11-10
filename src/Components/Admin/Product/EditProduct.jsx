@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ToastContext } from "../../Context/UseToastContext";
+import { ToastContext } from "../../../Context/UseToastContext";
 import { X, Plus, Trash2 } from "lucide-react";
 
 export default function EditProduct() {

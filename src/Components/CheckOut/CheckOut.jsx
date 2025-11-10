@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { CartContext } from "../../Context/UseCartContext";
 import { getImageUrl } from "../../utils/imageHelper";
+import { MdPayment } from "react-icons/md";
 
 export default function CheckOut() {
   const navigate = useNavigate();
@@ -60,11 +61,7 @@ export default function CheckOut() {
 
   const [paymentData, setPaymentData] = useState({
     method: "cod",
-    cardNumber: "",
-    cardName: "",
-    expiry: "",
-    cvv: "",
-    upiId: "",
+
   });
 
   const [errors, setErrors] = useState({});
@@ -948,45 +945,8 @@ export default function CheckOut() {
                       <input
                         type="radio"
                         name="paymentMethod"
-                        value="card"
-                        checked={paymentData.method === "card"}
-                        onChange={(e) =>
-                          setPaymentData({
-                            ...paymentData,
-                            method: e.target.value,
-                          })
-                        }
-                        className="peer sr-only"
-                      />
-                      <div
-                        className={`flex items-center p-5 border-2 rounded-2xl transition-all duration-300 peer-checked:border-[#8E6740] peer-checked:bg-gradient-to-br peer-checked:from-[#8E6740]/10 peer-checked:to-transparent border-gray-700 bg-black/30 hover:border-gray-600 peer-checked:shadow-lg peer-checked:shadow-[#8E6740]/20`}
-                      >
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mr-4">
-                          <CreditCard className="text-white" size={20} />
-                        </div>
-                        <div className="flex-1">
-                          <span className="text-white font-semibold text-lg block">
-                            Credit/Debit Card
-                          </span>
-                          <span className="text-gray-400 text-xs">
-                            Visa, Mastercard, Amex
-                          </span>
-                        </div>
-                        {paymentData.method === "card" && (
-                          <Check
-                            size={20}
-                            className="text-[#8E6740] animate-scaleIn"
-                          />
-                        )}
-                      </div>
-                    </label>
-
-                    <label className="relative block group cursor-pointer">
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value="upi"
-                        checked={paymentData.method === "upi"}
+                        value="onlinePayment"
+                        checked={paymentData.method === "onlinePayment"}
                         onChange={(e) =>
                           setPaymentData({
                             ...paymentData,
@@ -999,19 +959,17 @@ export default function CheckOut() {
                         className={`flex items-center p-5 border-2 rounded-2xl transition-all duration-300 peer-checked:border-[#8E6740] peer-checked:bg-gradient-to-br peer-checked:from-[#8E6740]/10 peer-checked:to-transparent border-gray-700 bg-black/30 hover:border-gray-600 peer-checked:shadow-lg peer-checked:shadow-[#8E6740]/20`}
                       >
                         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mr-4">
-                          <span className="text-white font-bold text-sm">
-                            UPI
-                          </span>
+                          <MdPayment className="text-white" size={20} />
                         </div>
                         <div className="flex-1">
                           <span className="text-white font-semibold text-lg block">
-                            UPI Payment
+                            Online Payment
                           </span>
                           <span className="text-gray-400 text-xs">
-                            Google Pay, PhonePe, Paytm
+                            UPI, Credit/Debit Cards, Net Banking
                           </span>
                         </div>
-                        {paymentData.method === "upi" && (
+                        {paymentData.method === "onlinePayment" && (
                           <Check
                             size={20}
                             className="text-[#8E6740] animate-scaleIn"
@@ -1058,107 +1016,6 @@ export default function CheckOut() {
                     </label>
                   </div>
 
-                  {paymentData.method === "card" && (
-                    <div className="space-y-4 mt-6 p-6 bg-gradient-to-br from-gray-900/50 to-black/50 rounded-2xl border border-gray-800 animate-slideInRight">
-                      <h4 className="text-white font-semibold mb-4">
-                        Card Details
-                      </h4>
-                      <input
-                        type="text"
-                        placeholder="Card Number"
-                        value={paymentData.cardNumber}
-                        onChange={(e) =>
-                          setPaymentData({
-                            ...paymentData,
-                            cardNumber: e.target.value,
-                          })
-                        }
-                        className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
-                  ${
-                    errors.cardNumber
-                      ? "border-red-500"
-                      : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
-                  }`}
-                      />
-
-                      <input
-                        type="text"
-                        placeholder="Cardholder Name"
-                        value={paymentData.cardName}
-                        onChange={(e) =>
-                          setPaymentData({
-                            ...paymentData,
-                            cardName: e.target.value,
-                          })
-                        }
-                        className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
-                  ${
-                    errors.cardName
-                      ? "border-red-500"
-                      : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
-                  }`}
-                      />
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <input
-                          type="text"
-                          placeholder="MM/YY"
-                          value={paymentData.expiry}
-                          onChange={(e) =>
-                            setPaymentData({
-                              ...paymentData,
-                              expiry: e.target.value,
-                            })
-                          }
-                          className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
-                    ${
-                      errors.expiry
-                        ? "border-red-500"
-                        : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
-                    }`}
-                        />
-
-                        <input
-                          type="text"
-                          placeholder="CVV"
-                          maxLength="3"
-                          value={paymentData.cvv}
-                          onChange={(e) =>
-                            setPaymentData({
-                              ...paymentData,
-                              cvv: e.target.value,
-                            })
-                          }
-                          className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
-                    ${
-                      errors.cvv
-                        ? "border-red-500"
-                        : "border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20"
-                    }`}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {paymentData.method === "upi" && (
-                    <div className="mt-6 p-6 bg-gradient-to-br from-gray-900/50 to-black/50 rounded-2xl border border-gray-800 animate-slideInRight">
-                      <h4 className="text-white font-semibold mb-4">
-                        UPI Details
-                      </h4>
-                      <input
-                        type="text"
-                        placeholder="Enter UPI ID (e.g., name@upi)"
-                        value={paymentData.upiId}
-                        onChange={(e) =>
-                          setPaymentData({
-                            ...paymentData,
-                            upiId: e.target.value,
-                          })
-                        }
-                        className="w-full px-5 py-3.5 bg-black/50 border-2 border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] focus:shadow-lg focus:shadow-[#8E6740]/20 transition-all duration-300"
-                      />
-                    </div>
-                  )}
                 </div>
               )}
 
@@ -1309,9 +1166,8 @@ export default function CheckOut() {
                         Payment Method
                       </h3>
                     </div>
-                    <p className="text-gray-300 font-medium">
-                      {paymentData.method === "card" && "💳 Credit/Debit Card"}
-                      {paymentData.method === "upi" && "📱 UPI Payment"}
+                    <p className="text-gray-300 font-medium text-[14px] border border-green-500 bg-green-700/10 p-2 rounded-full flex justify-center">
+                      {paymentData.method === "onlinePayment" && "Online Payment"}
                       {paymentData.method === "cod" && "🚚 Cash on Delivery"}
                     </p>
                   </div>

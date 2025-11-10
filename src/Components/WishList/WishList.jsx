@@ -24,6 +24,8 @@ const WishList = () => {
     document.title = `Wishlist (${wishlist.length}) - SLNS Sarees`;
   }, [wishlist.length]);
 
+  console.log("wishlist", wishlist)
+
   // ✅ Smart Add to Cart Handler
   const handleAddToCartClick = async (item) => {
 
