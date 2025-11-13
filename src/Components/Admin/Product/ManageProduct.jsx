@@ -185,7 +185,7 @@ export default function ManageProducts() {
         return product.primary_image;
       }
       if (product.primary_image.startsWith("/api/images/")) {
-        return `http://localhost:5000${product.primary_image}`; // change api
+        return `${BACKEND_URL}/${product.primary_image}`; // change api
       }
     }
     return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23333" width="200" height="200"/%3E%3Ctext fill="%23666" font-family="sans-serif" font-size="14" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle"%3ENo Image%3C/text%3E%3C/svg%3E';

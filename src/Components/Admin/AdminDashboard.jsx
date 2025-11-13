@@ -113,11 +113,11 @@ export default function AdminDashboard() {
       }
       // If API endpoint
       if (product.primary_image.startsWith("/api/images/")) {
-        return `http://localhost:5000${product.primary_image}`;
+        return `${BACKEND_URL}/${product.primary_image}`;
       }
       // If static file path
       if (product.primary_image.startsWith("/static/")) {
-        return `http://localhost:5000${product.primary_image}`;
+        return `${BACKEND_URL}/${product.primary_image}`;
       }
     }
 
@@ -130,7 +130,7 @@ export default function AdminDashboard() {
         return product.image_url;
       }
       if (product.image_url.startsWith("/static/")) {
-        return `http://localhost:5000${product.image_url}`;
+        return `${BACKEND_URL}/${product.image_url}`;
       }
     }
 

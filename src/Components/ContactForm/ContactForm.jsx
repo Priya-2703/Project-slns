@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import "./ContactForm.css";
 
 const ContactForm = () => {
+  const BACKEND_URL = import.meta.env.VITE_API_URL;
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -46,7 +47,7 @@ const ContactForm = () => {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
-      const response = await fetch("http://localhost:5000/api/contact", {
+      const response = await fetch(`${BACKEND_URL}/api/contact`, {
         method: "POST",
         headers: headers,
         body: JSON.stringify(formData),
@@ -183,7 +184,10 @@ const ContactForm = () => {
         {/* Main Content Grid */}
         <motion.div className="contact-grid font-body" variants={pageVariants}>
           {/* Left Side - Info Cards */}
-          <motion.div className="contact-info-section order-2 lg:order-1" variants={cardVariants}>
+          <motion.div
+            className="contact-info-section order-2 lg:order-1"
+            variants={cardVariants}
+          >
             {/* Map Card */}
             <motion.div
               className="info-card map-card"
@@ -293,7 +297,10 @@ const ContactForm = () => {
           </motion.div>
 
           {/* Right Side - Contact Form */}
-          <motion.div className="contact-form-section order-1 lg:order-2" variants={cardVariants}>
+          <motion.div
+            className="contact-form-section order-1 lg:order-2"
+            variants={cardVariants}
+          >
             <div className="form-card">
               <div className="form-card-glow"></div>
 

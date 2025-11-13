@@ -6,7 +6,11 @@ import { assets } from "../../../public/assets/asset";
 import { CartContext } from "../../Context/UseCartContext";
 import { motion } from "framer-motion";
 import { getImageUrl } from "../../utils/imageHelper";
-import { loadRazorpayScript } from "../../utils/razorpayHelper";
+import {
+  createRazorpayOrder,
+  loadRazorpayScript,
+  verifyPayment,
+} from "../../utils/razorpayHelper";
 import { ToastContext } from "../../Context/UseToastContext";
 
 function Cart() {
@@ -27,200 +31,122 @@ function Cart() {
 
   console.log("cart", cart);
 
-  // const handleCheckout = async () => {
-  //   try {
-  //     setIsProcessing(true);
-
-  //     // 1. Check if cart is empty
-  //     if (cart.length === 0) {
-  //       showToast("Cart is empty!");
-  //       return;
-  //     }
-
-  //     // 2. Load Razorpay Script
-  //     const scriptLoaded = await loadRazorpayScript();
-
-  //     if (!scriptLoaded) {
-  //       showToast("Razorpay SDK failed to load. Check your internet!");
-  //       setIsProcessing(false);
-  //       return;
-  //     }
-
-  //     // 3. Create Order in Backend
-  //     const orderData = await createRazorpayOrder(totalPrice);
-
-  //     if (!orderData.success) {
-  //       showToast("Failed to create order!");
-  //       setIsProcessing(false);
-  //       return;
-  //     }
-
-  //     // 4. Razorpay Options Setup
-  //     const options = {
-  //       key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-  //       amount: orderData.order.amount,
-  //       currency: orderData.order.currency,
-  //       name: "SLNS Sarees",
-  //       description: "Purchase from SLNS Sarees",
-  //       image: "/logo.png", // Optional: Unga logo path
-  //       order_id: orderData.order.id,
-
-  //       // ✅ Payment Success Handler
-  //       handler: async function (response) {
-  //         try {
-  //           // Verify payment
-  //           const verificationData = await verifyPayment({
-  //             razorpay_order_id: response.razorpay_order_id,
-  //             razorpay_payment_id: response.razorpay_payment_id,
-  //             razorpay_signature: response.razorpay_signature,
-  //           });
-
-  //           if (verificationData.success) {
-  //             showToast("Payment Successful! 🎉");
-
-  //             // ✅ Cart-a clear pannunga
-  //             clearCart();
-
-  //             // ✅ Success page ku redirect (optional)
-  //             // navigate('/order-success', {
-  //             //   state: {
-  //             //     orderId: response.razorpay_order_id,
-  //             //     paymentId: response.razorpay_payment_id
-  //             //   }
-  //             // });
-  //           } else {
-  //             showToast("Payment verification failed!");
-  //           }
-  //         } catch (error) {
-  //           console.error("Verification error:", error);
-  //           showToast("Something went wrong!");
-  //         } finally {
-  //           setIsProcessing(false);
-  //         }
-  //       },
-
-  //       // ✅ Customer Details Prefill
-  //       prefill: {
-  //         name: "Customer Name", // Database irunthu fetch pannunga
-  //         email: "customer@example.com",
-  //         contact: "9999999999",
-  //       },
-
-  //       // ✅ Notes (optional)
-  //       notes: {
-  //         cart_items: cart.length,
-  //         total_amount: totalPrice,
-  //       },
-
-  //       // ✅ Theme Customization
-  //       theme: {
-  //         color: "#815a37", // Unga brand color
-  //       },
-
-  //       // ✅ Modal Close Handler
-  //       modal: {
-  //         ondismiss: function () {
-  //           setIsProcessing(false);
-  //           showToast("Payment cancelled!");
-  //         },
-  //       },
-  //     };
-
-  //     // 5. Open Razorpay Checkout
-  //     const paymentObject = new window.Razorpay(options);
-  //     paymentObject.open();
-  //   } catch (error) {
-  //     console.error("Checkout error:", error);
-  //     showToast("Failed to initiate checkout!");
-  //     setIsProcessing(false);
-  //   }
-  // };
-
   const handleCheckout = async () => {
     try {
       setIsProcessing(true);
 
-      // 1. Cart empty check
+      // 1. Check if cart is empty
       if (cart.length === 0) {
         showToast("Cart is empty!");
-        setIsProcessing(false);
         return;
       }
 
-      // 2. Razorpay Script Load
+      // 2. Load Razorpay Script
       const scriptLoaded = await loadRazorpayScript();
 
       if (!scriptLoaded) {
-        showToast("Razorpay SDK failed to load. Please check your internet!");
+        showToast("Razorpay SDK failed to load. Check your internet!");
         setIsProcessing(false);
         return;
       }
 
-      const razorpayKey = import.meta.env.VITE_RAZORPAY_KEY_ID;
+      // ✅ Calculate amounts BEFORE creating order
+      const calculatedSubtotal = cart.reduce(
+        (sum, it) => sum + it.price * it.quantity,
+        0
+      );
+      const calculatedShipping =
+        calculatedSubtotal > 1000 && calculatedSubtotal < 7000 ? 0 : 100;
+      const calculatedTotal = calculatedSubtotal + calculatedShipping;
 
-      // ✅ Order details for success page
-      const orderDetails = {
-        items: cart,
-        subtotal: subtotal,
-        shipping: shipping,
-        total: totalPrice,
-        orderDate: new Date().toISOString(),
-      };
+      // 3. Create Order in Backend
+      const orderData = await createRazorpayOrder(calculatedTotal);
 
-      // 3. Razorpay Options (Backend illama direct setup)
+      if (!orderData.success) {
+        showToast("Failed to create order!");
+        setIsProcessing(false);
+        return;
+      }
+
+      // 4. Razorpay Options Setup
       const options = {
-        key: razorpayKey, // ✅ Test Key ID
-        amount: Math.round(totalPrice * 100), // ✅ Paise-la convert
-        currency: "INR",
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: orderData.order.amount,
+        currency: orderData.order.currency,
         name: "SLNS Sarees",
-        description: `Purchase of ${cart.length} items`,
-        image: `${assets.logo}`,
+        description: "Purchase from SLNS Sarees",
+        image: "/logo.png",
+        order_id: orderData.order.id,
 
-        // ✅ Payment Success Handler (Temporary - verification illama)
-        handler: function (response) {
-          console.log("Payment Response:", response);
-
+        // ✅✅✅ Payment Success Handler - FIXED
+        handler: async function (response) {
           try {
-            // ✅ Create payment data with response details
-            const paymentData = {
-              ...orderDetails, // Spread order details
-              paymentId: response.razorpay_payment_id,
-              orderId: response.razorpay_order_id || `ORD-${Date.now()}`,
-              paymentStatus: "SUCCESS",
-              paymentMethod: "Razorpay",
-            };
-
-            // ✅ Success message
-            showToast(
-              `Payment Successful! 🎉\n\nPayment ID: ${response.razorpay_payment_id}`
-            );
-
-            // ✅ Processing state reset
-            setIsProcessing(false);
-
-            // ✅ Success page ku navigate with data
-            navigate("/order-success", {
-              state: paymentData,
-              replace: true, // Back button prevent
+            // Verify payment
+            const verificationData = await verifyPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              items: cart, // ✅ Send cart items
+              total: calculatedTotal,
+              subtotal: calculatedSubtotal,
+              shipping: calculatedShipping,
             });
+
+            if (verificationData.success) {
+              showToast("Payment Successful! 🎉");
+
+              // ✅ Create a copy of cart data before clearing
+              const orderItems = cart.map((item) => ({
+                product_id: item.product_id,
+                product_name: item.product_name,
+                category_name: item.category_name,
+                primary_image: item.primary_image,
+                price: item.price,
+                quantity: item.quantity,
+                selectedSize: item.selectedSize || "One Size",
+              }));
+
+              // ✅ Clear cart
+              clearCart();
+
+              // ✅✅✅ Navigate with COMPLETE data
+              navigate("/order-success", {
+                state: {
+                  orderId:
+                    verificationData.order?._id || response.razorpay_order_id,
+                  paymentId: response.razorpay_payment_id,
+                  paymentStatus: "Success",
+                  paymentMethod: "Online Payment",
+                  orderDate: new Date().toISOString(),
+                  total: calculatedTotal,
+                  subtotal: calculatedSubtotal,
+                  shipping: calculatedShipping,
+                  items: orderItems, // ✅ Pass items
+                },
+                replace: true,
+              });
+            } else {
+              showToast("Payment verification failed!");
+              setIsProcessing(false);
+            }
           } catch (error) {
-            console.error("Post-payment error:", error);
+            console.error("Verification error:", error);
             showToast("Something went wrong!");
             setIsProcessing(false);
           }
         },
 
-        // ✅ Customer prefill
+        // ✅ Customer Details Prefill
         prefill: {
-          name: "Test Customer",
-          email: "test@example.com",
+          name: "Customer Name",
+          email: "customer@example.com",
           contact: "9999999999",
         },
 
         // ✅ Notes
         notes: {
           cart_items: cart.length,
-          total_amount: totalPrice,
+          total_amount: calculatedTotal,
         },
 
         // ✅ Theme
@@ -228,7 +154,7 @@ function Cart() {
           color: "#815a37",
         },
 
-        // ✅ Modal close handler
+        // ✅ Modal Close Handler
         modal: {
           ondismiss: function () {
             setIsProcessing(false);
@@ -237,42 +163,15 @@ function Cart() {
         },
       };
 
-      // 4. Razorpay Checkout Open
+      // 5. Open Razorpay Checkout
       const paymentObject = new window.Razorpay(options);
-
-      paymentObject.on("payment.failed", function (response) {
-        console.error("Payment Failed:", response.error);
-        showToast(`Payment Failed!\n${response.error.description}`);
-        setIsProcessing(false);
-      });
-
       paymentObject.open();
     } catch (error) {
-      console.error("Checkout Error:", error);
+      console.error("Checkout error:", error);
       showToast("Failed to initiate checkout!");
       setIsProcessing(false);
     }
   };
-
-  // const [sizeModalOpen, setSizeModalOpen] = useState(false);
-  // const [selectedProduct, setSelectedProduct] = useState(null);
-
-  // // ✅ Open Size Change Modal
-  // const handleSizeClick = (item) => {
-  //   setSelectedProduct(item);
-  //   setSizeModalOpen(true);
-  // };
-
-  // ✅ Handle Size Change
-  // const handleSizeChange = (newSize) => {
-  //   if (selectedProduct) {
-  //     changeCartItemSize(
-  //       selectedProduct.product_id,
-  //       selectedProduct.selectedSize,
-  //       newSize
-  //     );
-  //   }
-  // };
 
   // Math
   const currency = (n) =>

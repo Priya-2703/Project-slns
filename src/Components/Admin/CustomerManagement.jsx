@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 
 export default function CustomerManagement() {
-  const API_BASE_URL = "http://localhost:5000";
+  const API_BASE_URL = import.meta.env.VITE_API_URL;
 
   const [customers, setCustomers] = useState([]);
   const [filteredCustomers, setFilteredCustomers] = useState([]);

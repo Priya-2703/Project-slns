@@ -1,4 +1,9 @@
 // ✅ Razorpay Script Load
+
+const getAuthToken = () => {
+    return localStorage.getItem('token') || sessionStorage.getItem('token');
+};
+
 export const loadRazorpayScript = () => {
     return new Promise((resolve) => {
         const script = document.createElement('script');
@@ -10,39 +15,48 @@ export const loadRazorpayScript = () => {
 };
 
 // ✅ Order Create API Call
-// export const createRazorpayOrder = async (amount) => {
-//     try {
-//         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/payment/create-order`, {
-//             method: 'POST',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//             },
-//             body: JSON.stringify({ amount })
-//         });
-        
-//         const data = await response.json();
-//         return data;
-//     } catch (error) {
-//         console.error('Order creation failed:', error);
-//         throw error;
-//     }
-// };
+export const createRazorpayOrder = async (amount) => {
 
-// // ✅ Payment Verification API Call
-// export const verifyPayment = async (paymentData) => {
-//     try {
-//         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/payment/verify-payment`, {
-//             method: 'POST',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//             },
-//             body: JSON.stringify(paymentData)
-//         });
+    const token = getAuthToken()
+
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/payment/create-order`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization' : `Bearer ${token}`,
+            },
+            body: JSON.stringify({ amount })
+        });
         
-//         const data = await response.json();
-//         return data;
-//     } catch (error) {
-//         console.error('Verification failed:', error);
-//         throw error;
-//     }
-// };
+        const data = await response.json();
+        console.log("create order",data)
+        return data;
+    } catch (error) {
+        console.error('Order creation failed:', error);
+        throw error;
+    }
+};
+
+// ✅ Payment Verification API Call
+export const verifyPayment = async (paymentData) => {
+
+    const token = getAuthToken()
+
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/payment/verify`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization' : `Bearer ${token}`,
+            },
+            body: JSON.stringify(paymentData)
+        });
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Verification failed:', error);
+        throw error;
+    }
+};

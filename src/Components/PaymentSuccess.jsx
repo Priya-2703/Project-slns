@@ -1,20 +1,20 @@
-// src/pages/PaymentSuccess.jsx
-
 import { useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FaCheckCircle, FaDownload, FaHome } from "react-icons/fa";
+import { FaCheckCircle, FaHome } from "react-icons/fa";
 import { FiPackage } from "react-icons/fi";
 import { getImageUrl } from "../utils/imageHelper";
 
 function PaymentSuccess() {
+  const BACKEND_URL = import.meta.env.VITE_API_URL
   const location = useLocation();
   const navigate = useNavigate();
   const paymentData = location.state;
 
   useEffect(() => {
-    // ✅ No payment data means direct access - redirect to home
-    if (!paymentData) {
+    // ✅ Enhanced validation
+    if (!paymentData || !paymentData.orderId) {
+      console.error("Payment data missing:", paymentData);
       navigate("/", { replace: true });
     }
   }, [paymentData, navigate]);
@@ -25,8 +25,21 @@ function PaymentSuccess() {
 
   if (!paymentData) return null;
 
-  const currency = (n) =>
-    n.toLocaleString("en-IN", { style: "currency", currency: "INR" });
+
+  const CreateOrder =()=>{
+    
+  }
+
+  // ✅ Safe Currency Function
+  const currency = (n) => {
+    const amount = n ?? 0;
+    return amount.toLocaleString("en-IN", {
+      style: "currency",
+      currency: "INR",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  };
 
   // Animation Variants
   const containerVariants = {
@@ -114,32 +127,34 @@ function PaymentSuccess() {
           </h2>
 
           <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <DetailRow label="Order ID" value={paymentData.orderId} />
-            <DetailRow label="Payment ID" value={paymentData.paymentId} />
+            <DetailRow label="Order ID" value={paymentData.orderId || "N/A"} />
+            <DetailRow
+              label="Payment ID"
+              value={paymentData.paymentId || "N/A"}
+            />
             <DetailRow
               label="Payment Status"
               value={
                 <span className="text-green-500 font-semibold">
-                  {paymentData.paymentStatus}
+                  {paymentData.paymentStatus || "Success"}
                 </span>
               }
             />
             <DetailRow
               label="Payment Method"
-              value={paymentData.paymentMethod}
+              value={paymentData.paymentMethod || "Online"}
             />
             <DetailRow
               label="Order Date"
-              value={new Date(paymentData.orderDate).toLocaleDateString(
-                "en-IN",
-                {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }
-              )}
+              value={new Date(
+                paymentData.orderDate || new Date()
+              ).toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             />
             <DetailRow
               label="Total Amount"
@@ -152,50 +167,53 @@ function PaymentSuccess() {
           </div>
 
           {/* Order Items */}
-          <div className="border-t border-neutral-800 pt-6">
-            <h3 className="text-xl font-heading font-semibold mb-4">
-              Items Purchased ({paymentData.items.length})
-            </h3>
+          {paymentData.items && paymentData.items.length > 0 && (
+            <div className="border-t border-neutral-800 pt-6">
+              <h3 className="text-xl font-heading font-semibold mb-4">
+                Items Purchased ({paymentData.items.length})
+              </h3>
 
-            <div className="space-y-4">
-              {paymentData.items.map((item, index) => (
-                <motion.div
-                  key={item.product_id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-center gap-4 bg-black/30 rounded-lg p-4"
-                >
-                  <img
-                    src={getImageUrl(item.primary_image)}
-                    alt={item.product_name}
-                    className="w-16 h-20 object-cover rounded-lg ring-1 ring-neutral-700"
-                  />
-                  <div className="flex-1">
-                    <h4 className="font-body font-semibold text-sm mb-1">
-                      {item.product_name}
-                    </h4>
-                    <p className="text-xs text-neutral-400">
-                      {item.category_name}
-                    </p>
-                    {item.selectedSize && (
-                      <p className="text-xs text-neutral-400 mt-1">
-                        Size: {item.selectedSize}
+              <div className="space-y-4">
+                {paymentData.items.map((item, index) => (
+                  <motion.div
+                    key={item.product_id || index}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="flex items-center gap-4 bg-black/30 rounded-lg p-4"
+                  >
+                    <img
+                      src={getImageUrl(item.primary_image)}
+                      alt={item.product_name || "Product"}
+                      className="w-16 h-20 object-cover rounded-lg ring-1 ring-neutral-700"
+                    />
+                    <div className="flex-1">
+                      <h4 className="font-body font-semibold text-sm mb-1">
+                        {item.product_name || "Unknown Product"}
+                      </h4>
+                      <p className="text-xs text-neutral-400">
+                        {item.category_name || "Category"}
                       </p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <p className="font-body text-sm text-neutral-400">
-                      Qty: {item.quantity}
-                    </p>
-                    <p className="font-body font-semibold">
-                      {currency(item.price * item.quantity)}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
+                      {item.selectedSize && (
+                        <p className="text-xs text-neutral-400 mt-1">
+                          Size: {item.selectedSize}
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <p className="font-body text-sm text-neutral-400">
+                        Qty: {item.quantity || 0}
+                      </p>
+                      <p className="font-body font-semibold">
+                        {/* ✅ Safe calculation */}
+                        {currency((item.price || 0) * (item.quantity || 0))}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Price Summary */}
           <div className="border-t border-neutral-800 mt-6 pt-6 space-y-3">
@@ -221,7 +239,6 @@ function PaymentSuccess() {
           variants={itemVariants}
           className="flex flex-col md:flex-row gap-4 justify-center"
         >
-
           <Link to="/">
             <motion.button
               whileHover={{ scale: 1.05 }}
