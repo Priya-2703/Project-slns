@@ -7,6 +7,7 @@ import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 
 export default function SignUp() {
+  const BACKEND_URL = import.meta.env.VITE_API_URL;
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -41,7 +42,6 @@ export default function SignUp() {
     flow: "implicit", // still fine
   });
 
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -72,7 +72,7 @@ export default function SignUp() {
     setSuccess("");
 
     try {
-      const response = await fetch("http://localhost:5000/api/signup", {
+      const response = await fetch(`${BACKEND_URL}/api/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -105,13 +105,12 @@ export default function SignUp() {
     }
   };
 
-
   const handleGoogleSuccess = async (userInfo) => {
     const { name, email, picture, sub } = userInfo;
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/google-auth",
+        `${BACKEND_URL}/api/google-auth`,
         { name, email, picture, sub },
         { headers: { "Content-Type": "application/json" } }
       );
@@ -129,8 +128,6 @@ export default function SignUp() {
       setLoading(false);
     }
   };
-
-
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden">
@@ -247,10 +244,11 @@ export default function SignUp() {
                           <X size={14} className="text-red-400" />
                         )}
                         <span
-                          className={`text-[8px] md:text-[10px] ${passwordValidation.minLength
-                            ? "text-green-300"
-                            : "text-gray-300"
-                            }`}
+                          className={`text-[8px] md:text-[10px] ${
+                            passwordValidation.minLength
+                              ? "text-green-300"
+                              : "text-gray-300"
+                          }`}
                         >
                           At least 8 characters
                         </span>
@@ -264,10 +262,11 @@ export default function SignUp() {
                           <X size={14} className="text-red-400" />
                         )}
                         <span
-                          className={`text-[8px] md:text-[10px] ${passwordValidation.hasUpperCase
-                            ? "text-green-300"
-                            : "text-gray-300"
-                            }`}
+                          className={`text-[8px] md:text-[10px] ${
+                            passwordValidation.hasUpperCase
+                              ? "text-green-300"
+                              : "text-gray-300"
+                          }`}
                         >
                           One uppercase letter
                         </span>
@@ -281,10 +280,11 @@ export default function SignUp() {
                           <X size={14} className="text-red-400" />
                         )}
                         <span
-                          className={`text-[8px] md:text-[10px] ${passwordValidation.hasLowerCase
-                            ? "text-green-300"
-                            : "text-gray-300"
-                            }`}
+                          className={`text-[8px] md:text-[10px] ${
+                            passwordValidation.hasLowerCase
+                              ? "text-green-300"
+                              : "text-gray-300"
+                          }`}
                         >
                           One lowercase letter
                         </span>
@@ -298,10 +298,11 @@ export default function SignUp() {
                           <X size={14} className="text-red-400" />
                         )}
                         <span
-                          className={`text-[8px] md:text-[10px] ${passwordValidation.hasNumber
-                            ? "text-green-300"
-                            : "text-gray-300"
-                            }`}
+                          className={`text-[8px] md:text-[10px] ${
+                            passwordValidation.hasNumber
+                              ? "text-green-300"
+                              : "text-gray-300"
+                          }`}
                         >
                           At least one digit
                         </span>
@@ -315,10 +316,11 @@ export default function SignUp() {
                           <X size={14} className="text-red-400" />
                         )}
                         <span
-                          className={`text-[8px] md:text-[10px] ${passwordValidation.hasSpecialChar
-                            ? "text-green-300"
-                            : "text-gray-300"
-                            }`}
+                          className={`text-[8px] md:text-[10px] ${
+                            passwordValidation.hasSpecialChar
+                              ? "text-green-300"
+                              : "text-gray-300"
+                          }`}
                         >
                           One special character (!@#$%^&*)
                         </span>

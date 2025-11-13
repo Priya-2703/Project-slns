@@ -9,6 +9,7 @@ import { AuthContext } from "../../Context/UseAuthContext";
 import { CartContext } from "../../Context/UseCartContext";
 
 export default function SignIn() {
+  const BACKEND_URL = import.meta.env.VITE_API_URL;
   const { login } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     email: "",
@@ -63,7 +64,7 @@ export default function SignIn() {
 
     try {
       // 🔗 CONNECTION POINT: Send POST request to Flask backend
-      const response = await fetch("http://localhost:5000/api/signin", {
+      const response = await fetch(`${BACKEND_URL}/api/signin`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -108,7 +109,7 @@ export default function SignIn() {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/google-auth",
+        `${BACKEND_URL}/api/google-auth`,
         { name, email, picture, sub },
         { headers: { "Content-Type": "application/json" } }
       );
