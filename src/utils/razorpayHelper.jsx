@@ -1,4 +1,4 @@
-// ✅ Razorpay Script Load
+// ✅ razorpayHelper.jsx - FIXED VERSION
 
 const getAuthToken = () => {
     return localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -16,21 +16,20 @@ export const loadRazorpayScript = () => {
 
 // ✅ Order Create API Call
 export const createRazorpayOrder = async (amount) => {
-
-    const token = getAuthToken()
+    const token = getAuthToken();
 
     try {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/payment/create-order`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization' : `Bearer ${token}`,
+                'Authorization': `Bearer ${token}`,
             },
             body: JSON.stringify({ amount })
         });
         
         const data = await response.json();
-        console.log("create order",data)
+        console.log("create order", data);
         return data;
     } catch (error) {
         console.error('Order creation failed:', error);
@@ -40,15 +39,14 @@ export const createRazorpayOrder = async (amount) => {
 
 // ✅ Payment Verification API Call
 export const verifyPayment = async (paymentData) => {
-
-    const token = getAuthToken()
+    const token = getAuthToken();
 
     try {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/api/payment/verify`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization' : `Bearer ${token}`,
+                'Authorization': `Bearer ${token}`,
             },
             body: JSON.stringify(paymentData)
         });
@@ -57,6 +55,29 @@ export const verifyPayment = async (paymentData) => {
         return data;
     } catch (error) {
         console.error('Verification failed:', error);
+        throw error;
+    }
+};
+
+// ✅✅✅ NEW: Place Order API Call
+export const placeOrder = async (orderData) => {
+    const token = getAuthToken();
+
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/place`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify(orderData)
+        });
+        
+        const data = await response.json();
+        console.log("place order response", data);
+        return data;
+    } catch (error) {
+        console.error('Place order failed:', error);
         throw error;
     }
 };

@@ -10,6 +10,7 @@ import {
   createRazorpayOrder,
   loadRazorpayScript,
   verifyPayment,
+  placeOrder, 
 } from "../../utils/razorpayHelper";
 import { ToastContext } from "../../Context/UseToastContext";
 
@@ -31,147 +32,167 @@ function Cart() {
 
   console.log("cart", cart);
 
-  const handleCheckout = async () => {
-    try {
-      setIsProcessing(true);
+// Replace your handleCheckout function with this:
+const handleCheckout = async () => {
+  try {
+    setIsProcessing(true);
 
-      // 1. Check if cart is empty
-      if (cart.length === 0) {
-        showToast("Cart is empty!");
-        return;
-      }
+    // 1. Check if cart is empty
+    if (cart.length === 0) {
+      showToast("Cart is empty!");
+      return;
+    }
 
-      // 2. Load Razorpay Script
-      const scriptLoaded = await loadRazorpayScript();
+    // 2. Load Razorpay Script
+    const scriptLoaded = await loadRazorpayScript();
 
-      if (!scriptLoaded) {
-        showToast("Razorpay SDK failed to load. Check your internet!");
-        setIsProcessing(false);
-        return;
-      }
+    if (!scriptLoaded) {
+      showToast("Razorpay SDK failed to load. Check your internet!");
+      setIsProcessing(false);
+      return;
+    }
 
-      // ✅ Calculate amounts BEFORE creating order
-      const calculatedSubtotal = cart.reduce(
-        (sum, it) => sum + it.price * it.quantity,
-        0
-      );
-      const calculatedShipping =
-        calculatedSubtotal > 1000 && calculatedSubtotal < 7000 ? 0 : 100;
-      const calculatedTotal = calculatedSubtotal + calculatedShipping;
+    // ✅ Calculate amounts BEFORE creating order
+    const calculatedSubtotal = cart.reduce(
+      (sum, it) => sum + it.price * it.quantity,
+      0
+    );
+    const calculatedShipping =
+      calculatedSubtotal > 1000 && calculatedSubtotal < 7000 ? 0 : 100;
+    const calculatedTotal = calculatedSubtotal + calculatedShipping;
 
-      // 3. Create Order in Backend
-      const orderData = await createRazorpayOrder(calculatedTotal);
+    // 3. Create Order in Backend
+    const orderData = await createRazorpayOrder(calculatedTotal);
 
-      if (!orderData.success) {
-        showToast("Failed to create order!");
-        setIsProcessing(false);
-        return;
-      }
+    if (!orderData.success) {
+      showToast("Failed to create order!");
+      setIsProcessing(false);
+      return;
+    }
 
-      // 4. Razorpay Options Setup
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: orderData.order.amount,
-        currency: orderData.order.currency,
-        name: "SLNS Sarees",
-        description: "Purchase from SLNS Sarees",
-        image: "/logo.png",
-        order_id: orderData.order.id,
+    // ✅ Prepare order items BEFORE payment
+    const orderItems = cart.map((item) => ({
+      product_id: item.product_id,
+      product_name: item.product_name,
+      category_name: item.category_name,
+      primary_image: item.primary_image,
+      price: item.price,
+      quantity: item.quantity,
+      selectedSize: item.selectedSize || "One Size",
+    }));
 
-        // ✅✅✅ Payment Success Handler - FIXED
-        handler: async function (response) {
-          try {
-            // Verify payment
-            const verificationData = await verifyPayment({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              items: cart, // ✅ Send cart items
+    // 4. Razorpay Options Setup
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: orderData.order.amount,
+      currency: orderData.order.currency,
+      name: "SLNS Sarees",
+      description: "Purchase from SLNS Sarees",
+      image: "/logo.png",
+      order_id: orderData.order.id,
+
+      // ✅✅✅ Payment Success Handler - COMPLETELY REWRITTEN
+      handler: async function (response) {
+        try {
+          console.log("💳 Payment successful, processing...");
+
+          // Step 1: Verify payment signature
+          const verificationData = await verifyPayment({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          });
+
+          if (!verificationData.success) {
+            showToast("Payment verification failed!");
+            setIsProcessing(false);
+            return;
+          }
+
+          console.log("✅ Payment verified, placing order...");
+
+          // Step 2: Place order in database
+          const placeOrderData = await placeOrder({
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            items: orderItems,
+            total: calculatedTotal,
+            subtotal: calculatedSubtotal,
+            shipping: calculatedShipping,
+          });
+
+          if (!placeOrderData.success) {
+            showToast("Failed to create order!");
+            setIsProcessing(false);
+            return;
+          }
+
+          console.log("✅ Order placed successfully!");
+          showToast("Payment Successful! 🎉");
+
+          // Step 3: Clear cart
+          clearCart();
+
+          // Step 4: Navigate to success page
+          navigate("/order-success", {
+            state: {
+              orderId: placeOrderData.order.order_id,
+              orderNumber: placeOrderData.order.order_number,
+              paymentId: response.razorpay_payment_id,
+              paymentStatus: "Success",
+              paymentMethod: "Online Payment",
+              orderDate: placeOrderData.order.created_at,
               total: calculatedTotal,
               subtotal: calculatedSubtotal,
               shipping: calculatedShipping,
-            });
+              items: orderItems,
+            },
+            replace: true,
+          });
 
-            if (verificationData.success) {
-              showToast("Payment Successful! 🎉");
+        } catch (error) {
+          console.error("❌ Order processing error:", error);
+          showToast("Something went wrong! Please contact support.");
+          setIsProcessing(false);
+        }
+      },
 
-              // ✅ Create a copy of cart data before clearing
-              const orderItems = cart.map((item) => ({
-                product_id: item.product_id,
-                product_name: item.product_name,
-                category_name: item.category_name,
-                primary_image: item.primary_image,
-                price: item.price,
-                quantity: item.quantity,
-                selectedSize: item.selectedSize || "One Size",
-              }));
+      // ✅ Customer Details Prefill
+      prefill: {
+        name: "Customer Name",
+        email: "customer@example.com",
+        contact: "9999999999",
+      },
 
-              // ✅ Clear cart
-              clearCart();
+      // ✅ Notes
+      notes: {
+        cart_items: cart.length,
+        total_amount: calculatedTotal,
+      },
 
-              // ✅✅✅ Navigate with COMPLETE data
-              navigate("/order-success", {
-                state: {
-                  orderId:
-                    verificationData.order?._id || response.razorpay_order_id,
-                  paymentId: response.razorpay_payment_id,
-                  paymentStatus: "Success",
-                  paymentMethod: "Online Payment",
-                  orderDate: new Date().toISOString(),
-                  total: calculatedTotal,
-                  subtotal: calculatedSubtotal,
-                  shipping: calculatedShipping,
-                  items: orderItems, // ✅ Pass items
-                },
-                replace: true,
-              });
-            } else {
-              showToast("Payment verification failed!");
-              setIsProcessing(false);
-            }
-          } catch (error) {
-            console.error("Verification error:", error);
-            showToast("Something went wrong!");
-            setIsProcessing(false);
-          }
+      // ✅ Theme
+      theme: {
+        color: "#815a37",
+      },
+
+      // ✅ Modal Close Handler
+      modal: {
+        ondismiss: function () {
+          setIsProcessing(false);
+          showToast("Payment cancelled!");
         },
+      },
+    };
 
-        // ✅ Customer Details Prefill
-        prefill: {
-          name: "Customer Name",
-          email: "customer@example.com",
-          contact: "9999999999",
-        },
-
-        // ✅ Notes
-        notes: {
-          cart_items: cart.length,
-          total_amount: calculatedTotal,
-        },
-
-        // ✅ Theme
-        theme: {
-          color: "#815a37",
-        },
-
-        // ✅ Modal Close Handler
-        modal: {
-          ondismiss: function () {
-            setIsProcessing(false);
-            showToast("Payment cancelled!");
-          },
-        },
-      };
-
-      // 5. Open Razorpay Checkout
-      const paymentObject = new window.Razorpay(options);
-      paymentObject.open();
-    } catch (error) {
-      console.error("Checkout error:", error);
-      showToast("Failed to initiate checkout!");
-      setIsProcessing(false);
-    }
-  };
+    // 5. Open Razorpay Checkout
+    const paymentObject = new window.Razorpay(options);
+    paymentObject.open();
+  } catch (error) {
+    console.error("Checkout error:", error);
+    showToast("Failed to initiate checkout!");
+    setIsProcessing(false);
+  }
+};
 
   // Math
   const currency = (n) =>
