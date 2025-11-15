@@ -139,7 +139,7 @@ function AppContent() {
           <ButterflyLottieFollower
             hideCursor={false}
             animationData={assets.butterflyAnim}
-            size={80}
+            size={50}
             faceOffsetDeg={90}
             wingSpeed={3}
           />

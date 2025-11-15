@@ -8,12 +8,14 @@ import { motion } from "framer-motion";
 import { getImageUrl } from "../../utils/imageHelper";
 import {
   createRazorpayOrder,
+  getAuthToken,
   loadRazorpayScript,
   verifyPayment,
 } from "../../utils/razorpayHelper";
 import { ToastContext } from "../../Context/UseToastContext";
 
 function Cart() {
+  const BACKEND_URL = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
   const { showToast } = useContext(ToastContext);
   const {
@@ -93,6 +95,29 @@ function Cart() {
             });
 
             if (verificationData.success) {
+              const token = getAuthToken();
+
+              const placeOrder = await fetch(
+                `${BACKEND_URL}/api/orders/place`,
+                {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_order_id: response.razorpay_order_id,
+                    // address_id: selectedAddressId,
+                    payment_method: "online",
+                  }),
+                }
+              );
+
+              const orderData = await placeOrder.json();
+
+              console.log("Order Create", orderData);
+
               showToast("Payment Successful! 🎉");
 
               // ✅ Create a copy of cart data before clearing
@@ -331,7 +356,7 @@ function Cart() {
     >
       <motion.div
         variants={backButtonVariants}
-        className="absolute top-[90px] left-[20px] md:top-[130px] lg:top-[154px] md:left-[30px] lg:left-[100px] z-20"
+        className="absolute top-[90px] left-5 md:top-[130px] lg:top-[154px] md:left-[30px] lg:left-[100px] z-20"
         whileHover={{
           scale: 1.1,
           rotate: -5,

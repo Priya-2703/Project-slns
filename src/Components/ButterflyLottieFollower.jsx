@@ -6,7 +6,7 @@ import Lottie from "lottie-react";
 export default function ButterflyLottieFollower({
   animationData,
   url,
-  size = 160,
+  size = 50,
   faceOffsetDeg = 90,
   zIndex = 9999,
   wingSpeed = 2,

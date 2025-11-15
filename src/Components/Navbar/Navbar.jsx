@@ -11,22 +11,24 @@ import { CartContext } from "../../Context/UseCartContext";
 import { AuthContext } from "../../Context/UseAuthContext";
 
 const Navbar = () => {
-  const { logout} = useContext(AuthContext)
+  const { logout } = useContext(AuthContext);
   const { cart } = useContext(CartContext);
   const { wishlist } = useContext(WishlistContext);
   const { showToast } = useContext(ToastContext);
-  const [showCard, setShowCard] = useState(false); // profile card
-  const [menuOpen, setMenuOpen] = useState(false); // side menu
+  const [showCard, setShowCard] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [showNavbar, setShowNavbar] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
   const cardRef = useRef(null);
   const signRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
 
-  // ⭐ NEW: Track user login status and role
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // ⭐ NEW: Check login status on component mount and when location changes
   useEffect(() => {
     checkLoginStatus();
   }, [location.pathname]);
@@ -34,7 +36,6 @@ const Navbar = () => {
   const checkLoginStatus = () => {
     const token = localStorage.getItem("token");
     const userStr = localStorage.getItem("user");
-
 
     if (token && userStr) {
       try {
@@ -52,25 +53,13 @@ const Navbar = () => {
     }
   };
 
-  // ⭐ NEW: Logout function
   const handleLogout = () => {
-    // Clear all stored data
-
-    logout()
-    // localStorage.removeItem("token");
-    // localStorage.removeItem("user");
-
-    // Update state
+    logout();
     setUser(null);
     setIsLoggedIn(false);
     setShowCard(false);
     setMenuOpen(false);
-
-    // Redirect to home
     navigate("/");
-
-    // Optional: Show success message
-    // You can use your toast context here if you have one
     showToast("Logged out successfully");
   };
 
@@ -103,9 +92,47 @@ const Navbar = () => {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, []);
 
+  // ⭐ NEW: Show navbar when cursor is at top
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY < 10) {
+        setShowNavbar(true);
+      } else if (e.clientY <= 100) {
+        setShowNavbar(true);
+      } else if (e.clientY > 300 && currentScrollY > 100) {
+        setShowNavbar(false);
+      }
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, [lastScrollY, menuOpen]);
+
+  // ⭐ NEW: Handle scroll to show/hide navbar
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY < 10) {
+        setShowNavbar(true);
+      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setShowNavbar(false);
+      }
+
+      setLastScrollY(currentScrollY);
+
+      if (menuOpen) {
+        setMenuOpen(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY, menuOpen]);
+
   const mobileView = window.innerWidth < 480;
 
-  // ⭐ NEW: Admin menu items
   const adminMenuItems = [
     { path: "/admin/dashboard", label: "Dashboard", icon: "📊" },
     { path: "/admin/products", label: "View Products", icon: "📦" },
@@ -116,7 +143,6 @@ const Navbar = () => {
     { path: "/admin/customers", label: "Customer Management", icon: "👥" },
   ];
 
-  // ⭐ NEW: Regular user menu items
   const userMenuItems = [
     { path: "/", label: "Home" },
     { path: "/about", label: "About Us" },
@@ -129,21 +155,106 @@ const Navbar = () => {
 
   return (
     <>
-      <div className="absolute top-0 w-full mx-auto py-1 md:py-4 px-5 lg:px-10 z-50 bg-transparent">
-        <div className="flex justify-between items-center md:px-6">
-          <div>
+      <style>{`
+        @keyframes pulse-glow {
+          0%, 100% {
+            filter: drop-shadow(0 0 2px rgba(149, 94, 48, 0.3));
+            transform: scale(1);
+          }
+          50% {
+            filter: drop-shadow(0 0 12px rgba(149, 94, 48, 0.8)) drop-shadow(0 0 20px rgba(149, 94, 48, 0.4));
+            transform: scale(1.02);
+          }
+        }
+
+        .logo-glow {
+          animation: pulse-glow 2.5s ease-in-out infinite;
+        }
+
+        .logo-glow:hover {
+          animation: pulse-glow 1s ease-in-out infinite;
+        }
+
+        @keyframes tooltip-fade {
+          0% {
+            opacity: 0;
+            transform: translateX(-50%) translateY(5px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+          }
+        }
+
+        .tooltip-show {
+          animation: tooltip-fade 0.3s ease-out forwards;
+        }
+
+        /* ⭐ NEW: Navbar slide animation */
+        @keyframes slideDown {
+          from {
+            transform: translateY(-100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+
+        @keyframes slideUp {
+          from {
+            transform: translateY(0);
+            opacity: 1;
+          }
+          to {
+            transform: translateY(-100%);
+            opacity: 0;
+          }
+        }
+
+        .navbar-show {
+          animation: slideDown 0.3s ease-out forwards;
+        }
+
+        .navbar-hide {
+          animation: slideUp 0.3s ease-out forwards;
+        }
+      `}</style>
+
+      {/* ⭐ UPDATED: Added conditional class for show/hide */}
+      <div
+        className={`fixed top-0 w-full mx-auto py-1 md:py-4 px-5 lg:px-7 z-50 bg-transparent transition-transform duration-300 ${
+          showNavbar ? "translate-y-0" : "-translate-y-full"
+        }`}
+      >
+        <div className="flex justify-between items-center">
+          <div className="relative">
             <img
               src={assets.logo}
               alt="logo"
               loading="lazy"
               data-cursor-scale
-              className="w-[60px] md:w-[80px] cursor-pointer select-none"
+              className="w-[60px] md:w-[90px] cursor-pointer select-none logo-glow transition-all duration-300"
               onClick={() => setMenuOpen(true)}
+              onMouseEnter={() => setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
             />
+
+            <div
+              className={`absolute left-10 top-[70px] md:top-[100px] whitespace-nowrap
+                bg-[#955E30] text-white text-[8px] md:text-[10px] px-3 py-1.5 rounded-lg
+                font-body font-medium shadow-lg
+                transition-all duration-300 pointer-events-none
+                ${showTooltip ? "opacity-100 tooltip-show" : "opacity-0"}
+              `}
+            >
+              Tap to open menu
+              <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#955E30] rotate-45"></div>
+            </div>
           </div>
 
           <div className="flex justify-center items-center gap-8 md:gap-16">
-            {/* ⭐ UPDATED: Hide wishlist and cart for admin */}
             {user?.role !== "admin" && (
               <>
                 <Link to={"/wishlist"}>
@@ -182,7 +293,6 @@ const Navbar = () => {
               </>
             )}
 
-            {/* ⭐ UPDATED: Show admin badge for admin users */}
             {user?.role === "admin" && (
               <div className="hidden md:flex items-center gap-2 bg-[#955E30] px-3 py-1 rounded-full">
                 <svg
@@ -209,7 +319,6 @@ const Navbar = () => {
                 className="nav-item"
               />
 
-              {/* ⭐ UPDATED: Profile dropdown */}
               <div
                 ref={cardRef}
                 className={`absolute top-[30px] z-50 font-['Poppins'] right-[-3px] w-[120px] md:w-[160px] glass-card py-2 px-1 rounded-[14px] transition-all duration-300 ${
@@ -219,7 +328,6 @@ const Navbar = () => {
                 }`}
               >
                 <div className="flex flex-col justify-center items-center gap-1">
-                  {/* ⭐ NEW: Show user info if logged in */}
                   {isLoggedIn && user && (
                     <div className="w-full  px-3 py-2 mb-2">
                       <Link
@@ -249,7 +357,6 @@ const Navbar = () => {
                     </div>
                   )}
 
-                  {/* ⭐ UPDATED: Show sign in/out based on login status */}
                   {!isLoggedIn ? (
                     <>
                       <Link
@@ -266,7 +373,7 @@ const Navbar = () => {
                         className="w-full bg-black/50 px-5 py-1.5 rounded-[10px]"
                         onClick={() => setShowCard(false)}
                       >
-                        <p className="ext-white/60 hover:text-white transition-all duration-200 flex justify-center items-center gap-2 text-[12px] md:text-[14px]">
+                        <p className="text-white/60 hover:text-white transition-all duration-200 flex justify-center items-center gap-2 text-[12px] md:text-[14px]">
                           <IoBusiness className="text-[11px] md:text-[12px]" />{" "}
                           B 2 B
                         </p>
@@ -302,9 +409,9 @@ const Navbar = () => {
         onClick={() => setMenuOpen(false)}
       />
 
-      {/* ⭐ UPDATED: Side Menu with role-based items */}
+      {/* Side Menu */}
       <div
-        className={`fixed z-50 left-0 top-[80px] md:top-[100px] w-[200px] md:w-[330px] h-auto px-4 md:px-8 py-4 md:py-8 rounded-r-[20px] bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-white/5 justify-center overflow-hidden transform transition-transform duration-300 ease-in-out ${
+        className={`fixed z-50 left-0 top-20 md:top-[120px] w-[200px] md:w-[330px] h-full px-4 md:px-8 py-4 md:py-8 rounded-r-[20px] bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-white/5 justify-center overflow-hidden transform transition-transform duration-300 ease-in-out ${
           menuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
         aria-hidden={!menuOpen}
@@ -321,9 +428,7 @@ const Navbar = () => {
           </div>
 
           <div className="w-full flex flex-col text-[12px] md:text-[16px] justify-center gap-8 md:gap-10 mb-4">
-            {/* ⭐ NEW: Conditional menu based on role */}
             {user?.role === "admin" ? (
-              // Admin Menu
               <>
                 {adminMenuItems.map((item, index) => (
                   <Link
@@ -340,7 +445,6 @@ const Navbar = () => {
                 ))}
               </>
             ) : (
-              // Regular User Menu
               <>
                 {userMenuItems.map((item, index) => (
                   <Link
@@ -348,15 +452,13 @@ const Navbar = () => {
                     to={item.path}
                     onClick={() => setMenuOpen(false)}
                   >
-                    <p className="tracking-wide uppercase cursor-pointer text-white hover:text-[#955E30] transition-colors">
+                    <p className="tracking-wide uppercase cursor-pointer text-white hover:text-accet transition-colors">
                       {item.label}
                     </p>
                   </Link>
                 ))}
               </>
             )}
-
-            {/* ⭐ NEW: Sign out button at bottom of menu (only if logged in) */}
             {isLoggedIn && (
               <>
                 <span className="bg-white/20 w-full h-px"></span>
@@ -366,7 +468,7 @@ const Navbar = () => {
                 >
                   <FaCircleArrowLeft className="text-[15px]" />
                   Sign Out
-                </button>{" "}
+                </button>
               </>
             )}
           </div>

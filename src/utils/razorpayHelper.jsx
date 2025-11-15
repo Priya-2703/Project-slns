@@ -1,6 +1,6 @@
 // ✅ Razorpay Script Load
 
-const getAuthToken = () => {
+export const getAuthToken = () => {
     return localStorage.getItem('token') || sessionStorage.getItem('token');
 };
 
