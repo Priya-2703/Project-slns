@@ -128,9 +128,9 @@ export default function SignIn() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center overflow-hidden">
+    <div className="min-h-screen w-full flex items-center justify-center overflow-hidden sign_page">
       {/* Background Video and Overlay - same as your code */}
-      <div className="w-full h-full mx-auto flex justify-center items-center absolute py-5">
+      {/* <div className="w-full h-full mx-auto flex justify-center items-center absolute py-5">
         <video
           autoPlay
           muted
@@ -142,14 +142,14 @@ export default function SignIn() {
         </video>
         <div className="absolute top-0 w-full h-[30vh] bg-linear-to-b from-black to-transparent" />
         <div className="absolute bottom-0 w-full h-[30vh] bg-linear-to-t from-black to-transparent" />
-      </div>
+      </div> */}
 
       <div className="relative z-10 w-full max-w-2xl px-6">
-        <h1 className="text-[16px] md:text-[25px] font-['Poppins'] capitalize font-semibold text-center text-black py-2">
+        <h1 className="text-[16px] md:text-[25px] font-['Poppins'] capitalize font-semibold text-center text-white py-2">
           Sign in your account
         </h1>
 
-        <div className="bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-black/15 justify-center overflow-hidden rounded-[25px] px-4 md:px-10 py-4">
+        <div className="bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-white/5 justify-center overflow-hidden rounded-[25px] px-4 md:px-10 py-4">
           <div className="w-[80%] mx-auto space-y-3">
             {/* Error/Success Alerts - same as your code */}
             {error && (
@@ -166,7 +166,7 @@ export default function SignIn() {
             <form onSubmit={handleSubmit} className="space-y-2">
               {/* Email and Password Inputs - same as your code */}
               <div className="py-2">
-                <label className="block text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
+                <label className="block text-[12px] font-['Poppins'] font-semibold text-white py-1">
                   Email
                 </label>
                 <input
@@ -179,7 +179,7 @@ export default function SignIn() {
                 />
               </div>
               <div className="pb-1">
-                <label className="block font-['Poppins'] text-[12px] font-semibold text-gray-900 py-1">
+                <label className="block font-['Poppins'] text-[12px] font-semibold text-white py-1">
                   Password
                 </label>
                 <div className="relative">
@@ -280,16 +280,16 @@ export default function SignIn() {
               <p className="text-center">
                 <Link
                   to={"/forgot-password"}
-                  className="font-semibold text-gray-900 font-['Poppins'] hover:underline"
+                  className="font-semibold text-white font-['Poppins'] hover:underline"
                 >
                   Forgot Password?
                 </Link>
               </p>
-              <p className="text-center font-['Poppins'] text-gray-900">
+              <p className="text-center font-['Poppins'] text-white">
                 Don't have an Account?{" "}
                 <Link
                   to={"/signup"}
-                  className="font-semibold text-white hover:underline"
+                  className="font-semibold text-accet hover:underline"
                 >
                   Sign up
                 </Link>

@@ -33,7 +33,8 @@ export default function ManageOrders() {
   const fetchOrders = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${BACKEND_URL}/api/admin/orders`, {
+      const response = await fetch(`${BACKEND_URL}/api/orders`, {
+        method: "GET",
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
@@ -47,7 +48,7 @@ export default function ManageOrders() {
       setLoading(false);
     }
   };
-  console.log("a useeffect", orders.status);
+  console.log("a useeffect", orders);
 
   const calculateStats = (orderList) => {
     const stats = {

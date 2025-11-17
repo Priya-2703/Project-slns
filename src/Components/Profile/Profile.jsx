@@ -199,7 +199,7 @@ const Profile = () => {
   // ✅ Fetch User Orders
   const fetchUserOrders = async (token) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/orders`, {
+      const response = await fetch(`${BACKEND_URL}/api/profile/orders`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -212,7 +212,7 @@ const Profile = () => {
       }
 
       const data = await response.json();
-      console.log("Orders", data)
+      console.log("Orders", data.orders)
       setOrders(data.orders || []);
     } catch (error) {
       console.error("Error fetching orders:", error);
