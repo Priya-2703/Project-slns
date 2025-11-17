@@ -223,6 +223,7 @@ const Profile = () => {
       }
 
       const data = await response.json();
+      console.log("orders", data.orders)
       setOrders(data.orders || []);
     } catch (error) {
       console.error("Error fetching orders:", error);
