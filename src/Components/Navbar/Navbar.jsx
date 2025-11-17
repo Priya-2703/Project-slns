@@ -133,6 +133,28 @@ const Navbar = () => {
 
   const mobileView = window.innerWidth < 480;
 
+  // In your admin navbar
+const [notificationCount, setNotificationCount] = useState(0);
+
+useEffect(() => {
+  const fetchNotificationCount = async () => {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BACKEND_URL}/api/admin/notifications/count`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await response.json();
+    if (data.success) {
+      setNotificationCount(data.unread_count);
+    }
+  };
+
+  fetchNotificationCount();
+  const interval = setInterval(fetchNotificationCount, 30000); // Every 30s
+  
+  return () => clearInterval(interval);
+}, []);
+
+  // ⭐ NEW: Admin menu items
   const adminMenuItems = [
     { path: "/admin/dashboard", label: "Dashboard", icon: "📊" },
     { path: "/admin/products", label: "View Products", icon: "📦" },

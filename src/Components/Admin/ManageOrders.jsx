@@ -50,6 +50,46 @@ export default function ManageOrders() {
   };
   console.log("a useeffect", orders);
 
+  useEffect(() => {
+  // Connect to SSE for real-time notifications
+  const token = localStorage.getItem("token");
+  const eventSource = new EventSource(
+    `${BACKEND_URL}/api/admin/notifications/stream`,
+    {
+      headers: { Authorization: `Bearer ${token}` }
+    }
+  );
+
+  eventSource.onmessage = (event) => {
+    const notification = JSON.parse(event.data);
+    
+    if (notification.type === 'NEW_ORDER') {
+      // Show notification
+      alert(`🎉 New Order #${notification.order_number} - ₹${notification.total_amount}`);
+      
+      // Refresh orders list
+      fetchOrders();
+    }
+  };
+
+  return () => {
+    eventSource.close();
+  };
+}, []);
+
+const handleExportOrders = async () => {
+  const token = localStorage.getItem("token");
+  const response = await fetch(`${BACKEND_URL}/api/admin/orders/export`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'orders_export.xlsx';
+  a.click();
+};
   const calculateStats = (orderList) => {
     const stats = {
       total: orderList.length,
