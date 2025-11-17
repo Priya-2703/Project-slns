@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { Eye, EyeOff, Check, X } from "lucide-react";
-import { assets } from "../../../public/assets/asset";
 import { Link } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
-import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 
 export default function SignUp() {
@@ -130,9 +128,9 @@ export default function SignUp() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden sign_page">
       {/* Background Video */}
-      <div className="w-full h-full mx-auto flex justify-center items-center absolute py-5">
+      {/* <div className="w-full h-full mx-auto flex justify-center items-center absolute py-5">
         <video
           autoPlay
           muted
@@ -141,20 +139,20 @@ export default function SignUp() {
           className="absolute inset-0 w-full h-full object-cover"
         >
           <source src={assets.signup} type="video/mp4" />
-        </video>
+        </video> */}
 
         {/* Background Overlay */}
-        <div className="absolute top-0 w-full h-[30vh] bg-linear-to-b from-black to-transparent" />
+        {/* <div className="absolute top-0 w-full h-[30vh] bg-linear-to-b from-black to-transparent" />
         <div className="absolute bottom-0 w-full h-[30vh] bg-linear-to-t from-black to-transparent" />
-      </div>
+      </div> */}
 
       {/* Content */}
       <div className="relative z-10 w-full max-w-2xl px-6">
         {/* Heading */}
-        <h1 className="text-[16px] md:text-[25px] font-['Poppins'] capitalize font-semibold text-center text-black py-2">
+        <h1 className="text-[16px] md:text-[25px] font-['Poppins'] capitalize font-semibold text-center text-white py-2">
           Create a new account
         </h1>
-        <div className="bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-black/15 justify-center overflow-hidden rounded-[25px] px-4 md:px-10 py-4">
+        <div className="bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-white/5 justify-center overflow-hidden rounded-[25px] px-4 md:px-10 py-4">
           {/* Form */}
           <div className="w-[90%] md:w-[80%] mx-auto space-y-2">
             {/* Error Alert */}
@@ -175,7 +173,7 @@ export default function SignUp() {
             <form onSubmit={handleSubmit} className="space-y-2">
               {/* Name Input */}
               <div className="md:py-2">
-                <label className="block text-[11px] md:text-[12px] font-['Poppins'] font-semibold text-gray-900 py-1">
+                <label className="block text-[11px] md:text-[12px] font-['Poppins'] font-semibold text-white py-1">
                   Name
                 </label>
                 <input
@@ -191,7 +189,7 @@ export default function SignUp() {
 
               {/* Email Input */}
               <div className="md:pb-1">
-                <label className="block font-['Poppins'] text-[11px] md:text-[12px] font-semibold text-gray-900 py-1">
+                <label className="block font-['Poppins'] text-[11px] md:text-[12px] font-semibold text-white py-1">
                   Email
                 </label>
                 <input
@@ -207,7 +205,7 @@ export default function SignUp() {
 
               {/* Password Input */}
               <div className="md:pb-1">
-                <label className="block font-['Poppins'] text-[11px] md:text-[12px] font-semibold text-gray-900 py-1">
+                <label className="block font-['Poppins'] text-[11px] md:text-[12px] font-semibold text-white py-1">
                   Password
                 </label>
                 <div className="relative">
@@ -374,11 +372,11 @@ export default function SignUp() {
             </button>
 
             {/* Sign In Link */}
-            <p className="text-center font-['Poppins'] text-[12px] md:text-[16px] text-gray-900 mt-3 md:mt-6">
+            <p className="text-center font-['Poppins'] text-[12px] md:text-[16px] text-white mt-3 md:mt-6">
               Already have an account?{" "}
               <Link
                 to={"/signin"}
-                className="font-semibold text-white hover:underline"
+                className="font-semibold text-accet hover:underline"
               >
                 Sign in
               </Link>

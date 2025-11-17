@@ -95,7 +95,7 @@ const BannerCarousel3D = () => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: false, amount: 0.2 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      className="w-full py-20 relative overflow-hidden"
+      className="w-full py-8 md:py-20 relative overflow-hidden"
     >
       {/* Section Title */}
       <motion.div
@@ -103,12 +103,12 @@ const BannerCarousel3D = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: false }}
         transition={{ duration: 0.6 }}
-        className="text-center mb-6 md:mb-10"
+        className="text-center mb-3 md:mb-10"
       >
-        <h2 className="text-white text-3xl md:text-5xl font-heading font-bold mb-3">
+        <h2 className="text-white text-3xl md:text-5xl font-heading font-bold md:mb-3">
           Special Offers
         </h2>
-        <p className="text-white/60 text-sm md:text-base font-body">
+        <p className="text-white/60 text-[10px] md:text-base font-body">
           Exclusive deals just for you
         </p>
       </motion.div>
@@ -200,7 +200,7 @@ const BannerCarousel3D = () => {
                         boxShadow: "0 0 30px rgba(149, 94, 48, 0.8)",
                       }}
                       whileTap={{ scale: 0.95 }}
-                      className="bg-accet hover:bg-accet/90 text-white px-8 py-3 rounded-full font-body text-sm font-semibold shadow-xl transition-all duration-300"
+                      className="bg-accet hover:bg-accet/90 text-white px-4 py-2 md:px-8 md:py-3 rounded-full font-body md:text-sm text-[10px] font-semibold shadow-xl transition-all duration-300"
                     >
                       Shop Now
                     </motion.button>
@@ -320,17 +320,36 @@ const Landing = () => {
 
   // 🔹 Banner Carousel State
   const banners = [assets.banner, assets.banner2, assets.banner3];
-
   const [currentBanner, setCurrentBanner] = useState(0);
+  const [direction, setDirection] = useState(0);
+  const [isBannerPaused, setIsBannerPaused] = useState(false);
 
-  // 🔹 Auto-change banner every 3 seconds
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentBanner((prev) => (prev + 1) % banners.length);
-    }, 3000);
+    if (!isBannerPaused) {
+      const interval = setInterval(() => {
+        setCurrentBanner((prev) => (prev + 1) % banners.length);
+        setDirection(1);
+      }, 3000);
 
-    return () => clearInterval(interval);
-  }, [banners.length]);
+      return () => clearInterval(interval);
+    }
+  }, [banners.length, isBannerPaused]);
+
+  // ⭐ NEW: Swipe power calculation
+  const swipeConfidenceThreshold = 10000;
+  const swipePower = (offset, velocity) => {
+    return Math.abs(offset) * velocity;
+  };
+
+  // ⭐ NEW: Paginate function
+  const paginate = (newDirection) => {
+    if (newDirection === 1) {
+      setCurrentBanner((prev) => (prev + 1) % banners.length);
+    } else {
+      setCurrentBanner((prev) => (prev - 1 + banners.length) % banners.length);
+    }
+    setDirection(newDirection);
+  };
 
   // Animation Variants - Mobile optimized
   const fadeInUp = {
@@ -492,13 +511,20 @@ const Landing = () => {
         </motion.div>
 
         {/* 🔹 CAROUSEL BANNER - Auto-change every 3 seconds */}
-        <div className="relative w-full h-[200px] lg:h-[400px] mx-auto flex justify-center items-start overflow-hidden my-20 lg:my-40">
-          <AnimatePresence initial={false} custom={currentBanner}>
+        <div
+          className="relative w-full h-[120px] md:h-[200px] lg:h-[400px] mx-auto flex justify-center items-start overflow-hidden my-8 md:my-10 lg:my-40"
+          onMouseEnter={() => setIsBannerPaused(true)}
+          onMouseLeave={() => setIsBannerPaused(false)}
+        >
+          <AnimatePresence initial={false} custom={direction}>
             <motion.div
               key={currentBanner}
-              custom={currentBanner}
+              custom={direction}
               className="absolute w-full h-full shadow-2xl"
-              initial={{ x: 600, opacity: 0 }}
+              initial={(direction) => ({
+                x: direction > 0 ? 1000 : -1000,
+                opacity: 0,
+              })}
               animate={{
                 x: 0,
                 opacity: 1,
@@ -509,30 +535,52 @@ const Landing = () => {
                   "0 0 20px #ffffff",
                 ],
               }}
-              exit={{ x: -600, opacity: 0 }}
+              exit={(direction) => ({
+                x: direction < 0 ? 1000 : -1000,
+                opacity: 0,
+              })}
               transition={{
                 x: { type: "spring", stiffness: 300, damping: 30 },
-                opacity: { duration: 0.3 },
+                opacity: { duration: 0.2 },
+                boxShadow: { duration: 2, repeat: Infinity },
               }}
               whileHover={{ scale: 1.02 }}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={1}
+              onDragEnd={(e, { offset, velocity }) => {
+                const swipe = swipePower(offset.x, velocity.x);
+
+                if (swipe < -swipeConfidenceThreshold) {
+                  paginate(1);
+                } else if (swipe > swipeConfidenceThreshold) {
+                  paginate(-1);
+                }
+              }}
             >
               <img
                 src={banners[currentBanner]}
                 alt={`banner-${currentBanner + 1}`}
                 loading="lazy"
-                className="object-cover w-full h-full object-top"
+                className="object-cover w-full h-full object-top pointer-events-none select-none"
+                draggable="false" 
               />
             </motion.div>
           </AnimatePresence>
 
           {/* 🔹 Indicator Dots */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-10">
+          <div className="absolute bottom-2 md:bottom-4 left-1/2 transform -translate-x-1/2 flex gap-0.5 md:gap-2 z-10">
             {banners.map((_, index) => (
               <button
                 key={index}
-                onClick={() => setCurrentBanner(index)}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                  currentBanner === index ? "bg-white w-6" : "bg-white/50"
+                 onClick={() => {
+                  setCurrentBanner(index);
+                  setDirection(index > currentBanner ? 1 : -1);
+                }}
+                className={`md:w-2 md:h-2 w-1 h-1 rounded-full transition-all duration-300 ${
+                  currentBanner === index
+                    ? "bg-white w-3 md:w-6"
+                    : "bg-white/50"
                 }`}
               />
             ))}
@@ -549,13 +597,13 @@ const Landing = () => {
         >
           <div className="flex flex-col justify-center items-center text-white">
             <motion.h1
-              className="text-[40px] md:text-[65px] font-[950] md:py-5 font-heading capitalize leading-13 md:leading-14"
+              className="text-[40px] md:text-[65px] font-[950] md:py-3 lg:py-5 font-heading capitalize leading-13 md:leading-14"
               variants={fadeInUp}
             >
               Elevating Your Style
             </motion.h1>
             <motion.p
-              className="w-[90%] md:w-[40%] text-[8px] md:text-[12px] font-body tracking-wide font-thin capitalize text-center"
+              className="w-[90%] md:w-[60%] lg:w-[40%] text-[8px] md:text-[12px] font-body tracking-wide font-thin capitalize text-center"
               variants={fadeIn}
             >
               Discover the Perfect Blend of Comfort and Trend with Our Exclusive
@@ -565,7 +613,7 @@ const Landing = () => {
 
           {/* Grid with stagger animation */}
           <motion.div
-            className="w-[90%] h-full mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 py-6 mt-8 gap-4"
+            className="w-[90%] h-full mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 py-6 md:mt-8 gap-4"
             variants={staggerContainer}
             initial="hidden"
             whileInView="visible"

@@ -27,6 +27,7 @@ import forpassbg from "./forpassbg.mp4"
 import banner from "./banner.jpg"
 import banner2 from "./banner2.png"
 import banner3 from "./banner3.png"
+import signin from "./signin.png"
 import dhostiBanner from "./dhostiBanner.png"
 import butterflyAnim from "./butterfly.json"
 
@@ -36,6 +37,7 @@ export const assets={
     banner,
     banner2,
     banner3,
+    signin,
     butterflyAnim,
     dhostiBanner,
     visa,

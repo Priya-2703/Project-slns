@@ -31,23 +31,24 @@ export default function ManageOrders() {
   }, []);
 
   const fetchOrders = async () => {
-  try {
-    const token = localStorage.getItem("token");
-    const response = await fetch(`${BACKEND_URL}/api/admin/orders`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await response.json();
-    if (response.ok) {
-      setOrders(data.orders);
-      calculateStats(data.orders);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${BACKEND_URL}/api/orders`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setOrders(data.orders);
+        calculateStats(data.orders);
+      }
+    } catch (err) {
+      console.error("Failed to fetch orders:", err);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error("Failed to fetch orders:", err);
-  } finally {
-    setLoading(false);
-  }
-};
-  console.log("a useeffect", orders.status);
+  };
+  console.log("a useeffect", orders);
 
   useEffect(() => {
   // Connect to SSE for real-time notifications

@@ -1,13 +1,12 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 @import url("https://fonts.cdnfonts.com/css/brasika-display-trial");
-@import url(https://db.onlinewebfonts.com/c/bb018e64d01355748d8ddc53553850b9?family=Cerebri+Sans+Regular); 
-@import url(https://db.onlinewebfonts.com/c/af9dbbacda3360d434dcce8ab8b6c38f?family=Hello+Paris+Serif+Regular); 
-@import url(https://db.onlinewebfonts.com/c/ad025b22dc334bf7a82d60f676413d30?family=Gordita-Medium); 
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url(https://db.onlinewebfonts.com/c/bb018e64d01355748d8ddc53553850b9?family=Cerebri+Sans+Regular);
+@import url(https://db.onlinewebfonts.com/c/af9dbbacda3360d434dcce8ab8b6c38f?family=Hello+Paris+Serif+Regular);
+@import url(https://db.onlinewebfonts.com/c/ad025b22dc334bf7a82d60f676413d30?family=Gordita-Medium);
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap");
 
 @import "tailwindcss";
-
 
 @font-face {
   font-family: "Spectral";
@@ -18,15 +17,14 @@
   src: url("/public/fonts/Lastica.ttf") format("truetype");
 }
 
-@theme{
-  --font-heading :  "Hello Paris Serif Regular";
-  --font-body :  "Cerebri Sans Regular";
+@theme {
+  --font-heading: "Hello Paris Serif Regular";
+  --font-body: "Cerebri Sans Regular";
   --font-spectral: "Spectral";
-  --color-accet : #955E30; /*rgba(149, 94, 48, 1)   // code bb5e00*/   
+  --color-accet: #955e30; /*rgba(149, 94, 48, 1)   // code bb5e00*/
 }
 
-
-*{
+* {
   cursor: none !important;
 }
 
@@ -63,6 +61,46 @@ body {
   transition: all 0.3s ease-in;
 }
 
+.sign_page {
+  background: url(../public/assets/signin.png);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  position: relative;
+}
+
+.sign_page::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1;
+  pointer-events: none;
+}
+.sign_page::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.4) 50%,
+    rgba(0, 0, 0, 1) 100%
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+.sign_page > * {
+  position: relative;
+  z-index: 2;
+}
+
 .glass-card::before {
   content: "";
   position: absolute;
@@ -92,7 +130,6 @@ body {
     rgba(25, 25, 25, 0.436)
   );
 }
-
 
 /* Normal cursor for admin routes */
 body.admin-route,

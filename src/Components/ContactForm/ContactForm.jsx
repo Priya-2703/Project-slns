@@ -182,30 +182,12 @@ const ContactForm = () => {
         </motion.div>
 
         {/* Main Content Grid */}
-        <motion.div className="contact-grid font-body" variants={pageVariants}>
+        <motion.div className="w-[95%] md:w-[90%] lg:w-[75%] mx-auto contact-grid font-body" variants={pageVariants}>
           {/* Left Side - Info Cards */}
           <motion.div
-            className="contact-info-section order-2 lg:order-1"
+            className="contact-info-section order-2"
             variants={cardVariants}
           >
-            {/* Map Card */}
-            <motion.div
-              className="info-card map-card"
-              whileHover={{ y: -5 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="card-glow"></div>
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3719.92927612214!2d78.00297527477598!3d11.607965143306402!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3babe3cc252f1179%3A0xd95157e246c223ae!2sSLNS%20SAREES!5e1!3m2!1sen!2sin!4v1762317624543!5m2!1sen!2sin"
-                width="100%"
-                height="100%"
-                style={{ border: 0, borderRadius: "20px" }}
-                allowFullScreen=""
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              ></iframe>
-            </motion.div>
-
             {/* Contact Details Cards */}
             <div className="contact-details-grid">
               <motion.div
@@ -298,7 +280,7 @@ const ContactForm = () => {
 
           {/* Right Side - Contact Form */}
           <motion.div
-            className="contact-form-section order-1 lg:order-2"
+            className="contact-form-section order-1"
             variants={cardVariants}
           >
             <div className="form-card">

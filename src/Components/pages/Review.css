@@ -1,5 +1,3 @@
-/* Review.css */
-
 /* Hide custom cursor only in review section */
 .review-section {
   cursor: none !important;
@@ -7,44 +5,6 @@
 
 .review-section * {
   cursor: none !important;
-}
-
-/* Smooth flying heart animation */
-.flying-heart {
-  position: absolute;
-  pointer-events: none;
-  z-index: 9999;
-  animation: flyUpSmooth ease-out forwards;
-  user-select: none;
-  will-change: transform, opacity;
-}
-
-@keyframes flyUpSmooth {
-  0% {
-    transform: translate(0, 0) scale(0) rotate(0deg);
-    opacity: 0;
-  }
-  10% {
-    opacity: 1;
-    transform: translate(0, -10px) scale(0.8) rotate(0deg);
-  }
-  50% {
-    transform: translate(var(--offset-x, 0), -120px) scale(1.1) rotate(var(--rotation, 5deg));
-    opacity: 0.9;
-  }
-  80% {
-    opacity: 0.5;
-  }
-  100% {
-    transform: translate(calc(var(--offset-x, 0) * 1.5), -250px) scale(0.3) rotate(calc(var(--rotation, 5deg) * 2));
-    opacity: 0;
-  }
-}
-
-/* Smooth glow effect */
-.flying-heart {
-  filter: drop-shadow(0 0 8px rgba(255, 105, 180, 0.4));
-  text-shadow: 0 0 10px rgba(255, 105, 180, 0.4);
 }
 
 /* Ultra smooth transition for review cards */
