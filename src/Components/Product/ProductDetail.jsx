@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import DarkVeil from "../DarkVeil";
 import Trending from "../pages/Trending";
+import BuyTogether from "../FBT/BuyTogether";
 
 const images = [
   {
@@ -545,7 +546,7 @@ const ProductDetail = () => {
               transition={{ delay: 0.3 }}
               className="mb-2 md:mb-4"
             >
-              <span className="inline-flex items-center gap-2 text-white/80 text-[8px] md:text-[10px] tracking-wider font-body font-medium uppercase bg-gradient-to-r from-orange-600/20 to-red-600/20 px-3 py-1.5 rounded-full border border-orange-500/30 backdrop-blur-sm shadow-lg">
+              <span className="inline-flex items-center gap-2 text-white/80 text-[8px] md:text-[10px] tracking-wider font-body font-medium uppercase bg-linear-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-sm border border-white/10 px-3 py-1.5 rounded-full shadow-lg">
                 {product.category_name}
               </span>
             </motion.div>
@@ -569,17 +570,17 @@ const ProductDetail = () => {
               transition={{ delay: 0.5 }}
               className="w-full mb-3 md:mb-6"
             >
-              <div className="bg-gradient-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-sm border border-white/10 rounded-lg md:rounded-2xl p-4 md:p-6 shadow-xl">
+              <div className="bg-linear-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-sm border border-white/10 rounded-lg md:rounded-2xl p-4 md:px-4 md:py-2 shadow-xl">
                 <div className="flex justify-between items-center">
                   <div className="flex flex-col gap-1">
-                    <p className="font-['Poppins'] font-bold text-[22px] md:text-[40px] bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
+                    <p className="font-['Poppins'] font-bold text-[14px] md:text-[20px] text-white">
                       ₹{parseInt(product.price)}
                     </p>
-                    <p className="text-[8px] md:text-[11px] text-white/50 font-body">
+                    <p className="text-[8px] md:text-[10px] text-white/50 font-body">
                       Inclusive of all taxes
                     </p>
                   </div>
-                  <div className="flex flex-col items-end gap-1 md:gap-2">
+                  <div className="flex flex-col items-end gap-1">
                     <p className="font-['Poppins'] line-through text-white/30 text-[13px] md:text-[16px]">
                       ₹{parseInt(product.actual_price)}
                     </p>
@@ -587,7 +588,7 @@ const ProductDetail = () => {
                       initial={{ scale: 0, rotate: -180 }}
                       animate={{ scale: 1, rotate: 0 }}
                       transition={{ delay: 0.7, type: "spring", bounce: 0.5 }}
-                      className="font-['Poppins'] text-[8px] md:text-[12px] bg-gradient-to-r from-orange-500 to-red-500 px-3 md:px-4 py-1.5 rounded-full font-bold shadow-lg shadow-orange-500/30"
+                      className="font-['Poppins'] text-[8px] md:text-[10px] text-white bg-linear-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-sm border border-white/10 px-3 md:px-4 py-1.5 rounded-full font-bold shadow-lg"
                     >
                       {parseInt(product.discount)}% OFF
                     </motion.span>
@@ -652,9 +653,10 @@ const ProductDetail = () => {
                         initial={{ scale: 0, rotate: -180 }}
                         animate={{ scale: 1, rotate: 0 }}
                         exit={{ scale: 0, rotate: 180 }}
-                        className="text-green-400 ml-2 flex text-[10px] md:text-[15px] items-center gap-2 bg-green-500/20 px-2 md:px-3 py-1 rounded-full border border-green-500/40 shadow-lg shadow-green-500/20"
+                        className="text-green-400 ml-2 flex text-[10px] md:text-[15px] items-center gap-2 bg-green-500/20 px-2 md:px-3 py-1 rounded-[10px] border border-green-500/40 shadow-lg shadow-green-500/20"
                       >
-                        <span className="text-[10px] md:text-[14px]">✓</span> {selectedSize}
+                        <span className="text-[10px] md:text-[14px]">✓</span>{" "}
+                        {selectedSize}
                       </motion.span>
                     )}
                   </AnimatePresence>
@@ -674,23 +676,12 @@ const ProductDetail = () => {
                       whileHover={{ scale: 1.1, y: -3 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleSizeSelect(size)}
-                      className={`relative capitalize rounded-lg md:rounded-xl min-w-[40px] md:min-w-[75px] px-3 py-1.5 flex justify-center items-center font-body text-[10px] md:text-[14px] font-medium transition-all duration-300 cursor-pointer overflow-hidden ${
+                      className={`relative capitalize rounded-lg md:rounded-xl min-w-[40px] md:min-w-[75px] px-3 py-1.5 flex justify-center items-center font-body text-[10px] text-white md:text-[14px] font-medium transition-all duration-300 cursor-pointer overflow-hidden ${
                         selectedSize === size
-                          ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white border-2 border-green-400 shadow-xl shadow-green-500/50 scale-105"
-                          : "bg-white/5 text-white border md:border-2 border-white/20 hover:bg-white/10 hover:border-white/40 backdrop-blur-sm shadow-lg"
+                          ? "bg-green-500/20 border border-green-500/40 shadow-lg scale-110 shadow-green-700/40"
+                          : "bg-linear-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-sm border border-white/10 shadow-lg"
                       }`}
                     >
-                      {selectedSize === size && (
-                        <motion.div
-                          layoutId="size-selector"
-                          className="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-600"
-                          transition={{
-                            type: "spring",
-                            bounce: 0.2,
-                            duration: 0.6,
-                          }}
-                        />
-                      )}
                       <span className="relative z-10">{size}</span>
                     </motion.button>
                   ))}
@@ -723,21 +714,21 @@ const ProductDetail = () => {
                   handleCart();
                 }}
                 disabled={!canAddToCart}
-                className={`relative text-[12px] md:text-[15px] p-2 md:p-4 font-body font-bold rounded-lg md:rounded-xl w-full transition-all duration-300 overflow-hidden group ${
+                className={`relative text-[12px] md:text-[15px] p-2 md:p-4 font-body rounded-lg md:rounded-xl w-full transition-all duration-300 overflow-hidden group ${
                   canAddToCart
-                    ? "bg-linear-to-r from-orange-600 to-red-600 text-white hover:shadow-2xl hover:shadow-orange-500/50 cursor-pointer border-2 border-transparent hover:border-orange-400"
-                    : "bg-gray-800/50 text-gray-500 cursor-not-allowed opacity-50 border-2 border-gray-700"
+                    ? "bg-linear-to-r from-accet/90 to-accet/20 text-white hover:shadow-2xl hover:shadow-accet/50 cursor-pointer hover:border-2 border-0  border-accet"
+                    : "bg-linear-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-sm border border-white/10 text-white/60 cursor-not-allowed"
                 }`}
               >
                 {canAddToCart && (
                   <>
                     <motion.div
-                      className="absolute inset-0 bg-linear-to-r from-orange-500 to-red-500"
+                      className="absolute inset-0 bg-linear-to-r from-accet/20 to-accet/90"
                       initial={{ x: "-100%" }}
                       whileHover={{ x: "100%" }}
                       transition={{ duration: 0.6 }}
                     />
-                    <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute inset-0 bg-linear-to-r from-transparent via-accet to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   </>
                 )}
                 <span className="relative z-10 flex items-center justify-center gap-3">
@@ -751,10 +742,10 @@ const ProductDetail = () => {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setShowTryOn(true)}
-                className="relative text-[12px] md:text-[15px] text-white p-2 md:p-4 font-body font-bold rounded-lg md:rounded-2xl w-full overflow-hidden group border-2 border-purple-500/40 hover:border-purple-400 shadow-xl hover:shadow-purple-500/50 transition-all duration-300"
+                className="relative text-[12px] md:text-[15px] text-white p-2 md:p-4 font-body rounded-lg md:rounded-2xl w-full overflow-hidden group border-2 border-purple-500/40 hover:border-purple-400 shadow-xl hover:shadow-purple-500/50 transition-all duration-300"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 bg-[length:200%_100%] animate-gradient" />
-                <motion.div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="absolute inset-0 bg-linear-to-r from-purple-600 via-pink-600 to-indigo-600 bg-size-[200%_100%] animate-gradient" />
+                <motion.div className="absolute inset-0 bg-linear-to-r from-purple-500 via-pink-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <span className="relative z-10 flex items-center justify-center gap-3">
                   <Sparkles className="w-4 h-4" />
                   Virtual Try-On
@@ -779,7 +770,7 @@ const ProductDetail = () => {
                   aria-expanded={openIndex === 0}
                 >
                   <span className="flex items-center gap-3 font-semibold">
-                    <span className="w-2 h-2 bg-purple-400 rounded-full" />
+                    <span className="w-2 h-2 bg-white blur-[1px] rounded-full" />
                     Product Description
                   </span>
                   <motion.svg
@@ -839,7 +830,7 @@ const ProductDetail = () => {
                   aria-expanded={openIndex === 1}
                 >
                   <span className="flex items-center gap-3 font-semibold">
-                    <span className="w-2 h-2 bg-pink-400 rounded-full" />
+                    <span className="w-2 h-2 bg-white blur-[1px] rounded-full" />
                     Item Details
                   </span>
                   <motion.svg
@@ -891,7 +882,7 @@ const ProductDetail = () => {
                   aria-expanded={openIndex === 2}
                 >
                   <span className="flex items-center gap-3 font-semibold">
-                    <span className="w-2 h-2 bg-indigo-400 rounded-full" />
+                    <span className="w-2 h-2 bg-white blur-[1px] rounded-full" />
                     Delivery and Return
                   </span>
                   <motion.svg
@@ -1001,13 +992,18 @@ const ProductDetail = () => {
           </motion.div>
         </div>
 
+        {/* Frequently Bought Together */}
+        <div className="w-[90%] mx-auto bg-linear-to-r from-white/5 via-white/20 to-white/5 backdrop-blur-sm border border-white/20 rounded-[20px] lg:rounded-[50px] shadow-xl mt-16">
+          <BuyTogether />
+        </div>
+
         {/* Reviews Section - Enhanced */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="w-[90%] md:w-[80%] lg:w-[90%] mx-auto lg:px-10 py-5 md:py-12 lg:mt-6 px-3"
+          className="w-[90%] md:w-[80%] lg:w-[90%] mx-auto lg:px-10 py-5 px-3"
         >
           <div className="flex justify-between items-center mb-4 md:mb-6">
             <div>
@@ -1018,15 +1014,6 @@ const ProductDetail = () => {
                 {productReviews.length} verified customer reviews
               </p>
             </div>
-            {/* <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="bg-linear-to-r from-purple-600/20 to-pink-600/20 px-3 py-1.5 rounded-lg border border-white/20 backdrop-blur-sm shadow-lg"
-            >
-              <p className="text-white font-body text-[14px] md:text-[20px] font-bold flex items-center gap-1">
-                <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                {productReviews.length}
-              </p>
-            </motion.div> */}
           </div>
 
           {/* Display reviews */}
@@ -1047,13 +1034,12 @@ const ProductDetail = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  whileHover={{ scale: 1.02, y: -5 }}
-                  className="bg-linear-to-br from-white/5 to-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-3 md:p-6 hover:border-purple-500/40 transition-all duration-300 shadow-xl hover:shadow-purple-500/20"
+                  className="bg-linear-to-br from-white/5 to-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-3 md:p-6"
                 >
                   <div className="flex items-start gap-2 md:gap-3">
                     {/* Avatar */}
                     <div className="min-w-[40px] md:min-w-[55px]">
-                      <div className="w-[35px] h-[35px] md:w-[45px] md:h-[45px] rounded-full bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-[14px] md:text-[18px] shadow-xl">
+                      <div className="w-[35px] h-[35px] md:w-[45px] md:h-[45px] rounded-full bg-linear-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white font-bold text-[14px] md:text-[18px] shadow-xl">
                         {review.name.charAt(0).toUpperCase()}
                       </div>
                     </div>
@@ -1101,10 +1087,10 @@ const ProductDetail = () => {
                           {["Poor", "Good", "Awesome"].map((quality) => (
                             <span
                               key={quality}
-                              className={`text-[8px] md:text-[12px] font-['Poppins'] px-3 py-1.5 rounded-full transition-all duration-300 ${
+                              className={`text-[8px] md:text-[12px] font-['Poppins']  rounded-full transition-all duration-300 ${
                                 review.quality === quality
-                                  ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white border-2 border-white/40 shadow-lg font-semibold"
-                                  : "bg-white/5 text-white/40 border border-white/10"
+                                  ? "bg-linear-to-r from-white/15 via-white/60 to-white/15 text-black backdrop-blur-sm border border-white/10 shadow-lg font-semibold px-5 py-2.5"
+                                  : "bg-white/5 text-white border border-white/10 px-3 py-1.5"
                               }`}
                             >
                               {quality}
@@ -1122,10 +1108,10 @@ const ProductDetail = () => {
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: "spring" }}
-                  className="inline-block bg-gradient-to-r from-purple-600/20 to-pink-600/20 px-10 py-8 rounded-3xl border border-white/10 backdrop-blur-sm shadow-xl"
+                  className="inline-block bg-linear-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-sm border border-white/10 p-6 rounded-[10px]"
                 >
-                  <Star className="w-20 h-20 text-white/20 mx-auto mb-4" />
-                  <p className="text-white/50 font-body text-[16px]">
+                  <Star className="w-10 h-10 text-white/20 mx-auto mb-4" />
+                  <p className="text-white/50 font-body text-[13px]">
                     No reviews yet. Be the first to review this product!
                   </p>
                 </motion.div>
@@ -1157,7 +1143,7 @@ const ProductDetail = () => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full py-3 bg-linear-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 cursor-pointer text-[10px] md:text-[15px] text-white font-body font-bold mt-4 md:mt-8 rounded-lg md:rounded-2xl border-2 border-transparent hover:border-orange-400 shadow-xl hover:shadow-orange-500/50 transition-all duration-300"
+              className="w-full py-3 bg-linear-to-r from-accet/90 to-accet/20 hover:from-accet/20 hover:via-accet cursor-pointer text-[10px] md:text-[15px] text-white font-body font-bold mt-4 md:mt-8 rounded-lg md:rounded-2xl hover:border-2 border-0  border-accet/70 transition-all duration-300"
             >
               Write a Review for this Product ✍️
             </motion.button>
@@ -1254,8 +1240,8 @@ const ProductDetail = () => {
               animate={{ opacity: 1 }}
               className="text-center py-10"
             >
-              <div className="inline-block bg-white/5 rounded-3xl border border-white/10 backdrop-blur-sm px-10 py-8 shadow-xl">
-                <Sparkles className="md:w-16 md:h-16 w-10 h-10 mx-auto mb-4 text-white/20" />
+              <div className="inline-block bg-linear-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-sm border border-white/10 p-6 rounded-[10px]">
+                <Sparkles className="w-10 h-10 mx-auto mb-4 text-white/20" />
                 <p className="text-white/40 font-body text-[10px] md:text-[16px]">
                   No similar products found
                 </p>

@@ -33,13 +33,14 @@ export default function ManageOrders() {
   const fetchOrders = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${BACKEND_URL}/api/orders`, {
+      const response = await fetch(`${BACKEND_URL}/api/admin/orders`, {
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
       if (response.ok) {
         setOrders(data.orders);
+        console.log("orders",data.orders)
         calculateStats(data.orders);
       }
     } catch (err) {

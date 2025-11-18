@@ -11,6 +11,7 @@ import { CartContext } from "../../Context/UseCartContext";
 import { AuthContext } from "../../Context/UseAuthContext";
 
 const Navbar = () => {
+  const BACKEND_URL = import.meta.env.VITE_API_URL;
   const { logout } = useContext(AuthContext);
   const { cart } = useContext(CartContext);
   const { wishlist } = useContext(WishlistContext);
@@ -134,25 +135,28 @@ const Navbar = () => {
   const mobileView = window.innerWidth < 480;
 
   // In your admin navbar
-const [notificationCount, setNotificationCount] = useState(0);
+  const [notificationCount, setNotificationCount] = useState(0);
 
-useEffect(() => {
-  const fetchNotificationCount = async () => {
-    const token = localStorage.getItem("token");
-    const response = await fetch(`${BACKEND_URL}/api/admin/notifications/count`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const data = await response.json();
-    if (data.success) {
-      setNotificationCount(data.unread_count);
-    }
-  };
+  useEffect(() => {
+    const fetchNotificationCount = async () => {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `${BACKEND_URL}/api/admin/notifications/count`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      const data = await response.json();
+      if (data.success) {
+        setNotificationCount(data.unread_count);
+      }
+    };
 
-  fetchNotificationCount();
-  const interval = setInterval(fetchNotificationCount, 30000); // Every 30s
-  
-  return () => clearInterval(interval);
-}, []);
+    fetchNotificationCount();
+    const interval = setInterval(fetchNotificationCount, 30000); // Every 30s
+
+    return () => clearInterval(interval);
+  }, []);
 
   // ⭐ NEW: Admin menu items
   const adminMenuItems = [
