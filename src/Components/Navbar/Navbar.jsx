@@ -9,6 +9,7 @@ import { WishlistContext } from "../../Context/UseWishListContext";
 import { ToastContext } from "../../Context/UseToastContext";
 import { CartContext } from "../../Context/UseCartContext";
 import { AuthContext } from "../../Context/UseAuthContext";
+import AdminNotifications from "../Admin/AdminNotifications";
 
 const Navbar = () => {
   const BACKEND_URL = import.meta.env.VITE_API_URL;
@@ -320,6 +321,8 @@ const Navbar = () => {
             )}
 
             {user?.role === "admin" && (
+              <>
+              <AdminNotifications/>
               <div className="hidden md:flex items-center gap-2 bg-[#955E30] px-3 py-1 rounded-full">
                 <svg
                   className="w-4 h-4 text-white"
@@ -330,6 +333,8 @@ const Navbar = () => {
                 </svg>
                 <span className="text-white text-xs font2">Admin</span>
               </div>
+
+              </>
             )}
 
             <span
