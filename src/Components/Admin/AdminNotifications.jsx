@@ -22,6 +22,7 @@ export default function AdminNotifications() {
         }
       );
       const data = await response.json();
+      console.log("notification", data)
       if (response.ok) {
         setNotifications(data.notifications);
       }

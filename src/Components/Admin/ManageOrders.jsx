@@ -47,34 +47,6 @@ export default function ManageOrders() {
       setLoading(false);
     }
   };
-  console.log("a useeffect", orders);
-
-  //   useEffect(() => {
-  //   // Connect to SSE for real-time notifications
-  //   const token = localStorage.getItem("token");
-  //   const eventSource = new EventSource(
-  //     `${BACKEND_URL}/api/admin/notifications/read-all`,
-  //     {
-  //       headers: { Authorization: `Bearer ${token}` }
-  //     }
-  //   );
-
-  //   eventSource.onmessage = (event) => {
-  //     const notification = JSON.parse(event.data);
-
-  //     if (notification.type === 'NEW_ORDER') {
-  //       // Show notification
-  //       alert(`🎉 New Order #${notification.order_number} - ₹${notification.total_amount}`);
-
-  //       // Refresh orders list
-  //       fetchOrders();
-  //     }
-  //   };
-
-  //   return () => {
-  //     eventSource.close();
-  //   };
-  // }, []);
 
   const handleExportOrders = async () => {
     const token = localStorage.getItem("token");
@@ -89,6 +61,7 @@ export default function ManageOrders() {
     a.download = "orders_export.xlsx";
     a.click();
   };
+  
   const calculateStats = (orderList) => {
     const stats = {
       total: orderList.length,
@@ -740,10 +713,10 @@ export default function ManageOrders() {
                   </div>
                   <div>
                     <p className="text-white/60 text-xs font-body mb-1">
-                      User ID
+                      Customer ID
                     </p>
                     <p className="text-white font-body">
-                      {selectedOrder.user_id || "Guest"}
+                      {selectedOrder.customer_id || "Guest"}
                     </p>
                   </div>
                 </div>

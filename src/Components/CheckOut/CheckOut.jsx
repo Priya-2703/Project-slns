@@ -17,11 +17,16 @@ import {
 import { CartContext } from "../../Context/UseCartContext";
 import { getImageUrl } from "../../utils/imageHelper";
 import { MdPayment } from "react-icons/md";
+import {
+  createRazorpayOrder,
+  loadRazorpayScript,
+  placeOrder,
+  verifyPayment,
+} from "../../utils/razorpayHelper";
+import { ToastContext } from "../../Context/UseToastContext";
 
 export default function CheckOut() {
   const navigate = useNavigate();
-
-  // ✅ Get cart data from context
   const {
     cart,
     totalPrice,
@@ -29,15 +34,13 @@ export default function CheckOut() {
     clearCart,
     loading: cartLoading,
   } = useContext(CartContext);
-
+  const { showToast } = useContext(ToastContext);
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [showNewAddress, setShowNewAddress] = useState(false);
   const [loading, setLoading] = useState(false);
   const [profileLoading, setProfileLoading] = useState(true);
-
-
-  // Backend URL
+  const [isProcessing, setIsProcessing] = useState(false);
   const BACKEND_URL = import.meta.env.VITE_API_URL;
 
   // ✅ Form Data
@@ -61,7 +64,6 @@ export default function CheckOut() {
 
   const [paymentData, setPaymentData] = useState({
     method: "cod",
-
   });
 
   const [errors, setErrors] = useState({});
@@ -179,6 +181,8 @@ export default function CheckOut() {
         } else if (Array.isArray(data)) {
           addressList = data;
         }
+
+        console.log("address", data);
 
         if (addressList.length > 0) {
           setSavedAddresses(addressList);
@@ -319,7 +323,7 @@ export default function CheckOut() {
     }
   };
 
-  // ✅ Handle Place Order
+  // ✅ Handle Place Order with Payment Method Logic
   const handlePlaceOrder = async () => {
     try {
       setLoading(true);
@@ -334,6 +338,7 @@ export default function CheckOut() {
         deliveryAddress = newAddress;
       }
 
+      // Prepare order data
       const orderData = {
         user: {
           ...userDetails,
@@ -351,13 +356,35 @@ export default function CheckOut() {
 
       const token = localStorage.getItem("token");
 
+      // ✅ Check payment method
+      if (paymentData.method === "onlinePayment") {
+        // 🔥 RAZORPAY PAYMENT
+        await handleRazorpayPayment(orderData, token);
+      } else if (paymentData.method === "cod") {
+        // 🔥 CASH ON DELIVERY
+        await handleCODPayment(orderData, token);
+      }
+    } catch (error) {
+      console.error("Error placing order:", error);
+      alert(error.message || "Failed to place order. Please try again.");
+      setLoading(false);
+    }
+  };
+
+  // ✅ Handle Cash on Delivery Payment
+  const handleCODPayment = async (orderData, token) => {
+    try {
       const response = await fetch(`${BACKEND_URL}/api/orders/create`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(orderData),
+        body: JSON.stringify({
+          ...orderData,
+          payment_method: "cod",
+          payment_status: "pending",
+        }),
       });
 
       if (!response.ok) {
@@ -368,18 +395,189 @@ export default function CheckOut() {
       const result = await response.json();
 
       if (result.success) {
-        await clearCart();
-        alert("Order placed successfully!");
-        navigate("/order-success", {
-          state: { orderId: result.orderId || result.order_id },
-        });
+        // ✅ Show loading for 2 seconds before redirect
+        setTimeout(async () => {
+          await clearCart();
+          setLoading(false);
+          navigate("/order-success", {
+            state: {
+              orderId: result.orderId || result.order_id,
+              orderNumber: result.orderNumber || result.order_number,
+              paymentMethod: "cod",
+            },
+          });
+        }, 2000); // 2 seconds delay
       } else {
         throw new Error(result.message || "Failed to place order");
       }
     } catch (error) {
-      console.error("Error placing order:", error);
-      alert(error.message || "Failed to place order. Please try again.");
-    } finally {
+      setLoading(false);
+      throw error;
+    }
+  };
+
+  const handleRazorpayPayment = async () => {
+    try {
+      setIsProcessing(true);
+
+      // 1. Check if cart is empty
+      if (cart.length === 0) {
+        showToast("Cart is empty!");
+        return;
+      }
+
+      // 2. Load Razorpay Script
+      const scriptLoaded = await loadRazorpayScript();
+
+      if (!scriptLoaded) {
+        showToast("Razorpay SDK failed to load. Check your internet!");
+        setIsProcessing(false);
+        return;
+      }
+
+      // ✅ Calculate amounts BEFORE creating order
+      const calculatedSubtotal = cart.reduce(
+        (sum, it) => sum + it.price * it.quantity,
+        0
+      );
+      const calculatedShipping =
+        calculatedSubtotal > 1000 && calculatedSubtotal < 7000 ? 0 : 100;
+      const calculatedTotal = calculatedSubtotal + calculatedShipping;
+
+      // 3. Create Order in Backend
+      const orderData = await createRazorpayOrder(calculatedTotal);
+
+      if (!orderData.success) {
+        showToast("Failed to create order!");
+        setIsProcessing(false);
+        return;
+      }
+
+      // ✅ Prepare order items BEFORE payment
+      const orderItems = cart.map((item) => ({
+        product_id: item.product_id,
+        product_name: item.product_name,
+        category_name: item.category_name,
+        primary_image: item.primary_image,
+        price: item.price,
+        quantity: item.quantity,
+        selectedSize: item.selectedSize || "One Size",
+      }));
+
+      // 4. Razorpay Options Setup
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: orderData.order.amount,
+        currency: orderData.order.currency,
+        name: "SLNS Sarees",
+        description: "Purchase from SLNS Sarees",
+        image: "/logo.png",
+        order_id: orderData.order.id,
+
+        // ✅✅✅ Payment Success Handler - COMPLETELY REWRITTEN
+        handler: async function (response) {
+          try {
+            console.log("💳 Payment successful, processing...");
+
+            // Step 1: Verify payment signature
+            const verificationData = await verifyPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+
+            if (!verificationData.success) {
+              showToast("Payment verification failed!");
+              setIsProcessing(false);
+              return;
+            }
+
+            console.log("✅ Payment verified, placing order...");
+
+            // Step 2: Place order in database
+            const placeOrderData = await placeOrder({
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              items: orderItems,
+              total: calculatedTotal,
+              subtotal: calculatedSubtotal,
+              shipping: calculatedShipping,
+            });
+
+            if (!placeOrderData.success) {
+              showToast("Failed to create order!");
+              setIsProcessing(false);
+              setLoading(false);
+              return;
+            }
+
+            console.log("✅ Order placed successfully!");
+            showToast("Payment Successful! 🎉");
+            setLoading(false);
+            setIsProcessing(false);
+
+            // Step 3: Clear cart
+            clearCart();
+
+            // Step 4: Navigate to success page
+            navigate("/order-success", {
+              state: {
+                orderId: placeOrderData.order.order_id,
+                orderNumber: placeOrderData.order.order_number,
+                paymentId: response.razorpay_payment_id,
+                paymentStatus: "Success",
+                paymentMethod: "Online Payment",
+                orderDate: placeOrderData.order.created_at,
+                total: calculatedTotal,
+                subtotal: calculatedSubtotal,
+                shipping: calculatedShipping,
+                items: orderItems,
+              },
+              replace: true,
+            });
+          } catch (error) {
+            console.error("❌ Order processing error:", error);
+            showToast("Something went wrong! Please contact support.");
+            setIsProcessing(false);
+            setLoading(false);
+          }
+        },
+
+        // ✅ Customer Details Prefill
+        prefill: {
+          name: "Customer Name",
+          email: "customer@example.com",
+          contact: "9999999999",
+        },
+
+        // ✅ Notes
+        notes: {
+          cart_items: cart.length,
+          total_amount: calculatedTotal,
+        },
+
+        // ✅ Theme
+        theme: {
+          color: "#815a37",
+        },
+
+        // ✅ Modal Close Handler
+        modal: {
+          ondismiss: function () {
+            setIsProcessing(false);
+            setLoading(false);
+            showToast("Payment cancelled!");
+          },
+        },
+      };
+
+      // 5. Open Razorpay Checkout
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
+    } catch (error) {
+      console.error("Checkout error:", error);
+      showToast("Failed to initiate checkout!");
+      setIsProcessing(false);
       setLoading(false);
     }
   };
@@ -402,7 +600,6 @@ export default function CheckOut() {
       </div>
     );
   }
-
 
   return (
     <div className="min-h-screen bg-black font-body py-12 px-4 mt-20">
@@ -1015,7 +1212,6 @@ export default function CheckOut() {
                       </div>
                     </label>
                   </div>
-
                 </div>
               )}
 
@@ -1057,10 +1253,10 @@ export default function CheckOut() {
                                 {item.product_name}
                               </span>
                               <span className="text-gray-500 text-[12px] leading-none">
-                               QTY : {item.quantity}
+                                QTY : {item.quantity}
                               </span>
                               <div className="text-gray-500 font-body text-[12px] leading-none ">
-                               Size : {item.size || item.selectedSize}
+                                Size : {item.size || item.selectedSize}
                               </div>
                             </div>
                           </div>
@@ -1167,7 +1363,8 @@ export default function CheckOut() {
                       </h3>
                     </div>
                     <p className="text-gray-300 font-medium text-[14px] border border-green-500 bg-green-700/10 p-2 rounded-full flex justify-center">
-                      {paymentData.method === "onlinePayment" && "Online Payment"}
+                      {paymentData.method === "onlinePayment" &&
+                        "Online Payment"}
                       {paymentData.method === "cod" && "🚚 Cash on Delivery"}
                     </p>
                   </div>
@@ -1195,7 +1392,7 @@ export default function CheckOut() {
                   disabled={loading}
                   className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#8E6740] to-[#6b4e2f] text-white rounded-xl font-semibold hover:from-[#6b4e2f] hover:to-[#8E6740] transition-all duration-300 shadow-lg shadow-[#8E6740]/50 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? (
+                  {isProcessing ? (
                     <>
                       <Loader size={20} className="animate-spin" />
                       Processing...
@@ -1228,11 +1425,11 @@ export default function CheckOut() {
                       className="flex justify-between items-start p-3 bg-black/30 rounded-xl"
                     >
                       <div className="flex gap-2">
-                          <img
-                            src={getImageUrl(item.primary_image)}
-                            alt={item.name}
-                            className="w-10 h-10 rounded-lg object-cover"
-                          />
+                        <img
+                          src={getImageUrl(item.primary_image)}
+                          alt={item.name}
+                          className="w-10 h-10 rounded-lg object-cover"
+                        />
                         <div>
                           <p className="max-w-40 text-gray-200 font-medium text-[12px] line-clamp-1">
                             {item.product_name}
