@@ -14,8 +14,16 @@ import { CartContext } from "../../Context/UseCartContext";
 import { ToastContext } from "../../Context/UseToastContext";
 import { ReviewContext } from "../../Context/UseReviewContext";
 import confetti from "canvas-confetti";
-import { motion } from "framer-motion";
-import { X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Sparkles,
+  X,
+  ShoppingCart,
+  Star,
+  Package,
+  Truck,
+  RefreshCw,
+} from "lucide-react";
 import DarkVeil from "../DarkVeil";
 import Trending from "../pages/Trending";
 
@@ -92,36 +100,26 @@ const ProductDetail = () => {
   const [similarProducts, setSimilarProducts] = useState([]);
   const [selectedSize, setSelectedSize] = useState(null);
 
-  // ✅ Dynamic title set pannu
   useEffect(() => {
     if (product.product_name) {
       document.title = `${product.product_name} - Your Store Name`;
     }
-
-    // ✅ Component unmount aagum pothu reset
     return () => {
       document.title = "SLNS Sarees";
     };
   }, [product.product_name]);
 
-  // Replace the similar products useEffect with this:
   useEffect(() => {
     const fetchSimilarProducts = async () => {
-      // product.category_id or category_name irukka check pannu
       if (!product.category_id && !product.category_name) return;
 
       try {
-        // ✅ Ellaa products ah fetch pannu
         const response = await fetch(`${BACKEND_URL}/api/products`);
         const data = await response.json();
 
-        // ✅ Client-side la same category products ah filter pannu
         const filtered = data.products
           .filter((p) => {
-            // Current product ah exclude pannu
             const isNotCurrentProduct = p.product_id !== product.product_id;
-
-            // Same category check pannu (category_id or category_name use pannu)
             const isSameCategory =
               (product.category_id && p.category_id === product.category_id) ||
               (product.category_name &&
@@ -130,12 +128,12 @@ const ProductDetail = () => {
 
             return isNotCurrentProduct && isSameCategory;
           })
-          .slice(0, 5); // Only first 5 products
+          .slice(0, 5);
 
         setSimilarProducts(filtered);
       } catch (error) {
         console.error("Error fetching similar products:", error);
-        setSimilarProducts([]); // Error aanaa empty array set pannu
+        setSimilarProducts([]);
       }
     };
 
@@ -155,15 +153,14 @@ const ProductDetail = () => {
     }
   };
 
-  // ✅ Full product details (WITH images) fetch pannum
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
         setLoading(true);
         const response = await fetch(`${BACKEND_URL}/api/products/${id}`);
         const data = await response.json();
-
         setProduct(data.product);
+        console.log(data.product);
       } catch (error) {
         console.error("Error fetching product:", error);
       } finally {
@@ -174,42 +171,32 @@ const ProductDetail = () => {
     fetchProductDetails();
   }, [id]);
 
-  //image with full url
   const getImageUrl = (imagePath) => {
     if (!imagePath) return "/placeholder-image.png";
-
     if (imagePath.startsWith("http")) {
       return imagePath;
     }
-
     return `${BACKEND_URL}${imagePath}`;
   };
 
-  // ✅ Handle Size Selection
   const handleSizeSelect = (size) => {
     setSelectedSize(size);
   };
 
-  // ✅ Check if can add to cart (size selected)
   const canAddToCart = useMemo(() => {
-    // If product has sizes, size must be selected
     if (product.sizes && product.sizes.length > 0) {
       return selectedSize !== null;
     }
-    // If no sizes, can add directly
     return true;
   }, [product.sizes, selectedSize]);
 
-  // Use useMemo to compute isInCart safely
   const isInCart = useMemo(() => {
     if (!product || !product.product_id) return false;
     return cart.some((item) => item.product_id === product.product_id);
   }, [cart, product]);
 
-  const {
-    fetchProductReviews,
-    loading: reviewsLoading,
-  } = useContext(ReviewContext);
+  const { fetchProductReviews, loading: reviewsLoading } =
+    useContext(ReviewContext);
   const [productReviews, setProductReviews] = useState([]);
 
   useEffect(() => {
@@ -223,10 +210,8 @@ const ProductDetail = () => {
     }
   }, [id, fetchProductReviews]);
 
-    // after submit review effect
   useEffect(() => {
     if (location.state?.showCelebration) {
-      // Define all custom shapes
       var count = 200;
       var defaults = {
         origin: { y: 0.7 },
@@ -240,28 +225,11 @@ const ProductDetail = () => {
         });
       }
 
-      fire(0.25, {
-        spread: 26,
-        startVelocity: 55,
-      });
-      fire(0.2, {
-        spread: 60,
-      });
-      fire(0.35, {
-        spread: 100,
-        decay: 0.91,
-        scalar: 0.8,
-      });
-      fire(0.1, {
-        spread: 120,
-        startVelocity: 25,
-        decay: 0.92,
-        scalar: 1.2,
-      });
-      fire(0.1, {
-        spread: 120,
-        startVelocity: 45,
-      });
+      fire(0.25, { spread: 26, startVelocity: 55 });
+      fire(0.2, { spread: 60 });
+      fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+      fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+      fire(0.1, { spread: 120, startVelocity: 45 });
 
       showToast(
         "🎉 Review Added Successfully! Thank you for your feedback!",
@@ -270,31 +238,26 @@ const ProductDetail = () => {
     }
   }, [location, fetchProductReviews]);
 
-  // Add this handler function
   const handleLoadMoreReviews = () => {
     setReviewsToShow((prev) => prev + 4);
   };
 
-  //add to cart
   const handleAddToCart = async () => {
     if (!canAddToCart) {
       showToast("Please select a size first! 📏", "error");
       return;
     }
 
-    // ✅ Add product with selected size
     await addToCart({
       ...product,
-      selectedSize: selectedSize, // ✅ Include selected size
+      selectedSize: selectedSize,
     });
   };
 
-  // ✅ Reset selected size when product changes
   useEffect(() => {
     setSelectedSize(null);
   }, [id, product.product_id]);
 
-  // Get displayed reviews
   const displayedReviews = productReviews.slice(0, reviewsToShow);
   const hasMoreReviews = reviewsToShow < productReviews.length;
   const [cur, setCur] = useState(0);
@@ -304,7 +267,6 @@ const ProductDetail = () => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
-  // Calculate total slides (images + video if exists)
   const totalSlides =
     (product.images?.length || 0) + (product.video_url ? 1 : 0);
 
@@ -312,6 +274,7 @@ const ProductDetail = () => {
     if (totalSlides === 0) return;
     setCur((cur) => (cur === 0 ? totalSlides - 1 : cur - 1));
   };
+
   const next = () => {
     if (totalSlides === 0) return;
     setCur((cur) => (cur === totalSlides - 1 ? 0 : cur + 1));
@@ -343,8 +306,8 @@ const ProductDetail = () => {
   const [tryOnResult, setTryOnResult] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [selectedModel, setSelectedModel] = useState(null);
 
-  // Handle Photo Upload
   const handlePhotoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -358,7 +321,6 @@ const ProductDetail = () => {
     }
   };
 
-  // Simulate Virtual Try-On Process (Frontend Only)
   const startVirtualTryOn = () => {
     if (!userPhoto) {
       showToast("Please select a photo first! 📸", "error");
@@ -368,7 +330,6 @@ const ProductDetail = () => {
     setIsProcessing(true);
     setProgress(0);
 
-    // Simulate processing with progress
     let currentProgress = 0;
     const progressInterval = setInterval(() => {
       currentProgress += Math.random() * 15;
@@ -379,13 +340,11 @@ const ProductDetail = () => {
       if (currentProgress >= 100) {
         clearInterval(progressInterval);
 
-        // Demo: Show product image as result (actual la API result varum)
         setTimeout(() => {
           setTryOnResult(product.image_url);
           setIsProcessing(false);
           showToast("Virtual Try-On Complete! Looking Great! 🎉", "success");
 
-          // Celebration effect
           confetti({
             particleCount: 100,
             spread: 70,
@@ -396,7 +355,6 @@ const ProductDetail = () => {
     }, 300);
   };
 
-  // Reset Everything
   const resetTryOn = () => {
     setUserPhoto(null);
     setUserPhotoFile(null);
@@ -406,13 +364,11 @@ const ProductDetail = () => {
     setIsProcessing(false);
   };
 
-  // Close Modal
   const closeTryOnModal = () => {
     setShowTryOn(false);
     resetTryOn();
   };
 
-  // Share Result (Frontend only)
   const shareResult = () => {
     if (navigator.share) {
       navigator
@@ -425,13 +381,11 @@ const ProductDetail = () => {
           showToast("Copied link to clipboard! 📋", "success");
         });
     } else {
-      // Fallback: Copy to clipboard
       navigator.clipboard.writeText(window.location.href);
       showToast("Link copied to clipboard! 📋", "success");
     }
   };
 
-  // Download Image (Frontend only)
   const downloadImage = () => {
     const link = document.createElement("a");
     link.href = tryOnResult;
@@ -445,7 +399,13 @@ const ProductDetail = () => {
   if (!product || !product.product_id) {
     return (
       <div className="w-full bg-black min-h-screen flex items-center justify-center mt-28">
-        <div className="text-white text-2xl font2">Product not found</div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-white text-2xl font2"
+        >
+          Product not found
+        </motion.div>
       </div>
     );
   }
@@ -453,43 +413,47 @@ const ProductDetail = () => {
   return (
     <>
       <div className="w-full bg-black mx-auto mt-14 md:mt-28 py-20 overflow-x-hidden">
+        {/* Back Button - Enhanced */}
         <motion.div
+          initial="hidden"
+          animate="visible"
           variants={backButtonVariants}
           className="absolute top-[90px] left-5 md:top-[130px] lg:top-[154px] md:left-[30px] lg:left-[100px] z-20"
-          whileHover={{
-            scale: 1.1,
-            rotate: -5,
-          }}
+          whileHover={{ scale: 1.1, rotate: -5 }}
           whileTap={{ scale: 0.9 }}
         >
           <Link
             to={"/product"}
             aria-label="Go to product details"
             title="Go to Product"
-            className="group inline-flex items-center justify-center rounded-full border border-neutral-700 bg-black p-2 text-gray-300 hover:text-white hover:border-gray-500 focus:outline-none backdrop-blur"
+            className="group relative inline-flex items-center justify-center rounded-full border border-white/20 bg-black/60 backdrop-blur-xl p-3 text-gray-300 hover:text-white hover:border-white/40 focus:outline-none transition-all duration-300 shadow-xl hover:shadow-white/20"
           >
             <motion.div whileHover={{ x: -3 }} transition={{ duration: 0.3 }}>
-              <FaArrowLeft className="text-white text-[12px] md:text-[18px]" />
+              <FaArrowLeft className="text-white text-[14px] md:text-[16px]" />
             </motion.div>
+
+            {/* Glow Effect */}
+            <div className="absolute inset-0 rounded-full bg-linear-to-r from-purple-500/0 to-pink-500/0 group-hover:from-purple-500/20 group-hover:to-pink-500/20 blur-xl transition-all duration-500" />
           </Link>
         </motion.div>
-        <div className="w-[90%] lg:w-[85%] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-7">
-          {/* image */}
-          <div className="flex lg:sticky lg:top-10 justify-center items-start px-2">
-            <div className="relative overflow-hidden w-full h-[400px] md:h-[600px] lg:h-[900px] flex rounded-4xl">
+
+        <div className="w-[90%] md:w-[80%] lg:w-[85%] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12">
+          {/* Image Gallery - Enhanced */}
+          <div className="flex lg:sticky lg:top-10 justify-center items-center px-2">
+            <div className="relative overflow-hidden w-full h-[400px] md:h-[700px] lg:h-[800px] flex rounded-[1.5rem] md:rounded-[2.5rem] shadow-2xl border-2 border-white/10">
               {product.images?.map((img, index) => (
                 <img
-                  key={img.image_id}
+                  key={index}
                   src={getImageUrl(img.image_url)}
-                  alt={`Thumbnail ${index + 1}`}
-                  className={`object-cover object-center min-w-full transition-all ease-out duration-500`}
+                  alt={img.image_name}
+                  className="object-cover object-center min-w-full"
                   style={{
                     transform: `translateX(-${cur * 100}%)`,
                   }}
                 />
               ))}
 
-              {/* Video Slide (Last Slide) */}
+              {/* Video Slide */}
               {product.video_url && (
                 <div
                   className="min-w-full transition-all ease-out duration-500 relative"
@@ -505,49 +469,61 @@ const ProductDetail = () => {
                     muted
                     playsInline
                   />
-                  <div className="absolute bottom-4 left-4 bg-black/60 backdrop-blur px-3 py-1 rounded-full">
-                    <p className="text-white text-sm font-body">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="absolute bottom-6 left-6 bg-gradient-to-r from-red-600/90 to-orange-600/90 backdrop-blur-md px-4 py-2 rounded-full border border-white/30 shadow-lg"
+                  >
+                    <p className="text-white text-sm font-body flex items-center gap-2">
+                      <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
                       Product Video
                     </p>
-                  </div>
+                  </motion.div>
                 </div>
               )}
 
-              <div className="absolute inset-0 flex justify-between items-center px-5">
-                <button
+              {/* Navigation Buttons - Enhanced */}
+              <div className="absolute inset-0 flex justify-between items-center px-2 md:px-6 z-20">
+                <motion.button
+                  whileHover={{ scale: 1.15, x: -5 }}
+                  whileTap={{ scale: 0.9 }}
                   onClick={prev}
-                  className="bg-black/80 p-2 rounded-full flex justify-center cursor-pointer items-center"
+                  className="bg-black/70 backdrop-blur-xl p-1.5 md:p-2 rounded-full border border-white/20 hover:bg-black/90 hover:border-white/40 transition-all duration-300 shadow-xl hover:shadow-2xl"
                 >
-                  <MdKeyboardArrowLeft className="text-white text-[22px]" />
-                </button>
-                <button
+                  <MdKeyboardArrowLeft className="text-white text-[26px] md:text-[32px]" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.15, x: 5 }}
+                  whileTap={{ scale: 0.9 }}
                   onClick={next}
-                  className="bg-black/80 p-2 rounded-full flex justify-center cursor-pointer items-center"
+                  className="bg-black/70 backdrop-blur-xl p-1.5 md:p-2 rounded-full border border-white/20 hover:bg-black/90 hover:border-white/40 transition-all duration-300 shadow-xl hover:shadow-2xl"
                 >
-                  <MdKeyboardArrowRight className="text-white text-[22px]" />
-                </button>
+                  <MdKeyboardArrowRight className="text-white text-[26px] md:text-[32px]" />
+                </motion.button>
               </div>
-              {/* dot on bottom */}
-              <div className="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-2">
+
+              {/* Dots Navigation - Enhanced */}
+              <div className="absolute bottom-2 md:bottom-6 left-0 right-0 flex justify-center items-center gap-1 md:gap-2.5 z-20">
                 {product.images?.map((s, index) => (
-                  <div
+                  <motion.div
                     key={index}
+                    whileHover={{ scale: 1.3 }}
                     onClick={() => setCur(index)}
-                    className={`cursor-pointer transition-all ${
+                    className={`cursor-pointer transition-all duration-300 ${
                       cur === index
-                        ? "w-8 h-2 bg-white rounded-full"
-                        : "w-2 h-2 bg-white/50 rounded-full hover:bg-white/80"
+                        ? "md:w-12 md:h-3 h-1.5 w-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full shadow-lg shadow-purple-500/50"
+                        : "md:w-3 md:h-3 w-1.5 h-1.5 bg-white/30 rounded-full hover:bg-white/60 backdrop-blur-sm"
                     }`}
                   />
                 ))}
-                {/* ✅ Video dot (if video exists) */}
                 {product.video_url && (
-                  <div
+                  <motion.div
+                    whileHover={{ scale: 1.3 }}
                     onClick={() => setCur(product.images?.length || 0)}
-                    className={`cursor-pointer transition-all ${
+                    className={`cursor-pointer transition-all duration-300 ${
                       cur === (product.images?.length || 0)
-                        ? "w-8 h-2 bg-red-500 rounded-full"
-                        : "w-2 h-2 bg-red-500/50 rounded-full hover:bg-red-500/80"
+                        ? "md:w-12 md:h-3 h-1.5 w-6 bg-gradient-to-r from-red-500 to-orange-500 rounded-full shadow-lg shadow-red-500/50"
+                        : "md:w-3 md:h-3 w-1.5 h-1.5 bg-red-500/30 rounded-full hover:bg-red-500/60"
                     }`}
                   />
                 )}
@@ -555,140 +531,261 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          {/* content */}
-          <div className="flex flex-col justify-start h-auto items-start px-3 lg:px-20 py-3">
-            <div className="flex justify-start items-start">
-              <p className="text-white text-[12px] tracking-wide font-body">
+          {/* Product Details - Enhanced */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="flex flex-col justify-start h-auto items-start px-3 lg:px-7 py-3"
+          >
+            {/* Category Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="mb-2 md:mb-4"
+            >
+              <span className="inline-flex items-center gap-2 text-white/80 text-[8px] md:text-[10px] tracking-wider font-body font-medium uppercase bg-gradient-to-r from-orange-600/20 to-red-600/20 px-3 py-1.5 rounded-full border border-orange-500/30 backdrop-blur-sm shadow-lg">
                 {product.category_name}
-              </p>
-            </div>
-            <div className="w-full text-white lg:mt-6 mb-3">
-              <h1 className="font-heading font-[950] text-[35px] md:text-[35px] leading-none">
+              </span>
+            </motion.div>
+
+            {/* Product Name */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="w-full text-white mb-3 md:mb-6"
+            >
+              <h1 className="font-heading font-[950] text-[24px] md:text-[32px] lg:text-[38px] leading-tight text-white">
                 {product.product_name}
               </h1>
-            </div>
-            <div className="text-white my-3 md:my-5 border-t border-t-white/10 border-b border-b-white/10 flex justify-between items-center w-full py-3 px-1">
-              <p className="font-['Poppins'] font-semibold text-[18px] md:text-[24px]">
-                ₹{parseInt(product.price)}
-              </p>
-              <div className="flex justify-center items-center gap-3">
-                <p className="font-['Poppins'] line-through text-white/30 text-[14px]">
-                  ₹{parseInt(product.actual_price)}
-                </p>
-                <p className="font-['Poppins'] text-[14px]">
-                  {parseInt(product.discount)}% OFF
-                </p>
-              </div>
-            </div>
-            {/* Choose Other Versions Section - Replace existing section */}
-            {similarProducts.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <h1 className="text-white text-[12px] tracking-wide font-body">
-                  Choose Other Versions
-                </h1>
-                <div className="flex items-center gap-2">
-                  {similarProducts.map((item) => (
-                    <Link
-                      key={item.product_id}
-                      to={`/product/${item.product_id}`}
-                      className="hover:scale-110 transition-transform duration-200"
+            </motion.div>
+
+            {/* Price Section */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5 }}
+              className="w-full mb-3 md:mb-6"
+            >
+              <div className="bg-gradient-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-sm border border-white/10 rounded-lg md:rounded-2xl p-4 md:p-6 shadow-xl">
+                <div className="flex justify-between items-center">
+                  <div className="flex flex-col gap-1">
+                    <p className="font-['Poppins'] font-bold text-[22px] md:text-[40px] bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
+                      ₹{parseInt(product.price)}
+                    </p>
+                    <p className="text-[8px] md:text-[11px] text-white/50 font-body">
+                      Inclusive of all taxes
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 md:gap-2">
+                    <p className="font-['Poppins'] line-through text-white/30 text-[13px] md:text-[16px]">
+                      ₹{parseInt(product.actual_price)}
+                    </p>
+                    <motion.span
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ delay: 0.7, type: "spring", bounce: 0.5 }}
+                      className="font-['Poppins'] text-[8px] md:text-[12px] bg-gradient-to-r from-orange-500 to-red-500 px-3 md:px-4 py-1.5 rounded-full font-bold shadow-lg shadow-orange-500/30"
                     >
-                      <img
-                        src={getImageUrl(item.primary_image)}
-                        alt={item.product_name}
-                        loading="lazy"
-                        className="w-[50px] h-[50px] object-cover object-center rounded-md border border-white/20 hover:border-white/60 transition-colors"
-                      />
-                    </Link>
+                      {parseInt(product.discount)}% OFF
+                    </motion.span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Similar Versions */}
+            {similarProducts.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="flex flex-col gap-2 md:gap-4 mb-6 w-full"
+              >
+                <h3 className="text-white text-[10px] md:text-[12px] tracking-wide font-body font-medium flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-purple-400" />
+                  Choose Other Versions
+                </h3>
+                <div className="flex items-center gap-1 md:gap-2 flex-wrap">
+                  {similarProducts.map((item, index) => (
+                    <motion.div
+                      key={item.product_id}
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.7 + index * 0.1, type: "spring" }}
+                      whileHover={{ scale: 1.15, rotate: 3 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Link
+                        to={`/product/${item.product_id}`}
+                        className="relative group block"
+                      >
+                        <img
+                          src={getImageUrl(item.primary_image)}
+                          alt={item.product_name}
+                          loading="lazy"
+                          className="w-[40px] h-[50px] md:w-[60px] md:h-[70px] object-cover object-center rounded-md md:rounded-2xl border md:border-2 border-white/20 group-hover:border-purple-500/70 transition-all duration-300 shadow-lg group-hover:shadow-purple-500/40"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+                      </Link>
+                    </motion.div>
                   ))}
                 </div>
-              </div>
+              </motion.div>
             )}
-            <div className="flex flex-wrap md:flex-nowrap items-center mt-4 md:mt-7 gap-1">
-              {/* Size Selection */}
-              {product.sizes && product.sizes.length > 0 && (
-                <div className="flex flex-col gap-3 mt-4 md:mt-7">
-                  <h3 className="text-white text-[14px] font-body tracking-wide">
-                    Select Size:{" "}
+
+            {/* Size Selection */}
+            {product.sizes && product.sizes.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                className="flex flex-col gap-2 md:gap-4 mb-5 md:mb-8 w-full"
+              >
+                <h3 className="text-white text-[13px] md:text-[15px] font-body tracking-wide font-medium flex items-center gap-1">
+                  Select Size:
+                  <AnimatePresence>
                     {selectedSize && (
-                      <span className="text-green-400 ml-2">
-                        ✓ {selectedSize}
-                      </span>
-                    )}
-                  </h3>
-
-                  <div className="flex flex-wrap md:flex-nowrap items-center gap-2">
-                    {product.sizes.map((size, id) => (
-                      <button
-                        key={id}
-                        onClick={() => handleSizeSelect(size)}
-                        className={`capitalize rounded-lg min-w-[60px] px-4 py-2 flex justify-center items-center font-body text-[14px] font-normal transition-all duration-200 cursor-pointer ${
-                          selectedSize === size
-                            ? "bg-green-700/20 text-green-500  border border-green-500 scale-110 shadow-lg" // ✅ Selected style
-                            : "bg-accet/20 text-white border border-accet hover:bg-[#bb5e00]/80" // ✅ Unselected style
-                        }`}
+                      <motion.span
+                        initial={{ scale: 0, rotate: -180 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        exit={{ scale: 0, rotate: 180 }}
+                        className="text-green-400 ml-2 flex text-[10px] md:text-[15px] items-center gap-2 bg-green-500/20 px-2 md:px-3 py-1 rounded-full border border-green-500/40 shadow-lg shadow-green-500/20"
                       >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
+                        <span className="text-[10px] md:text-[14px]">✓</span> {selectedSize}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </h3>
 
-                  {/* ✅ Size not selected warning */}
-                  {!selectedSize && (
-                    <p className="text-yellow-400 text-[12px] font-body flex items-center gap-2">
-                      <span>⚠️</span> Please select a size to continue
-                    </p>
-                  )}
+                <div className="flex flex-wrap items-center gap-1 md:gap-2">
+                  {product.sizes.map((size, id) => (
+                    <motion.button
+                      key={id}
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{
+                        delay: 0.8 + id * 0.1,
+                        type: "spring",
+                        bounce: 0.4,
+                      }}
+                      whileHover={{ scale: 1.1, y: -3 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleSizeSelect(size)}
+                      className={`relative capitalize rounded-lg md:rounded-xl min-w-[40px] md:min-w-[75px] px-3 py-1.5 flex justify-center items-center font-body text-[10px] md:text-[14px] font-medium transition-all duration-300 cursor-pointer overflow-hidden ${
+                        selectedSize === size
+                          ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white border-2 border-green-400 shadow-xl shadow-green-500/50 scale-105"
+                          : "bg-white/5 text-white border md:border-2 border-white/20 hover:bg-white/10 hover:border-white/40 backdrop-blur-sm shadow-lg"
+                      }`}
+                    >
+                      {selectedSize === size && (
+                        <motion.div
+                          layoutId="size-selector"
+                          className="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-600"
+                          transition={{
+                            type: "spring",
+                            bounce: 0.2,
+                            duration: 0.6,
+                          }}
+                        />
+                      )}
+                      <span className="relative z-10">{size}</span>
+                    </motion.button>
+                  ))}
                 </div>
-              )}
-            </div>
 
-            <div className="flex w-full flex-col py-8 md:mt-5 gap-3">
-              <button
+                {!selectedSize && (
+                  <motion.p
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="text-yellow-400 text-[8px] md:text-[10px] font-body flex items-center gap-3 bg-yellow-500/10 p-2 md:px-2.5 md:py-2.5 rounded-md border border-yellow-500/30 backdrop-blur-sm shadow-lg"
+                  >
+                    Please select a size to continue
+                  </motion.p>
+                )}
+              </motion.div>
+            )}
+
+            {/* Action Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9 }}
+              className="flex w-full flex-col gap-2 md:gap-4 mb-5 md:mb-8"
+            >
+              <motion.button
+                whileHover={{ scale: canAddToCart ? 1.03 : 1 }}
+                whileTap={{ scale: canAddToCart ? 0.97 : 1 }}
                 onClick={() => {
                   handleAddToCart();
                   handleCart();
                 }}
                 disabled={!canAddToCart}
-                className={`text-[16px] px-3 py-4 font-body rounded-[8px] w-full transition-all ${
+                className={`relative text-[12px] md:text-[15px] p-2 md:p-4 font-body font-bold rounded-lg md:rounded-xl w-full transition-all duration-300 overflow-hidden group ${
                   canAddToCart
-                    ? "bg-accet text-white hover:scale-[1.02] cursor-pointer"
-                    : "bg-gray-700 text-gray-500 cursor-not-allowed opacity-50"
+                    ? "bg-linear-to-r from-orange-600 to-red-600 text-white hover:shadow-2xl hover:shadow-orange-500/50 cursor-pointer border-2 border-transparent hover:border-orange-400"
+                    : "bg-gray-800/50 text-gray-500 cursor-not-allowed opacity-50 border-2 border-gray-700"
                 }`}
               >
-                {canAddToCart ? "Add to Cart" : "Select Size to Add"}
-              </button>
+                {canAddToCart && (
+                  <>
+                    <motion.div
+                      className="absolute inset-0 bg-linear-to-r from-orange-500 to-red-500"
+                      initial={{ x: "-100%" }}
+                      whileHover={{ x: "100%" }}
+                      transition={{ duration: 0.6 }}
+                    />
+                    <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </>
+                )}
+                <span className="relative z-10 flex items-center justify-center gap-3">
+                  <ShoppingCart className="w-4 h-4" />
+                  {canAddToCart ? "Add to Cart" : "Select Size to Add"}
+                </span>
+              </motion.button>
 
               {/* Virtual Try-On Button */}
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => setShowTryOn(true)}
-                className="relative text-[16px] text-white px-3 py-4 font-body rounded-[8px] w-full overflow-hidden group"
+                className="relative text-[12px] md:text-[15px] text-white p-2 md:p-4 font-body font-bold rounded-lg md:rounded-2xl w-full overflow-hidden group border-2 border-purple-500/40 hover:border-purple-400 shadow-xl hover:shadow-purple-500/50 transition-all duration-300"
               >
-                {/* Animated gradient background */}
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 py-4 via-pink-600 to-indigo-600 bg-[length:200%_100%] animate-gradient"></div>
-                <span className="relative flex items-center justify-center gap-2">
-                  <span className="text-lg">✨</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 bg-[length:200%_100%] animate-gradient" />
+                <motion.div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <span className="relative z-10 flex items-center justify-center gap-3">
+                  <Sparkles className="w-4 h-4" />
                   Virtual Try-On
-                  <span className="text-lg">👗</span>
+                  <span className="text-[14px]">👗</span>
                 </span>
               </motion.button>
-            </div>
+            </motion.div>
 
-            <div className="w-full flex flex-col items-center px-2">
-              <div className="w-full border-b border-b-white/10 pb-1 mt-5">
+            {/* Accordion Sections */}
+            <div className="w-full flex flex-col gap-2">
+              {/* Product Description */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1 }}
+                className="w-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden hover:bg-white/10 transition-all duration-300"
+              >
                 <button
                   type="button"
                   onClick={() => toggle(0)}
-                  className="w-full flex justify-between items-center font-body text-[16px] text-white cursor-pointer select-none"
+                  className="w-full flex justify-between items-center font-body text-[12px] md:text-[17px] text-white cursor-pointer select-none p-3 md:p-5"
                   aria-expanded={openIndex === 0}
                 >
-                  Product Description
-                  <svg
-                    className={`h-6 w-6 transition-transform duration-300 ${
-                      openIndex === 0 ? "rotate-180" : ""
-                    }`}
+                  <span className="flex items-center gap-3 font-semibold">
+                    <span className="w-2 h-2 bg-purple-400 rounded-full" />
+                    Product Description
+                  </span>
+                  <motion.svg
+                    animate={{ rotate: openIndex === 0 ? 180 : 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="h-6 w-6"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                   >
@@ -697,45 +794,58 @@ const ProductDetail = () => {
                       d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
                       clipRule="evenodd"
                     />
-                  </svg>
+                  </motion.svg>
                 </button>
-                <div
-                  className={`mt-3 overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
-                    openIndex === 0
-                      ? "opacity-100 max-h-96"
-                      : "max-h-0 opacity-0"
-                  }`}
-                >
-                  <div className="mt-2 pb-5">
-                    <ul className="space-y-5 leading-normal text-[12px] font-body text-white">
-                      {/* <li className="pl-2">Dhoti Border Design May Vary</li> */}
-                      <li className="pl-2">{product.description}</li>
-                      {product?.washCare?.map((item, id) => (
-                        <li key={id} className="pl-2">
-                          {item}
-                        </li>
-                      ))}
+                <AnimatePresence>
+                  {openIndex === 0 && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-5 pb-5">
+                        <ul className="space-y-4 leading-relaxed text-[10px] md:text-[14px] font-body text-white/80">
+                          <li className="pl-4 border-l-2 border-purple-500/50">
+                            {product.description}
+                          </li>
+                          {product?.washCare?.map((item, id) => (
+                            <li
+                              key={id}
+                              className="pl-4 border-l-2 border-purple-500/30"
+                            >
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
 
-                      {/* <li className="pl-2">Wash separately.</li>
-                      <li className="pl-2">Use white Colour detergents.</li>
-                      <li className="pl-2">Gentle Wash.</li>
-                      <li className="pl-2">Don't use fabric bluing agents.</li> */}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-              <div className="w-full border-b border-b-white/10 pb-1 mt-5">
+              {/* Item Details */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.1 }}
+                className="w-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden hover:bg-white/10 transition-all duration-300"
+              >
                 <button
                   type="button"
                   onClick={() => toggle(1)}
-                  className="w-full flex justify-between items-center font-body text-[16px] text-white cursor-pointer select-none"
+                  className="w-full flex justify-between items-center font-body text-[12px] md:text-[17px] text-white cursor-pointer select-none p-3 md:p-5"
                   aria-expanded={openIndex === 1}
                 >
-                  Item Details
-                  <svg
-                    className={`h-6 w-6 transition-transform duration-300 ${
-                      openIndex === 1 ? "rotate-180" : ""
-                    }`}
+                  <span className="flex items-center gap-3 font-semibold">
+                    <span className="w-2 h-2 bg-pink-400 rounded-full" />
+                    Item Details
+                  </span>
+                  <motion.svg
+                    animate={{ rotate: openIndex === 1 ? 180 : 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="h-6 w-6"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                   >
@@ -744,34 +854,50 @@ const ProductDetail = () => {
                       d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
                       clipRule="evenodd"
                     />
-                  </svg>
+                  </motion.svg>
                 </button>
-                <div
-                  className={`mt-3 overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
-                    openIndex === 1
-                      ? "opacity-100 max-h-96"
-                      : "max-h-0 opacity-0"
-                  }`}
-                >
-                  <div className="mt-2 pb-5">
-                    <ul className="space-y-5 leading-normal text-[12px] font-body text-white">
-                      <li className="pl-2">{product?.item_description}</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-              <div className="w-full border-b border-b-white/10 pb-1 mt-5 ">
+                <AnimatePresence>
+                  {openIndex === 1 && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-5 pb-5">
+                        <ul className="space-y-4 leading-relaxed text-[10px] md:text-[14px] font-body text-white/80">
+                          <li className="pl-4 border-l-2 border-pink-500/50">
+                            {product?.item_description}
+                          </li>
+                        </ul>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+
+              {/* Delivery and Return */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.2 }}
+                className="w-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden hover:bg-white/10 transition-all duration-300"
+              >
                 <button
                   type="button"
                   onClick={() => toggle(2)}
-                  className="w-full flex justify-between items-center font-body text-[16px] text-white cursor-pointer select-none"
+                  className="w-full flex justify-between items-center font-body text-[12px] md:text-[17px] text-white cursor-pointer select-none p-3 md:p-5"
                   aria-expanded={openIndex === 2}
                 >
-                  Delivery and Return
-                  <svg
-                    className={`h-6 w-6 transition-transform duration-300 ${
-                      openIndex === 2 ? "rotate-180" : ""
-                    }`}
+                  <span className="flex items-center gap-3 font-semibold">
+                    <span className="w-2 h-2 bg-indigo-400 rounded-full" />
+                    Delivery and Return
+                  </span>
+                  <motion.svg
+                    animate={{ rotate: openIndex === 2 ? 180 : 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="h-6 w-6"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                   >
@@ -780,517 +906,450 @@ const ProductDetail = () => {
                       d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"
                       clipRule="evenodd"
                     />
-                  </svg>
+                  </motion.svg>
                 </button>
-                <div
-                  className={`pl-4 mt-3 overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
-                    openIndex === 2
-                      ? "opacity-100 max-h-[500px]"
-                      : "max-h-0 opacity-0"
-                  }`}
-                >
-                  <div className="mt-2">
-                    <h3 className="font-body text-white text-[12px]">
-                      Delivery:
-                    </h3>
+                <AnimatePresence>
+                  {openIndex === 2 && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-5 pb-5 space-y-6">
+                        {/* Delivery Section */}
+                        <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 p-5 rounded-xl border border-blue-500/20">
+                          <h3 className="font-body text-white text-[15px] md:text-[16px] flex items-center gap-2 mb-3 font-semibold">
+                            <Truck className="w-5 h-5 text-blue-400" />
+                            Delivery:
+                          </h3>
+                          <ul className="list-disc list-inside space-y-2.5 text-[10px] md:text-[13px] leading-relaxed font-body text-white/70">
+                            <li className="pl-2">
+                              Delivery is made by express courier, within 2-5
+                              working days from the confirmation of the order.
+                            </li>
+                            <li className="pl-2">
+                              The delivery cost is 100 INR for orders under 1000
+                              INR and free for orders over 1000 INR.
+                            </li>
+                            <li className="pl-2">
+                              You can choose to have your order delivered to an
+                              address specified by you or to a pick-up point.
+                            </li>
+                            <li className="pl-2">
+                              You will receive an email with the delivery
+                              confirmation and a tracking code for the parcel.
+                            </li>
+                          </ul>
+                        </div>
 
-                    <ul className="list-disc list-inside space-y-1 text-[10px] leading-normal font-body text-gray-100">
-                      <li className="pl-2">
-                        Delivery is made by express courier, within 2-5 working
-                        days from the confirmation of the order.
-                      </li>
-                      <li className="pl-2">
-                        The delivery cost is 100 INR for orders under 1000 INR
-                        and free for orders over 1000 INR.
-                      </li>
-                      <li className="pl-2">
-                        You can choose to have your order delivered to an
-                        address specified by you or to a pick-up point.
-                      </li>
-                      <li className="pl-2">
-                        You will receive an email with the delivery confirmation
-                        and a tracking code for the parcel.
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="mt-2">
-                    <h3 className="font-body text-white text-[12px]">
-                      Return:
-                    </h3>
+                        {/* Return Section */}
+                        <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 p-5 rounded-xl border border-orange-500/20">
+                          <h3 className="font-body text-white text-[15px] md:text-[16px] flex items-center gap-2 mb-3 font-semibold">
+                            <RefreshCw className="w-5 h-5 text-orange-400" />
+                            Return:
+                          </h3>
+                          <ul className="list-disc list-inside space-y-2.5 text-[10px] md:text-[13px] leading-relaxed font-body text-white/70">
+                            <li className="pl-2">
+                              You can return the products within 14 days of
+                              receipt, without giving any reason.
+                            </li>
+                            <li className="pl-2">
+                              The cost of returning the products is borne by the
+                              customer.
+                            </li>
+                            <li className="pl-2">
+                              Products can be returned by express courier or to
+                              a pick-up point.
+                            </li>
+                            <li className="pl-2">
+                              Products must be returned in their original
+                              packaging, with labels intact and with the
+                              documents received in the parcel.
+                            </li>
+                            <li className="pl-2">
+                              The refund of the value of the products will be
+                              made within 14 days of receipt of the return.
+                            </li>
+                          </ul>
+                        </div>
 
-                    <ul className="list-disc list-inside space-y-1 text-[10px] leading-normal font-body text-gray-100">
-                      <li className="pl-2">
-                        You can return the products within 14 days of receipt,
-                        without giving any reason.
-                      </li>
-                      <li className="pl-2">
-                        The cost of returning the products is borne by the
-                        customer.
-                      </li>
-                      <li className="pl-2">
-                        Products can be returned by express courier or to a
-                        pick-up point.
-                      </li>
-                      <li className="pl-2">
-                        Products must be returned in their original packaging,
-                        with labels intact and with the documents received in
-                        the parcel.
-                      </li>
-                      <li className="pl-2">
-                        The refund of the value of the products will be made
-                        within 14 days of receipt of the return.
-                      </li>
-                    </ul>
-                  </div>
-                  <div className="mt-2">
-                    <h3 className="font-body text-white text-[12px]">
-                      Exceptions to return:
-                    </h3>
-
-                    <ul className="list-disc list-inside space-y-1 text-[10px] leading-normal font-body text-gray-100">
-                      <li className="pl-2">
-                        Products that have been worn, damaged or modified cannot
-                        be returned.
-                      </li>
-                      <li className="pl-2">
-                        Products that have been made to order or personalized
-                        cannot be returned.
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
+                        {/* Exceptions */}
+                        <div className="bg-gradient-to-r from-red-500/10 to-pink-500/10 p-5 rounded-xl border border-red-500/20">
+                          <h3 className="font-body text-white text-[15px] md:text-[16px] flex items-center gap-2 mb-3 font-semibold">
+                            <X className="w-5 h-5 text-red-400" />
+                            Exceptions to return:
+                          </h3>
+                          <ul className="list-disc list-inside space-y-2.5 text-[10px] md:text-[13px] leading-relaxed font-body text-white/70">
+                            <li className="pl-2">
+                              Products that have been worn, damaged or modified
+                              cannot be returned.
+                            </li>
+                            <li className="pl-2">
+                              Products that have been made to order or
+                              personalized cannot be returned.
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
         </div>
 
-        {/* review */}
-        <div className="w-[90%] mx-auto lg:px-10 py-7 md:mt-5">
-          <div className="flex justify-start items-center">
-            <h1 className="text-white font-heading text-[28px] md:text-[46px] font-[950] capitalize">
-              Reviews ({productReviews.length})
-            </h1>
+        {/* Reviews Section - Enhanced */}
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="w-[90%] md:w-[80%] lg:w-[90%] mx-auto lg:px-10 py-5 md:py-12 lg:mt-6 px-3"
+        >
+          <div className="flex justify-between items-center mb-4 md:mb-6">
+            <div>
+              <h2 className="text-white font-heading text-[26px] md:text-[52px] font-[950] capitalize bg-linear-to-r from-white to-gray-400 bg-clip-text">
+                Reviews
+              </h2>
+              <p className="text-white/50 text-[12px] md:text-[15px] font-body">
+                {productReviews.length} verified customer reviews
+              </p>
+            </div>
+            {/* <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="bg-linear-to-r from-purple-600/20 to-pink-600/20 px-3 py-1.5 rounded-lg border border-white/20 backdrop-blur-sm shadow-lg"
+            >
+              <p className="text-white font-body text-[14px] md:text-[20px] font-bold flex items-center gap-1">
+                <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                {productReviews.length}
+              </p>
+            </motion.div> */}
           </div>
 
           {/* Display reviews */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 items-start md:space-y-2">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-6">
             {reviewsLoading ? (
-              <div className="loading">Loading reviews...</div>
+              <div className="col-span-2 flex justify-center items-center py-10">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="w-14 h-14 border-4 border-purple-500 border-t-transparent rounded-full"
+                />
+              </div>
             ) : productReviews.length > 0 ? (
-              productReviews.map((review) => (
-                <div
+              displayedReviews.map((review, index) => (
+                <motion.div
                   key={review.id}
-                  className="flex items-start py-3 gap-4 md:gap-4 w-full"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ scale: 1.02, y: -5 }}
+                  className="bg-linear-to-br from-white/5 to-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-3 md:p-6 hover:border-purple-500/40 transition-all duration-300 shadow-xl hover:shadow-purple-500/20"
                 >
-                  <div className="min-w-[80px] md:min-w-[150px] lg:min-w-[200px] flex flex-col justify-start items-start">
-                    <p className="text-[12px] md:text-[14px] lg:text-[20px] text-white font-spectral uppercase">
-                      {review.name}
-                    </p>
-                    <p className="text-[10px] md:text-[14px] font-body flex justify-center items-center gap-2 text-white">
-                      Verified Buyer{" "}
-                      <MdVerified className="text-white text-[16px]" />
-                    </p>
-                  </div>
-                  <div className="w-full flex flex-col justify-start items-start gap-1 md:gap-2">
-                    <p className="text-[18px] md:text-[22px] text-white font-body uppercase">
-                      {"★".repeat(review.rating)}
-                      {"☆".repeat(5 - review.rating)}
-                    </p>
-                    <p className="text-[12px] md:text-[16px] font-body flex capitalize justify-center items-center gap-2 text-white">
-                      "{review.review}"
-                    </p>
-                    {review.quality && (
-                      <div className="flex justify-start items-center gap-3 md:gap-4">
-                        <p
-                          className={`text-white text-[8px] md:text-[12px] font-['Poppins'] border-b-2 px-2 md:px-4 py-1 ${
-                            review.quality === "Poor"
-                              ? "border-b-white"
-                              : "border-b-white/20"
-                          }`}
-                        >
-                          Poor
+                  <div className="flex items-start gap-2 md:gap-3">
+                    {/* Avatar */}
+                    <div className="min-w-[40px] md:min-w-[55px]">
+                      <div className="w-[35px] h-[35px] md:w-[45px] md:h-[45px] rounded-full bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-[14px] md:text-[18px] shadow-xl">
+                        {review.name.charAt(0).toUpperCase()}
+                      </div>
+                    </div>
+
+                    {/* Review Content */}
+                    <div className="flex-1">
+                      <div className="md:mb-2">
+                        <p className="text-[14px] md:text-[17px] text-white font-body font-[950] uppercase">
+                          {review.name}
                         </p>
-                        <p
-                          className={`text-white text-[8px] md:text-[12px] font-['Poppins'] border-b-2 px-2 md:px-4 py-1 ${
-                            review.quality === "Good"
-                              ? "border-b-white"
-                              : "border-b-white/20"
-                          }`}
-                        >
-                          Good
-                        </p>
-                        <p
-                          className={`text-white text-[8px] md:text-[12px] font-['Poppins'] border-b-2 px-2 md:px-4 py-1 ${
-                            review.quality === "Awesome"
-                              ? "border-b-white"
-                              : "border-b-white/20"
-                          }`}
-                        >
-                          Awesome
+                        <p className="text-[8px] md:text-[12px] font-body flex items-center gap-1 text-white/60 md:mt-1">
+                          Verified Buyer
+                          <MdVerified className="text-green-400 text-[10px] md:text-[13px]" />
                         </p>
                       </div>
-                    )}
+
+                      {/* Star Rating */}
+                      <div className="flex items-center gap-1 my-2 md:my-3">
+                        {[...Array(5)].map((_, i) => (
+                          <motion.span
+                            key={i}
+                            initial={{ scale: 0, rotate: -180 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            transition={{ delay: i * 0.1 }}
+                          >
+                            <Star
+                              className={`md:w-4 md:h-4 w-3 h-3 ${
+                                i < review.rating
+                                  ? "text-yellow-400 fill-yellow-400"
+                                  : "text-gray-600"
+                              }`}
+                            />
+                          </motion.span>
+                        ))}
+                      </div>
+
+                      {/* Review Text */}
+                      <p className="text-[12px] md:text-[16px] font-body text-white/80 leading-relaxed mb-4 italic">
+                        "{review.review}"
+                      </p>
+
+                      {/* Quality Rating */}
+                      {review.quality && (
+                        <div className="flex items-center gap-1.5 md:gap-2.5">
+                          {["Poor", "Good", "Awesome"].map((quality) => (
+                            <span
+                              key={quality}
+                              className={`text-[8px] md:text-[12px] font-['Poppins'] px-3 py-1.5 rounded-full transition-all duration-300 ${
+                                review.quality === quality
+                                  ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white border-2 border-white/40 shadow-lg font-semibold"
+                                  : "bg-white/5 text-white/40 border border-white/10"
+                              }`}
+                            >
+                              {quality}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
+                </motion.div>
               ))
             ) : (
-              <p className="text-white/60 font-body text-[14px] py-4">
-                No reviews yet. Be the first to review this product!
-              </p>
+              <div className="col-span-2 text-center py-10">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring" }}
+                  className="inline-block bg-gradient-to-r from-purple-600/20 to-pink-600/20 px-10 py-8 rounded-3xl border border-white/10 backdrop-blur-sm shadow-xl"
+                >
+                  <Star className="w-20 h-20 text-white/20 mx-auto mb-4" />
+                  <p className="text-white/50 font-body text-[16px]">
+                    No reviews yet. Be the first to review this product!
+                  </p>
+                </motion.div>
+              </div>
             )}
           </div>
 
           {/* Load More Button */}
-          <div className="flex justify-center items-center">
-            {hasMoreReviews && (
-              <button
+          {hasMoreReviews && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex justify-center items-center mt-8"
+            >
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={handleLoadMoreReviews}
-                className="flex justify-center items-center px-3 py-2  bg-white hover:bg-white/20 hover:text-white transition-colors cursor-pointer text-[10px] md:text-[14px] text-black font-body font-medium mt-3 rounded-[50px]"
+                className="flex items-center gap-3 px-8 py-4 bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white transition-all cursor-pointer text-[14px] md:text-[16px] font-body font-semibold rounded-full border-2 border-white/20 shadow-xl hover:shadow-purple-500/50"
               >
-                ...({productReviews.length - reviewsToShow}) More Reviews
-              </button>
-            )}
-          </div>
+                <Sparkles className="w-4 h-4" />
+                Show {productReviews.length - reviewsToShow} More Reviews
+              </motion.button>
+            </motion.div>
+          )}
 
+          {/* Write Review Button */}
           <Link to={`/product/${id}/product-review`}>
-            <button className="w-full py-2 bg-accet cursor-pointer text-[14px] md:text-[18px] text-white font-body mt-3 md:mt-8 rounded-[5px]">
-              Write a Review for this Product
-            </button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full py-3 bg-linear-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 cursor-pointer text-[10px] md:text-[15px] text-white font-body font-bold mt-4 md:mt-8 rounded-lg md:rounded-2xl border-2 border-transparent hover:border-orange-400 shadow-xl hover:shadow-orange-500/50 transition-all duration-300"
+            >
+              Write a Review for this Product ✍️
+            </motion.button>
           </Link>
-        </div>
+        </motion.div>
 
-        {/* The Wardrobe Hub */}
-        <div
-          className={`w-full mx-auto md:mt-7 py-6 ${
-            product.gender == "men" ? "hidden" : "block"
+        {/* The Wardrobe Hub - Enhanced */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className={`w-full mx-auto py-4 lg:py-12 ${
+            product.gender === "men" ? "hidden" : "block"
           }`}
         >
-          <div className="flex flex-col justify-center items-center py-3 md:mb-10">
-            <p className="text-[12px] text-white capitalize tracking-wide leading-none font-body">
+          <div className="flex flex-col justify-center items-center py-7 md:py-8 md:mb-4">
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-[10px] md:text-[13px] text-white/60 capitalize tracking-[0.3em] leading-none font-body"
+            >
               We give you more
-            </p>
-            <h1 className="text-[38px] lg:text-[64px] text-white capitalize tracking-wide leading-8 font-[950] font-heading">
+            </motion.p>
+            <motion.h2
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="text-[28px] md:text-[44px] lg:text-[56px] text-center text-white capitalize tracking-wide leading-tight font-[950] font-heading bg-gradient-to-r from-white via-purple-100 to-pink-100 bg-clip-text"
+            >
               The Wardrobe Hub
-            </h1>
+            </motion.h2>
           </div>
 
-          <div className="overflow-hidden relative grid grid-cols-1 py-2 bg-black">
-            <div className="flex justify-center items-center gap-4 productCard-wrapper">
-              {images.map((item, index) => {
-                return (
-                  <div
-                    key={index}
-                    className={`sareeProduct ${item.saree} flex flex-col justify-center items-center`}
-                  >
-                    <img
-                      src={
-                        product.category == "Chudidhars" ? item.chudi : item.img
-                      }
-                      alt={item.saree}
-                      loading="lazy"
-                      className="object-cover w-[150px] h-[250px] md:w-[200px] md:h-[300px] object-center rounded-3xl"
-                    />
-                  </div>
-                );
-              })}
+          <div className="overflow-hidden relative rounded-3xl">
+            <div className="flex justify-center items-center gap-5 productCard-wrapper">
+              {images.map((item, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ scale: 1.08, rotate: 2 }}
+                  className={`sareeProduct ${item.saree} relative group `}
+                >
+                  <img
+                    src={
+                      product.category === "Chudidhars" ? item.chudi : item.img
+                    }
+                    alt={item.saree}
+                    loading="lazy"
+                    className="object-cover w-[170px] min-h-[230px] max-h-[300px] md:w-[230px] md:min-h-[300px] md:max-h-[350px] object-center rounded-3xl"
+                  />
+                </motion.div>
+              ))}
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Similar products */}
-        <div className="w-full mx-auto mt-7 py-6">
-          <div className="flex flex-col justify-center items-center md:mb-6">
-            <p className="text-[12px] text-white uppercase tracking-wide leading-none font-body">
+        {/* Similar Products - Enhanced */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="w-full mx-auto py-5"
+        >
+          <div className="flex flex-col justify-center items-center mb-3">
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-[8px] md:text-[13px] text-white/60 uppercase tracking-[0.3em] leading-none font-body"
+            >
               RECOMMENDATIONS FOR YOU
-            </p>
-            <h1 className="text-[38px] lg:text-[64px] text-white capitalize tracking-wide leading-7 md:leading-12 font-[950] font-heading">
+            </motion.p>
+            <motion.h2
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="text-[28px] md:text-[44px] lg:text-[56px] text-center text-white capitalize tracking-wide leading-tight font-[950] font-heading bg-gradient-to-r from-white via-blue-100 to-cyan-100 bg-clip-text"
+            >
               Similar products
-            </h1>
+            </motion.h2>
           </div>
 
-          {/* Pass similarProducts to ProductSwiper */}
           {similarProducts.length > 0 ? (
             <ProductSwiper products={similarProducts} />
           ) : (
-            <div className="text-center text-white/50 py-10 font-body">
-              No similar products found
-            </div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-10"
+            >
+              <div className="inline-block bg-white/5 rounded-3xl border border-white/10 backdrop-blur-sm px-10 py-8 shadow-xl">
+                <Sparkles className="md:w-16 md:h-16 w-10 h-10 mx-auto mb-4 text-white/20" />
+                <p className="text-white/40 font-body text-[10px] md:text-[16px]">
+                  No similar products found
+                </p>
+              </div>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
 
-        {/* Curated Styles for Everyone */}
-        <div className="w-full mx-auto lg:mt-7 py-6">
-          <div className="flex flex-col gap-2 justify-center items-center">
-            <h1 className="text-[35px] lg:text-[64px] text-center text-white capitalize tracking-wide leading-none font-[950] font-heading">
+        {/* Curated Styles - Enhanced */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          className="w-full mx-auto py-6"
+        >
+          <div className="flex flex-col gap-4 justify-center items-center md:mb-6">
+            <motion.h2
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="text-[24px] md:text-[42px] lg:text-[56px] text-center text-white capitalize tracking-wide leading-tight font-[950] font-heading bg-linear-to-r from-white via-orange-100 to-red-100 bg-clip-text"
+            >
               Curated Styles for Everyone
-            </h1>
+            </motion.h2>
           </div>
           <Trending />
-        </div>
+        </motion.div>
 
-        {/* Virtual Try-On Modal - Complete Frontend Only */}
-        {showTryOn && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="fixed inset-0 bg-black/95 z-50 flex font-body items-center justify-center p-4"
-            onClick={closeTryOnModal}
-          >
+        {/* Virtual Try-On Modal - Enhanced */}
+        <AnimatePresence>
+          {showTryOn && (
             <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              transition={{ type: "spring", damping: 25 }}
-              className="bg-linear-to-b from-gray-900 to-black rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-white/10"
-              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/95 backdrop-blur-xl z-50 flex font-body items-center justify-center p-4"
+              onClick={closeTryOnModal}
             >
-              {/* Header */}
-              <div className="sticky top-0 bg-gray-900/95 backdrop-blur p-5 border-b border-white/10 z-50">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h2 className="text-[18px] md:text-2xl font-heading font-bold text-white">
-                      Virtual Try-On
-                    </h2>
-                    <p className="text-white/50 text-[10px] md:text-sm font-body">
-                      See how it looks on you!
-                    </p>
-                  </div>
-                  <motion.button
-                    whileHover={{ rotate: 90 }}
-                    onClick={closeTryOnModal}
-                    className="text-white/60 hover:text-white text-2xl"
-                  >
-                    <X />
-                  </motion.button>
-                </div>
-              </div>
-
-              <div
-                style={{ width: "100%", height: "400px", position: "relative" }}
-                className="w-[90%] mx-auto h-[50vh] text-white text-[30px] font-body flex justify-center items-center"
+              <motion.div
+                initial={{ scale: 0.9, y: 50, opacity: 0 }}
+                animate={{ scale: 1, y: 0, opacity: 1 }}
+                exit={{ scale: 0.9, y: 50, opacity: 0 }}
+                transition={{ type: "spring", damping: 25 }}
+                className="bg-gradient-to-b from-gray-900 via-black to-gray-900 rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto border-2 border-white/20 shadow-2xl shadow-purple-500/30"
+                onClick={(e) => e.stopPropagation()}
               >
-                <DarkVeil />
-                <p className="absolute">Coming Soon</p>
-              </div>
+                {/* Header */}
+                <div className="sticky top-0 bg-gradient-to-r from-purple-900/95 to-pink-900/95 backdrop-blur-xl p-6 border-b border-white/10 z-50 rounded-t-3xl">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h2 className="text-[22px] md:text-2xl font-heading font-bold text-white flex items-center gap-3">
+                        <Sparkles className="w-7 h-7 text-purple-400" />
+                        Virtual Try-On
+                      </h2>
+                      <p className="text-white/50 text-[12px] md:text-sm font-body mt-1">
+                        See how it looks on you!
+                      </p>
+                    </div>
+                    <motion.button
+                      whileHover={{ rotate: 90, scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={closeTryOnModal}
+                      className="text-white/60 hover:text-white text-2xl bg-white/10 p-2 rounded-full hover:bg-white/20 transition-all"
+                    >
+                      <X />
+                    </motion.button>
+                  </div>
+                </div>
 
-              {/* place here the below tryon content code */}
+                {/* Content */}
+                <div className="relative w-full h-[450px] flex justify-center items-center">
+                  <DarkVeil />
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", delay: 0.3 }}
+                    className="absolute z-10 text-center px-6"
+                  >
+                    <Sparkles className="w-24 h-24 text-purple-400 mx-auto mb-6 animate-pulse" />
+                    <p className="text-white text-[32px] md:text-[40px] font-heading font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent mb-3">
+                      Coming Soon
+                    </p>
+                    <p className="text-white/50 text-[15px] font-body max-w-md mx-auto">
+                      Revolutionary AI-powered virtual try-on experience
+                    </p>
+                  </motion.div>
+                </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
+          )}
+        </AnimatePresence>
       </div>
     </>
   );
 };
 
 export default ProductDetail;
-
-// tryon code place there
-{
-  /* Content */
-}
-// <div className="p-5">
-//   {!tryOnResult ? (
-//     <>
-//       {/* Product Preview */}
-//       <motion.div
-//         initial={{ x: -20, opacity: 0 }}
-//         animate={{ x: 0, opacity: 1 }}
-//         className="flex items-center gap-3 p-2 md:p-3 bg-linear-to-r from-purple-900/20 to-pink-900/20 rounded-2xl mb-5"
-//       >
-//         <img
-//           src={product.image_url}
-//           alt={product.product_name}
-//           loading="lazy"
-//           className="md:w-20 md:h-20 w-16 h-16 object-cover rounded-xl"
-//         />
-//         <div className="flex-1">
-//           <p className="text-white font-medium text-sm truncate">
-//             {product.product_name}
-//           </p>
-//           <div className="flex items-center gap-2 mt-1">
-//             <p className="text-white font-bold">₹{product.price}</p>
-//             <p className="text-accet text-xs line-through">
-//               ₹{product.actualPrice}
-//             </p>
-//           </div>
-//         </div>
-//       </motion.div>
-
-//       {/* Upload Section */}
-//       {!userPhoto ? (
-//         <motion.div
-//           initial={{ y: 20, opacity: 0 }}
-//           animate={{ y: 0, opacity: 1 }}
-//           transition={{ delay: 0.1 }}
-//         >
-//           {/* Upload Button */}
-//           <label className="block cursor-pointer">
-//             <motion.div
-//               whileHover={{ scale: 1.02 }}
-//               className="border-2 border-dashed border-purple-500/30 hover:border-purple-500/60 rounded-2xl p-10 text-center transition-all bg-linear-to-b from-purple-900/10 to-transparent"
-//             >
-//               <div className="text-5xl mb-3">📸</div>
-//               <p className="text-white text-[13px] md:text-[16px] font-medium font-body">
-//                 Upload Your Photo
-//               </p>
-//               <p className="text-white/40 text-[8px] md:text-sm mt-1">
-//                 Full body, facing front • Max 5MB
-//               </p>
-//               <input
-//                 type="file"
-//                 className="hidden"
-//                 accept="image/*"
-//                 onChange={handlePhotoUpload}
-//               />
-//             </motion.div>
-//           </label>
-//         </motion.div>
-//       ) : (
-//         <motion.div
-//           initial={{ opacity: 0 }}
-//           animate={{ opacity: 1 }}
-//           className="space-y-4"
-//         >
-//           {/* Selected Photo */}
-//           <div className="relative rounded-2xl overflow-hidden z-10">
-//             <img
-//               src={userPhoto}
-//               alt="Selected"
-//               loading="lazy"
-//               className="w-full h-full object-cover"
-//             />
-//             <motion.button
-//               whileHover={{ scale: 1.1 }}
-//               onClick={() => resetTryOn()}
-//               className="absolute top-3 right-3 bg-red-500 text-white p-2 rounded-full"
-//             >
-//               <X />
-//             </motion.button>
-//           </div>
-
-//           {/* Process Button */}
-//           <motion.button
-//             whileHover={{ scale: isProcessing ? 1 : 1.02 }}
-//             whileTap={{ scale: isProcessing ? 1 : 0.98 }}
-//             onClick={startVirtualTryOn}
-//             disabled={isProcessing}
-//             className={`w-full py-3 md:py-4 rounded-2xl font-medium transition-all ${
-//               isProcessing
-//                 ? "bg-gray-800 cursor-not-allowed"
-//                 : "bg-linear-to-r from-purple-600 to-pink-600 hover:shadow-xl hover:shadow-purple-500/25"
-//             } text-white`}
-//           >
-//             {isProcessing ? (
-//               <div className="space-y-3">
-//                 <div className="flex items-center justify-center gap-2">
-//                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-//                   <span>Processing... {progress}%</span>
-//                 </div>
-//                 <div className="w-full bg-gray-700 rounded-full h-1.5 overflow-hidden">
-//                   <motion.div
-//                     className="h-full bg-linear-to-r from-purple-500 to-pink-500"
-//                     animate={{ width: `${progress}%` }}
-//                     transition={{ duration: 0.3 }}
-//                   />
-//                 </div>
-//               </div>
-//             ) : (
-//               <span className="flex items-center text-[12px] md:text-[16px] justify-center gap-2">
-//                 <span>Generate Try-On</span>
-//                 <span>🪄</span>
-//               </span>
-//             )}
-//           </motion.button>
-
-//           {/* Info */}
-//           <p className="text-white/40 text-[10px] md:text-xs text-center">
-//             AI processing takes 05-30 seconds
-//           </p>
-//         </motion.div>
-//       )}
-//     </>
-//   ) : (
-//     /* Result Section */
-//     <motion.div
-//       initial={{ opacity: 0, scale: 0.95 }}
-//       animate={{ opacity: 1, scale: 1 }}
-//       className="space-y-3 md:space-y-4"
-//     >
-//       {/* Success Message */}
-//       <div className="text-center py-3">
-//         <motion.div
-//           initial={{ scale: 0 }}
-//           animate={{ scale: 1 }}
-//           transition={{ type: "spring", delay: 0.2 }}
-//           className="text-3xl md:text-5xl mb-2"
-//         >
-//           🎉
-//         </motion.div>
-//         <h3 className="text-white text-[17px] md:text-xl font-heading font-bold">
-//           Looking Fantastic!
-//         </h3>
-//         <p className="text-white/60 text-[10px] md:text-sm mt-1">
-//           Here's your virtual try-on result
-//         </p>
-//       </div>
-
-//       {/* Result Image */}
-//       <div className="relative rounded-2xl overflow-hidden">
-//         <img
-//           src={tryOnResult}
-//           loading="lazy"
-//           alt="Try-on result"
-//           className="w-full"
-//         />
-//         <div className="absolute top-3 left-3 bg-black/60 backdrop-blur px-3 py-1.5 rounded-full">
-//           <p className="text-white text-[10px] md:text-xs font-medium flex items-center gap-1">
-//             <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-//             AI Generated
-//           </p>
-//         </div>
-//       </div>
-
-//       {/* Action Buttons */}
-//       <div className="grid grid-cols-2 gap-3">
-//         <motion.button
-//           whileHover={{ scale: 1.02 }}
-//           whileTap={{ scale: 0.98 }}
-//           onClick={downloadImage}
-//           className="py-2 md:py-3 bg-white text-black rounded-xl text-[12px] md:text-[16px] font-medium"
-//         >
-//           Download 📥
-//         </motion.button>
-
-//         <motion.button
-//           whileHover={{ scale: 1.02 }}
-//           whileTap={{ scale: 0.98 }}
-//           onClick={shareResult}
-//           className="py-2 md:py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white text-[12px] md:text-[16px] rounded-xl font-medium"
-//         >
-//           Share 🔗
-//         </motion.button>
-//       </div>
-
-//       {/* Try Another */}
-//       <motion.button
-//         whileHover={{ scale: 1.02 }}
-//         onClick={resetTryOn}
-//         className="w-full py-2 md:py-3 border border-white/20 text-[12px] md:text-[16px] text-white rounded-xl font-medium hover:bg-white/5 transition-colors"
-//       >
-//         Try Another Photo 🔄
-//       </motion.button>
-
-//       {/* Add to Cart from Result */}
-//       <motion.button
-//         whileHover={{ scale: 1.02 }}
-//         onClick={() => {
-//           addToCart(product);
-//           closeTryOnModal();
-//           showToast("Added to cart! 🛒", "success");
-//         }}
-//         className="w-full py-2 md:py-3 bg-accet text-[12px] md:text-[16px] text-white rounded-xl font-medium"
-//       >
-//         Add to Cart 🛒
-//       </motion.button>
-//     </motion.div>
-//   )}
-// </div>

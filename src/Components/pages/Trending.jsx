@@ -106,27 +106,18 @@ const Trending = () => {
 
   return (
     <>
-      <div className="w-full mx-auto py-3 md:py-4 md:px-6 lg:px-8 bg-black">
+      <div className="w-full mx-auto py-1 md:py-4 md:px-6 lg:px-8 bg-black">
         <div
           className={`w-[90%] mx-auto flex flex-col justify-center items-center ${
             location.pathname.startsWith("/product/") ? "hidden" : "block"
-          } text-white md:mb-8 relative py-3`}
+          } text-white md:mb-4 lg:mb-8 relative`}
         >
-          <h1 className="text-[40px] md:text-[65px] py-3 font-heading font-[950] capitalized leading-14 z-20">
+          <h1 className="text-[30px] md:text-[45px] lg:text-[65px] font-heading font-[950] capitalized leading-14 z-20">
             Trending Now
           </h1>
-          <video
-            src={assets.trending}
-            loop
-            autoPlay
-            muted
-            playsInline
-            preload="auto"
-            className="absolute h-[100px] w-[500px] object-cover"
-          />
         </div>
 
-        <div className="w-[95%] h-auto md:w-[90%] lg:w-full mx-auto relative overflow-visible py-6 lg:py-4">
+        <div className="w-[95%] h-auto md:w-[90%] lg:w-full mx-auto relative overflow-visible py-2 lg:py-4">
           <Swiper
             modules={[Navigation]}
             className="w-[90%] lg-[95%] py-10 md:py-16 lg:gap-5"

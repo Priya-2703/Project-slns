@@ -48,7 +48,7 @@ const ForgotPassword = lazy(() =>
 const B2bSignUp = lazy(() => import("./Components/B2bSignUp/B2bSignup"));
 const B2bSignIn = lazy(() => import("./Components/B2bSignIn/B2bSignIn"));
 const Product = lazy(() => import("./Components/Product/Product"));
-// const CheckOut = lazy(() => import("./Components/CheckOut/CheckOut"));
+const CheckOut = lazy(() => import("./Components/CheckOut/CheckOut"));
 const WishList = lazy(() => import("./Components/WishList/WishList"));
 const Profile = lazy(() => import("./Components/Profile/Profile"));
 const ErrorPage = lazy(() => import("./Components/ErrorPage/ErrorPage"));
@@ -85,7 +85,7 @@ function AppContent() {
     };
   }, [isAdminRoute]);
 
-  // Define exact valid routes (including dynamic routes)
+  // Define exact valid routes
   const validRoutes = [
     "/",
     "/about",
@@ -95,7 +95,7 @@ function AppContent() {
     "/profile",
     "/cart",
     "/wishlist",
-    // "/checkout",
+    "/checkout",
     "/faq",
     "/privacy-policy",
     "/terms-and-conditions",
@@ -140,7 +140,7 @@ function AppContent() {
           <ButterflyLottieFollower
             hideCursor={false}
             animationData={assets.butterflyAnim}
-            size={80}
+            size={50}
             faceOffsetDeg={90}
             wingSpeed={3}
           />
@@ -163,7 +163,7 @@ function AppContent() {
           />
           <Route path="/cart" element={<Cart />} />
           <Route path="/wishlist" element={<WishList />} />
-          {/* <Route path="/checkout" element={<CheckOut />} /> */}
+          <Route path="/checkout" element={<CheckOut />} />
           <Route path="/faq" element={<Faq />} />
           <Route path="/privacy-policy" element={<Privacy />} />
           <Route path="/terms-and-conditions" element={<Terms />} />
@@ -195,7 +195,7 @@ function AppContent() {
           <Route path="/b2b-signin" element={<B2bSignIn />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           {/* ========================================
-                      ADMIN ROUTES (Protected - Admin Only)
+            ADMIN ROUTES (Protected - Admin Only)
            ======================================== */}
           <Route
             path="/admin/dashboard"

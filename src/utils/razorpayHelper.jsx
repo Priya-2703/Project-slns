@@ -1,6 +1,4 @@
-// ✅ razorpayHelper.jsx - FIXED VERSION
-
-const getAuthToken = () => {
+export const getAuthToken = () => {
     return localStorage.getItem('token') || sessionStorage.getItem('token');
 };
 
