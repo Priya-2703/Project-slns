@@ -543,7 +543,7 @@ const handleExportOrders = async () => {
                       {/* <option value="pending">Pending</option> */}
                       <option value="Processing">Processing</option>
                       <option value="Shipped">Shipped</option>
-                      <option value="delivered">Delivered</option>
+                      <option value="Delivered">Delivered</option>
                       <option value="Cancelled">Cancelled</option>
                     </select>
                   </div>
