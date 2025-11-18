@@ -1,0 +1,27 @@
+/* Hide custom cursor only in review section */
+.review-section {
+  cursor: none !important;
+}
+
+.review-section * {
+  cursor: none !important;
+}
+
+/* Ultra smooth transition for review cards */
+.review {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+/* Prevent lag */
+.review-section {
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Optional: Add backdrop blur for smooth effect */
+@supports (backdrop-filter: blur(10px)) {
+  .review {
+    backdrop-filter: blur(10px);
+  }
+}
