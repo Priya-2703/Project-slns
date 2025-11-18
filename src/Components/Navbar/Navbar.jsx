@@ -148,6 +148,8 @@ const Navbar = () => {
         }
       );
       const data = await response.json();
+
+      console.log("notify", data)
       if (data.success) {
         setNotificationCount(data.unread_count);
       }

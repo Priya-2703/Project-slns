@@ -786,7 +786,7 @@ const Profile = () => {
       variants={pageVariants}
       className="min-h-screen bg-black text-white mt-20 md:mt-28"
     >
-      {/* Authentication Popup - SAME AS BEFORE */}
+      {/* Authentication Popup */}
       <AnimatePresence>
         {showAuthPopup && !isAuthenticated && (
           <>
@@ -1311,19 +1311,7 @@ const Profile = () => {
                                       {addr.type}
                                     </span>
                                   </div>
-                                  {addr.isDefault && (
-                                    <motion.span
-                                      initial={{ scale: 0 }}
-                                      animate={{ scale: 1 }}
-                                      transition={{
-                                        type: "spring",
-                                        stiffness: 200,
-                                      }}
-                                      className="bg-green-500/20 font-body text-green-400 px-3 py-1 rounded-full text-xs font-semibold border border-green-500"
-                                    >
-                                      Default
-                                    </motion.span>
-                                  )}
+                                  
                                 </div>
                                 <p className="text-gray-400 text-[14px] font-body md:text-[16px] mb-4">
                                   {addr.area && `${addr.area}, `}
@@ -1334,18 +1322,7 @@ const Profile = () => {
                                   {addr.pincode}
                                 </p>
                                 <div className="flex gap-2">
-                                  {!addr.isDefault && (
-                                    <motion.button
-                                      whileHover={{ scale: 1.05 }}
-                                      whileTap={{ scale: 0.95 }}
-                                      onClick={() =>
-                                        setDefaultAddress(addr.id || addr._id)
-                                      }
-                                      className="flex-1 bg-gray-800 hover:bg-gray-700 text-[12px] font-body md:text-[14px] px-3 md:px-4 py-2 rounded-lg transition-all duration-300"
-                                    >
-                                      Set as Default
-                                    </motion.button>
-                                  )}
+                                  
                                   <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
