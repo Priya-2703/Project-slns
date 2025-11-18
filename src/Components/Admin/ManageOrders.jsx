@@ -50,32 +50,32 @@ export default function ManageOrders() {
   };
   console.log("a useeffect", orders);
 
-  useEffect(() => {
-  // Connect to SSE for real-time notifications
-  const token = localStorage.getItem("token");
-  const eventSource = new EventSource(
-    `${BACKEND_URL}/api/admin/notifications/stream`,
-    {
-      headers: { Authorization: `Bearer ${token}` }
-    }
-  );
+//   useEffect(() => {
+//   // Connect to SSE for real-time notifications
+//   const token = localStorage.getItem("token");
+//   const eventSource = new EventSource(
+//     `${BACKEND_URL}/api/admin/notifications/read-all`,
+//     {
+//       headers: { Authorization: `Bearer ${token}` }
+//     }
+//   );
 
-  eventSource.onmessage = (event) => {
-    const notification = JSON.parse(event.data);
+//   eventSource.onmessage = (event) => {
+//     const notification = JSON.parse(event.data);
     
-    if (notification.type === 'NEW_ORDER') {
-      // Show notification
-      alert(`🎉 New Order #${notification.order_number} - ₹${notification.total_amount}`);
+//     if (notification.type === 'NEW_ORDER') {
+//       // Show notification
+//       alert(`🎉 New Order #${notification.order_number} - ₹${notification.total_amount}`);
       
-      // Refresh orders list
-      fetchOrders();
-    }
-  };
+//       // Refresh orders list
+//       fetchOrders();
+//     }
+//   };
 
-  return () => {
-    eventSource.close();
-  };
-}, []);
+//   return () => {
+//     eventSource.close();
+//   };
+// }, []);
 
 const handleExportOrders = async () => {
   const token = localStorage.getItem("token");
@@ -540,11 +540,11 @@ const handleExportOrders = async () => {
                         order.status
                       )} cursor-pointer`}
                     >
-                      <option value="pending">Pending</option>
-                      <option value="processing">Processing</option>
-                      <option value="shipped">Shipped</option>
-                      <option value="delivered">Delivered</option>
-                      <option value="cancelled">Cancelled</option>
+                      {/* <option value="pending">Pending</option> */}
+                      <option value="Processing">Processing</option>
+                      <option value="Shipped">Shipped</option>
+                      <option value="Delivered">Delivered</option>
+                      <option value="Cancelled">Cancelled</option>
                     </select>
                   </div>
 

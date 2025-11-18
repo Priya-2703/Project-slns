@@ -32,6 +32,7 @@ import ManageOrders from "./Components/Admin/ManageOrders";
 import CustomerManagement from "./Components/Admin/CustomerManagement";
 import BannerManagement from "./Components/Admin/BannerManagement";
 import PaymentSuccess from "./Components/PaymentSuccess";
+import AdminNotifications from "./Components/Admin/AdminNotifications";
 
 const About = lazy(() => import("./Components/About/About"));
 const Faq = lazy(() => import("./Components/FAQ/Faq"));
@@ -233,6 +234,14 @@ function AppContent() {
             element={
               <ProtectedAdminRoute>
                 <ManageCategories />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
+            path="/admin/notification"
+            element={
+              <ProtectedAdminRoute>
+                <AdminNotifications />
               </ProtectedAdminRoute>
             }
           />
