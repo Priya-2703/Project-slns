@@ -28,6 +28,7 @@ import banner from "./banner.jpg"
 import banner2 from "./banner2.png"
 import banner3 from "./banner3.png"
 import signin from "./signin.png"
+import fbt from "./fbt.png"
 import dhostiBanner from "./dhostiBanner.png"
 import butterflyAnim from "./butterfly.json"
 
@@ -35,6 +36,7 @@ export const assets={
     logo,
     owner,
     banner,
+    fbt,
     banner2,
     banner3,
     signin,
