@@ -129,12 +129,14 @@ function AppContent() {
     matchPath({ path: route, end: true }, location.pathname)
   );
 
+  const isMobile = window.innerWidth <=800
+
   return (
     <>
       <ScrollToTop behavior="smooth" />
 
       {/* Show Butterfly and Yellow Cursor only for NON-admin routes */}
-      {!isAdminRoute && (
+      {!isAdminRoute && !isMobile && (
         <>
           <YellowCursor size={18} hideNative />
           <ButterflyLottieFollower
