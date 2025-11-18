@@ -14,7 +14,6 @@ export default function ManageOrders() {
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [stats, setStats] = useState({
     total: 0,
-    pending: 0,
     processing: 0,
     shipped: 0,
     delivered: 0,
@@ -23,8 +22,7 @@ export default function ManageOrders() {
   });
 
   // Base URL for your API - UPDATE THIS TO YOUR BACKEND URL
-   const BACKEND_URL = import.meta.env.VITE_API_URL;
-
+  const BACKEND_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     fetchOrders();
@@ -40,7 +38,7 @@ export default function ManageOrders() {
       const data = await response.json();
       if (response.ok) {
         setOrders(data.orders);
-        console.log("orders",data.orders)
+        console.log("orders", data.orders);
         calculateStats(data.orders);
       }
     } catch (err) {
@@ -51,54 +49,49 @@ export default function ManageOrders() {
   };
   console.log("a useeffect", orders);
 
-//   useEffect(() => {
-//   // Connect to SSE for real-time notifications
-//   const token = localStorage.getItem("token");
-//   const eventSource = new EventSource(
-//     `${BACKEND_URL}/api/admin/notifications/read-all`,
-//     {
-//       headers: { Authorization: `Bearer ${token}` }
-//     }
-//   );
+  //   useEffect(() => {
+  //   // Connect to SSE for real-time notifications
+  //   const token = localStorage.getItem("token");
+  //   const eventSource = new EventSource(
+  //     `${BACKEND_URL}/api/admin/notifications/read-all`,
+  //     {
+  //       headers: { Authorization: `Bearer ${token}` }
+  //     }
+  //   );
 
-//   eventSource.onmessage = (event) => {
-//     const notification = JSON.parse(event.data);
-    
-//     if (notification.type === 'NEW_ORDER') {
-//       // Show notification
-//       alert(`🎉 New Order #${notification.order_number} - ₹${notification.total_amount}`);
-      
-//       // Refresh orders list
-//       fetchOrders();
-//     }
-//   };
+  //   eventSource.onmessage = (event) => {
+  //     const notification = JSON.parse(event.data);
 
-//   return () => {
-//     eventSource.close();
-//   };
-// }, []);
+  //     if (notification.type === 'NEW_ORDER') {
+  //       // Show notification
+  //       alert(`🎉 New Order #${notification.order_number} - ₹${notification.total_amount}`);
 
-const handleExportOrders = async () => {
-  const token = localStorage.getItem("token");
-  const response = await fetch(`${BACKEND_URL}/api/admin/orders/export`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  
-  const blob = await response.blob();
-  const url = window.URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'orders_export.xlsx';
-  a.click();
-};
+  //       // Refresh orders list
+  //       fetchOrders();
+  //     }
+  //   };
+
+  //   return () => {
+  //     eventSource.close();
+  //   };
+  // }, []);
+
+  const handleExportOrders = async () => {
+    const token = localStorage.getItem("token");
+    const response = await fetch(`${BACKEND_URL}/api/admin/orders/export`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "orders_export.xlsx";
+    a.click();
+  };
   const calculateStats = (orderList) => {
     const stats = {
       total: orderList.length,
-      pending: orderList.filter(
-        (o) =>
-          o.status?.toLowerCase() === "pending" ||
-          o.order_status?.toLowerCase() === "pending"
-      ).length,
       processing: orderList.filter(
         (o) =>
           o.status?.toLowerCase() === "processing" ||
@@ -160,8 +153,6 @@ const handleExportOrders = async () => {
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
-      case "pending":
-        return "bg-yellow-500/20 text-yellow-500 border-yellow-500/30";
       case "processing":
         return "bg-blue-500/20 text-blue-500 border-blue-500/30";
       case "shipped":
@@ -175,7 +166,7 @@ const handleExportOrders = async () => {
     }
   };
 
-  const getPaymentStatusColor = (status) => {
+ const getPaymentStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case "paid":
         return "bg-green-500/20 text-green-500";
@@ -214,7 +205,7 @@ const handleExportOrders = async () => {
 
       let matchesDate = true;
       if (dateFilter !== "all") {
-        const orderDate = new Date(order.created_at);
+        const orderDate = new Date(order.order_date);
         const today = new Date();
         const diffDays = Math.floor(
           (today - orderDate) / (1000 * 60 * 60 * 24)
@@ -288,16 +279,10 @@ const handleExportOrders = async () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
           <div className="bg-white/5 border border-white/10 rounded-xl p-4">
             <p className="text-white/60 text-xs font-body mb-1">Total Orders</p>
             <p className="text-2xl font-bold text-white font1">{stats.total}</p>
-          </div>
-          <div className="bg-white/5 border border-yellow-500/20 rounded-xl p-4">
-            <p className="text-yellow-500/60 text-xs font-body mb-1">Pending</p>
-            <p className="text-2xl font-bold text-yellow-500 font1">
-              {stats.pending}
-            </p>
           </div>
           <div className="bg-white/5 border border-blue-500/20 rounded-xl p-4">
             <p className="text-blue-500/60 text-xs font-body mb-1">
@@ -380,22 +365,19 @@ const handleExportOrders = async () => {
                 <option className="text-black bg-transparent" value="all">
                   All Status
                 </option>
-                <option className="text-black bg-transparent" value="pending">
-                  Pending
-                </option>
                 <option
                   className="text-black bg-transparent"
-                  value="processing"
+                  value="Processing"
                 >
                   Processing
                 </option>
-                <option className="text-black bg-transparent" value="shipped">
+                <option className="text-black bg-transparent" value="Shipped">
                   Shipped
                 </option>
-                <option className="text-black bg-transparent" value="delivered">
+                <option className="text-black bg-transparent" value="Delivered">
                   Delivered
                 </option>
-                <option className="text-black bg-transparent" value="cancelled">
+                <option className="text-black bg-transparent" value="Cancelled">
                   Cancelled
                 </option>
               </select>
@@ -414,13 +396,13 @@ const handleExportOrders = async () => {
                 <option className="text-black bg-transparent" value="all">
                   All Payments
                 </option>
-                <option className="text-black bg-transparent" value="paid">
+                <option className="text-black bg-transparent" value="Paid">
                   Paid
                 </option>
-                <option className="text-black bg-transparent" value="pending">
+                <option className="text-black bg-transparent" value="Pending">
                   Pending
                 </option>
-                <option className="text-black bg-transparent" value="failed">
+                <option className="text-black bg-transparent" value="Failed">
                   Failed
                 </option>
               </select>
@@ -475,9 +457,9 @@ const handleExportOrders = async () => {
           <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
             {/* Table Header */}
             <div className="bg-white/5 border-b border-white/10 px-6 py-4 grid grid-cols-12 gap-4 text-white/60 font-body text-sm font-semibold">
-              <div className="col-span-1">Order ID</div>
+              <div className="col-span-2">Order ID</div>
               <div className="col-span-2">Customer</div>
-              <div className="col-span-2">Date</div>
+              <div className="col-span-1">Date</div>
               <div className="col-span-1">Items</div>
               <div className="col-span-1">Amount</div>
               <div className="col-span-2">Status</div>
@@ -493,9 +475,9 @@ const handleExportOrders = async () => {
                   className="px-6 py-4 hover:bg-white/5 transition-colors grid grid-cols-12 gap-4 items-center"
                 >
                   {/* Order ID */}
-                  <div className="col-span-1">
-                    <p className="text-white font-body font-semibold">
-                      #{order.order_id}
+                  <div className="col-span-2">
+                    <p className="text-white text-[12px] font-body font-semibold">
+                      {order.order_number}
                     </p>
                   </div>
 
@@ -510,8 +492,8 @@ const handleExportOrders = async () => {
                   </div>
 
                   {/* Date */}
-                  <div className="col-span-2">
-                    <p className="text-white/80 font-body text-sm">
+                  <div className="col-span-1">
+                    <p className="text-white/80 font-body text-[10px]">
                       {formatDate(order.order_date)}
                     </p>
                   </div>
@@ -654,10 +636,10 @@ const handleExportOrders = async () => {
             <div className="sticky top-0 bg-black border-b border-white/10 px-6 py-4 flex items-center justify-between z-10">
               <div>
                 <h2 className="text-2xl font-bold text-white font1">
-                  Order #{selectedOrder.order_id}
+                  Order No. {selectedOrder.order_number}
                 </h2>
                 <p className="text-white/60 font-body text-sm mt-1">
-                  {formatDate(selectedOrder.created_at)}
+                  {formatDate(selectedOrder.order_date)}
                 </p>
               </div>
               <button
@@ -791,9 +773,39 @@ const handleExportOrders = async () => {
                   </svg>
                   Shipping Address
                 </h3>
-                <p className="text-white font-body">
-                  {selectedOrder.shipping_address || "No address provided"}
-                </p>
+                {typeof selectedOrder.shipping_address === "object" &&
+                selectedOrder.shipping_address !== null ? (
+                  <div className="text-white font-body space-y-1">
+                    {selectedOrder.shipping_address.house_no && (
+                      <p>{selectedOrder.shipping_address.house_no}</p>
+                    )}
+                    {selectedOrder.shipping_address.area && (
+                      <p>{selectedOrder.shipping_address.area}</p>
+                    )}
+                    {selectedOrder.shipping_address.landmark && (
+                      <p className="text-white/70">
+                        Landmark: {selectedOrder.shipping_address.landmark}
+                      </p>
+                    )}
+                    {selectedOrder.shipping_address.city &&
+                      selectedOrder.shipping_address.state && (
+                        <p>
+                          {selectedOrder.shipping_address.city},{" "}
+                          {selectedOrder.shipping_address.state}
+                        </p>
+                      )}
+                    {selectedOrder.shipping_address.pincode && (
+                      <p>Pincode: {selectedOrder.shipping_address.pincode}</p>
+                    )}
+                    {selectedOrder.shipping_address.phone && (
+                      <p>Phone: {selectedOrder.shipping_address.phone}</p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-white font-body">
+                    {selectedOrder.shipping_address || "No address provided"}
+                  </p>
+                )}
               </div>
 
               {/* Order Items */}
@@ -910,14 +922,14 @@ const handleExportOrders = async () => {
                   Order Timeline
                 </h3>
                 <div className="space-y-4">
-                  {["pending", "processing", "shipped", "delivered"].map(
+                  {["Pending", "Processing", "Shipped", "Delivered"].map(
                     (status, index) => {
                       const isActive =
                         [
-                          "pending",
-                          "processing",
-                          "shipped",
-                          "delivered",
+                          "Pending",
+                          "Processing",
+                          "Shipped",
+                          "Delivered",
                         ].indexOf(selectedOrder.status) >= index;
                       return (
                         <div key={status} className="flex items-center gap-3">
