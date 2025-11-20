@@ -170,6 +170,7 @@ const Navbar = () => {
     { path: "/admin/categories", label: "Manage Categories" },
     { path: "/admin/import", label: "Bulk Import" },
     { path: "/admin/orders", label: "Order Management" },
+    { path: "/admin/return", label: "Return Requests" },
     { path: "/admin/customers", label: "Customer Management" },
   ];
 

@@ -27,6 +27,7 @@ import {
 import DarkVeil from "../DarkVeil";
 import Trending from "../pages/Trending";
 import BuyTogether from "../FBT/BuyTogether";
+import { useTranslation } from "react-i18next";
 
 const images = [
   {
@@ -90,6 +91,7 @@ const images = [
 ];
 
 const ProductDetail = () => {
+  const {t} = useTranslation()
   const BACKEND_URL = import.meta.env.VITE_API_URL;
   const [product, setProduct] = useState({});
   const [loading, setLoading] = useState(true);
@@ -405,7 +407,7 @@ const ProductDetail = () => {
           animate={{ opacity: 1, scale: 1 }}
           className="text-white text-2xl font2"
         >
-          Product not found
+          {t('product_detail.not_found')}
         </motion.div>
       </div>
     );
@@ -577,7 +579,7 @@ const ProductDetail = () => {
                       ₹{parseInt(product.price)}
                     </p>
                     <p className="text-[8px] md:text-[10px] text-white/50 font-body">
-                      Inclusive of all taxes
+                      {t('product_detail.tax_text')}
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
@@ -590,7 +592,7 @@ const ProductDetail = () => {
                       transition={{ delay: 0.7, type: "spring", bounce: 0.5 }}
                       className="font-['Poppins'] text-[8px] md:text-[10px] text-white bg-linear-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-sm border border-white/10 px-3 md:px-4 py-1.5 rounded-full font-bold shadow-lg"
                     >
-                      {parseInt(product.discount)}% OFF
+                      {parseInt(product.discount)}{t('product_detail.off_text')}
                     </motion.span>
                   </div>
                 </div>
@@ -607,7 +609,7 @@ const ProductDetail = () => {
               >
                 <h3 className="text-white text-[10px] md:text-[12px] tracking-wide font-body font-medium flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-purple-400" />
-                  Choose Other Versions
+                  {t('product_detail.choose_versions')}
                 </h3>
                 <div className="flex items-center gap-1 md:gap-2 flex-wrap">
                   {similarProducts.map((item, index) => (
@@ -646,7 +648,7 @@ const ProductDetail = () => {
                 className="flex flex-col gap-2 md:gap-4 mb-5 md:mb-8 w-full"
               >
                 <h3 className="text-white text-[13px] md:text-[15px] font-body tracking-wide font-medium flex items-center gap-1">
-                  Select Size:
+                  {t('product_detail.select_size')}
                   <AnimatePresence>
                     {selectedSize && (
                       <motion.span
@@ -693,7 +695,7 @@ const ProductDetail = () => {
                     animate={{ opacity: 1, x: 0 }}
                     className="text-yellow-400 text-[8px] md:text-[10px] font-body flex items-center gap-3 bg-yellow-500/10 p-2 md:px-2.5 md:py-2.5 rounded-md border border-yellow-500/30 backdrop-blur-sm shadow-lg"
                   >
-                    Please select a size to continue
+                    {t('product_detail.size_warning')}
                   </motion.p>
                 )}
               </motion.div>
@@ -733,7 +735,7 @@ const ProductDetail = () => {
                 )}
                 <span className="relative z-10 flex items-center justify-center gap-3">
                   <ShoppingCart className="w-4 h-4" />
-                  {canAddToCart ? "Add to Cart" : "Select Size to Add"}
+                  {canAddToCart ? `${t('product_detail.add_to_cart')}` : `${t('product_detail.select_size_btn')}`}
                 </span>
               </motion.button>
 
@@ -748,7 +750,7 @@ const ProductDetail = () => {
                 <motion.div className="absolute inset-0 bg-linear-to-r from-purple-500 via-pink-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <span className="relative z-10 flex items-center justify-center gap-3">
                   <Sparkles className="w-4 h-4" />
-                  Virtual Try-On
+                  {t('product_detail.virtual_try_on')}
                   <span className="text-[14px]">👗</span>
                 </span>
               </motion.button>
@@ -771,7 +773,7 @@ const ProductDetail = () => {
                 >
                   <span className="flex items-center gap-3 font-semibold">
                     <span className="w-2 h-2 bg-white blur-[1px] rounded-full" />
-                    Product Description
+                    {t('product_detail.sections.description')}
                   </span>
                   <motion.svg
                     animate={{ rotate: openIndex === 0 ? 180 : 0 }}
@@ -831,7 +833,7 @@ const ProductDetail = () => {
                 >
                   <span className="flex items-center gap-3 font-semibold">
                     <span className="w-2 h-2 bg-white blur-[1px] rounded-full" />
-                    Item Details
+                    {t('product_detail.sections.details')}
                   </span>
                   <motion.svg
                     animate={{ rotate: openIndex === 1 ? 180 : 0 }}
@@ -883,7 +885,7 @@ const ProductDetail = () => {
                 >
                   <span className="flex items-center gap-3 font-semibold">
                     <span className="w-2 h-2 bg-white blur-[1px] rounded-full" />
-                    Delivery and Return
+                    {t('product_detail.sections.delivery_return')}
                   </span>
                   <motion.svg
                     animate={{ rotate: openIndex === 2 ? 180 : 0 }}
@@ -913,24 +915,20 @@ const ProductDetail = () => {
                         <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 p-5 rounded-xl border border-blue-500/20">
                           <h3 className="font-body text-white text-[15px] md:text-[16px] flex items-center gap-2 mb-3 font-semibold">
                             <Truck className="w-5 h-5 text-blue-400" />
-                            Delivery:
+                            {t('product_detail.delivery_info.title')}
                           </h3>
                           <ul className="list-disc list-inside space-y-2.5 text-[10px] md:text-[13px] leading-relaxed font-body text-white/70">
                             <li className="pl-2">
-                              Delivery is made by express courier, within 2-5
-                              working days from the confirmation of the order.
+                              {t('product_detail.delivery_info.text_1')}
                             </li>
                             <li className="pl-2">
-                              The delivery cost is 100 INR for orders under 1000
-                              INR and free for orders over 1000 INR.
+                              {t('product_detail.delivery_info.text_2')}
                             </li>
                             <li className="pl-2">
-                              You can choose to have your order delivered to an
-                              address specified by you or to a pick-up point.
+                             {t('product_detail.delivery_info.text_3')}
                             </li>
                             <li className="pl-2">
-                              You will receive an email with the delivery
-                              confirmation and a tracking code for the parcel.
+                              {t('product_detail.delivery_info.text_4')}
                             </li>
                           </ul>
                         </div>
@@ -939,29 +937,23 @@ const ProductDetail = () => {
                         <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 p-5 rounded-xl border border-orange-500/20">
                           <h3 className="font-body text-white text-[15px] md:text-[16px] flex items-center gap-2 mb-3 font-semibold">
                             <RefreshCw className="w-5 h-5 text-orange-400" />
-                            Return:
+                            {t('product_detail.return_info.title')}
                           </h3>
                           <ul className="list-disc list-inside space-y-2.5 text-[10px] md:text-[13px] leading-relaxed font-body text-white/70">
                             <li className="pl-2">
-                              You can return the products within 14 days of
-                              receipt, without giving any reason.
+                              {t('product_detail.return_info.text_1')}
                             </li>
                             <li className="pl-2">
-                              The cost of returning the products is borne by the
-                              customer.
+                             {t('product_detail.return_info.text_2')}
                             </li>
                             <li className="pl-2">
-                              Products can be returned by express courier or to
-                              a pick-up point.
+                              {t('product_detail.return_info.text_3')}
                             </li>
                             <li className="pl-2">
-                              Products must be returned in their original
-                              packaging, with labels intact and with the
-                              documents received in the parcel.
+                              {t('product_detail.return_info.text_4')}
                             </li>
                             <li className="pl-2">
-                              The refund of the value of the products will be
-                              made within 14 days of receipt of the return.
+                              {t('product_detail.return_info.text_5')}
                             </li>
                           </ul>
                         </div>
@@ -970,16 +962,14 @@ const ProductDetail = () => {
                         <div className="bg-gradient-to-r from-red-500/10 to-pink-500/10 p-5 rounded-xl border border-red-500/20">
                           <h3 className="font-body text-white text-[15px] md:text-[16px] flex items-center gap-2 mb-3 font-semibold">
                             <X className="w-5 h-5 text-red-400" />
-                            Exceptions to return:
+                            {t('product_detail.exceptions_info.title')}
                           </h3>
                           <ul className="list-disc list-inside space-y-2.5 text-[10px] md:text-[13px] leading-relaxed font-body text-white/70">
                             <li className="pl-2">
-                              Products that have been worn, damaged or modified
-                              cannot be returned.
+                              {t('product_detail.exceptions_info.text_1')}
                             </li>
                             <li className="pl-2">
-                              Products that have been made to order or
-                              personalized cannot be returned.
+                             {t('product_detail.exceptions_info.text_2')}
                             </li>
                           </ul>
                         </div>
@@ -1008,10 +998,10 @@ const ProductDetail = () => {
           <div className="flex justify-between items-center mb-4 md:mb-6">
             <div>
               <h2 className="text-white font-heading text-[26px] md:text-[52px] font-[950] capitalize bg-linear-to-r from-white to-gray-400 bg-clip-text">
-                Reviews
+                {t('product_detail.reviews.title')}
               </h2>
               <p className="text-white/50 text-[12px] md:text-[15px] font-body">
-                {productReviews.length} verified customer reviews
+                {productReviews.length}  {t('product_detail.reviews.subtitle')}
               </p>
             </div>
           </div>
@@ -1051,7 +1041,7 @@ const ProductDetail = () => {
                           {review.name}
                         </p>
                         <p className="text-[8px] md:text-[12px] font-body flex items-center gap-1 text-white/60 md:mt-1">
-                          Verified Buyer
+                          {t('product_detail.verified_buyer')}
                           <MdVerified className="text-green-400 text-[10px] md:text-[13px]" />
                         </p>
                       </div>
@@ -1112,7 +1102,7 @@ const ProductDetail = () => {
                 >
                   <Star className="w-10 h-10 text-white/20 mx-auto mb-4" />
                   <p className="text-white/50 font-body text-[13px]">
-                    No reviews yet. Be the first to review this product!
+                   {t('product_detail.no_reviews')}
                   </p>
                 </motion.div>
               </div>
@@ -1145,7 +1135,7 @@ const ProductDetail = () => {
               whileTap={{ scale: 0.98 }}
               className="w-full py-3 bg-linear-to-r from-accet/90 to-accet/20 hover:from-accet/20 hover:via-accet cursor-pointer text-[10px] md:text-[15px] text-white font-body font-bold mt-4 md:mt-8 rounded-lg md:rounded-2xl hover:border-2 border-0  border-accet/70 transition-all duration-300"
             >
-              Write a Review for this Product ✍️
+              {t('product_detail.write_review_btn')}
             </motion.button>
           </Link>
         </motion.div>
@@ -1166,16 +1156,16 @@ const ProductDetail = () => {
               viewport={{ once: true }}
               className="text-[10px] md:text-[13px] text-white/60 capitalize tracking-[0.3em] leading-none font-body"
             >
-              We give you more
+               {t('product_detail.wardrobe_hub.subtitle')}
             </motion.p>
             <motion.h2
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              className="text-[28px] md:text-[44px] lg:text-[56px] text-center text-white capitalize tracking-wide leading-tight font-[950] font-heading bg-gradient-to-r from-white via-purple-100 to-pink-100 bg-clip-text"
+              className="text-[28px] md:text-[34px] lg:text-[44px] text-center text-white capitalize tracking-wide leading-tight font-[950] font-heading bg-gradient-to-r from-white via-purple-100 to-pink-100 bg-clip-text"
             >
-              The Wardrobe Hub
+              {t('product_detail.wardrobe_hub.title')}
             </motion.h2>
           </div>
 
@@ -1219,16 +1209,16 @@ const ProductDetail = () => {
               viewport={{ once: true }}
               className="text-[8px] md:text-[13px] text-white/60 uppercase tracking-[0.3em] leading-none font-body"
             >
-              RECOMMENDATIONS FOR YOU
+              {t('product_detail.similar_products.subtitle')}
             </motion.p>
             <motion.h2
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              className="text-[28px] md:text-[44px] lg:text-[56px] text-center text-white capitalize tracking-wide leading-tight font-[950] font-heading bg-gradient-to-r from-white via-blue-100 to-cyan-100 bg-clip-text"
+              className="text-[28px] md:text-[34px] lg:text-[44px] text-center text-white capitalize tracking-wide leading-tight font-[950] font-heading bg-gradient-to-r from-white via-blue-100 to-cyan-100 bg-clip-text"
             >
-              Similar products
+              {t('product_detail.similar_products.title')}
             </motion.h2>
           </div>
 
@@ -1243,7 +1233,7 @@ const ProductDetail = () => {
               <div className="inline-block bg-linear-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-sm border border-white/10 p-6 rounded-[10px]">
                 <Sparkles className="w-10 h-10 mx-auto mb-4 text-white/20" />
                 <p className="text-white/40 font-body text-[10px] md:text-[16px]">
-                  No similar products found
+                  {t('product_detail.similar_products.no_products')}
                 </p>
               </div>
             </motion.div>
@@ -1262,9 +1252,9 @@ const ProductDetail = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              className="text-[24px] md:text-[42px] lg:text-[56px] text-center text-white capitalize tracking-wide leading-tight font-[950] font-heading bg-linear-to-r from-white via-orange-100 to-red-100 bg-clip-text"
+              className="text-[24px] md:text-[32px] lg:text-[44px] text-center text-white capitalize tracking-wide leading-tight font-[950] font-heading bg-linear-to-r from-white via-orange-100 to-red-100 bg-clip-text"
             >
-              Curated Styles for Everyone
+              {t('product_detail.curated_styles.title')}
             </motion.h2>
           </div>
           <Trending />
@@ -1294,10 +1284,10 @@ const ProductDetail = () => {
                     <div>
                       <h2 className="text-[22px] md:text-2xl font-heading font-bold text-white flex items-center gap-3">
                         <Sparkles className="w-7 h-7 text-purple-400" />
-                        Virtual Try-On
+                        {t('product_detail.try_on_modal.title')}
                       </h2>
                       <p className="text-white/50 text-[12px] md:text-sm font-body mt-1">
-                        See how it looks on you!
+                        {t('product_detail.try_on_modal.subtitle')}
                       </p>
                     </div>
                     <motion.button
@@ -1322,10 +1312,10 @@ const ProductDetail = () => {
                   >
                     <Sparkles className="w-24 h-24 text-purple-400 mx-auto mb-6 animate-pulse" />
                     <p className="text-white text-[32px] md:text-[40px] font-heading font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent mb-3">
-                      Coming Soon
+                      {t('product_detail.try_on_modal.coming_soon')}
                     </p>
                     <p className="text-white/50 text-[15px] font-body max-w-md mx-auto">
-                      Revolutionary AI-powered virtual try-on experience
+                     {t('product_detail.try_on_modal.coming_soon_desc')}
                     </p>
                   </motion.div>
                 </div>

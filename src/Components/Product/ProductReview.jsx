@@ -5,8 +5,10 @@ import { ReviewContext } from "../../Context/UseReviewContext";
 import { ToastContext } from "../../Context/UseToastContext";
 import { FaArrowLeft } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const ProductReviewForm = () => {
+  const {t} = useTranslation()
   const { id } = useParams();
   const navigate = useNavigate();
   const { addReview, loading } = useContext(ReviewContext);
@@ -73,14 +75,14 @@ const ProductReviewForm = () => {
 
       <div className="w-[90%] lg:w-[60%] mx-auto">
         <h1 className="text-white font-heading text-[32px] md:text-[48px] font-[950] mb-8">
-          Write a Review
+          {t("product_review.title")}
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Name Input */}
           <div>
             <label className="text-white font-body text-[14px] mb-2 block">
-              Your Name *
+              {t("product_review.labels.name")}
             </label>
             <input
               type="text"
@@ -89,14 +91,14 @@ const ProductReviewForm = () => {
                 setFormData({ ...formData, name: e.target.value })
               }
               className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white font-body focus:outline-none focus:border-white/50"
-              placeholder="Enter your name"
+              placeholder={t("product_review.placeholders.name")}
             />
           </div>
 
           {/* Rating */}
           <div>
             <label className="text-white font-body text-[14px] mb-2 block">
-              Rating *
+              {t("product_review.labels.rating")}
             </label>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((star) => (
@@ -119,7 +121,7 @@ const ProductReviewForm = () => {
           {/* Review Text */}
           <div>
             <label className="text-white font-body text-[14px] mb-2 block">
-              Your Review *
+              {t("product_review.labels.review")}
             </label>
             <textarea
               value={formData.review}
@@ -127,14 +129,14 @@ const ProductReviewForm = () => {
                 setFormData({ ...formData, review: e.target.value })
               }
               className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white font-body focus:outline-none focus:border-white/50 h-32 resize-none"
-              placeholder="Write your review here..."
+              placeholder={t("product_review.placeholders.review")}
             />
           </div>
 
           {/* Quality Selection */}
           <div>
             <label className="text-white font-body text-[14px] mb-2 block">
-              Product Quality
+              {t("product_review.labels.quality")}
             </label>
             <div className="flex gap-4">
               {["Poor", "Good", "Awesome"].map((quality) => (
@@ -160,14 +162,14 @@ const ProductReviewForm = () => {
               type="submit"
               className="flex-1 py-3 bg-accet text-white font-body text-[16px] rounded-lg hover:bg-accet/80 transition-colors"
             >
-              Submit Review
+              {t("product_review.buttons.submit")}
             </button>
             <button
               type="button"
               onClick={() => navigate(`/product/${id}`)}
               className="flex-1 py-3 bg-white/10 text-white font-body text-[16px] rounded-lg hover:bg-white/20 transition-colors border border-white/20"
             >
-              Cancel
+              {t("product_review.buttons.cancel")}
             </button>
           </div>
         </form>

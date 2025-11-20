@@ -21,16 +21,21 @@ import {
   Loader,
   EyeOff,
   Lock,
+  Upload,
+  RefreshCw,
+  DollarSign,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ToastContext } from "../../Context/UseToastContext";
+import { useTranslation } from "react-i18next";
 
 const Profile = () => {
+  const { t } = useTranslation();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showAuthPopup, setShowAuthPopup] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false); // ✅ ADD THIS - separate state for saving
+  const [saving, setSaving] = useState(false);
   const [showAddAddressPopup, setShowAddAddressPopup] = useState(false);
   const [newAddress, setNewAddress] = useState({
     area: "",
@@ -56,6 +61,27 @@ const Profile = () => {
     isDefault: false,
   });
   const [error, setError] = useState(null);
+
+  // ✅ NEW - Return Order States
+  const [showReturnPopup, setShowReturnPopup] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [returnFormData, setReturnFormData] = useState({
+    reason: "",
+    comments: "",
+    action: "refund", // 'refund' or 'exchange'
+    images: [],
+  });
+  const [refundPaymentMethod, setRefundPaymentMethod] = useState("upi"); // 'upi' or 'bank'
+  const [refundPaymentDetails, setRefundPaymentDetails] = useState({
+    upi_id: "",
+    account_holder_name: "",
+    account_number: "",
+    ifsc_code: "",
+    bank_name: "",
+  });
+  const [submittingReturn, setSubmittingReturn] = useState(false);
+  const [imagePreview, setImagePreview] = useState([]);
+
   const navigate = useNavigate();
   const location = useLocation();
   const { showToast } = useContext(ToastContext);
@@ -71,7 +97,6 @@ const Profile = () => {
     const checkAuthAndFetchData = async () => {
       const token = localStorage.getItem("token");
 
-      // If no token found, show auth popup
       if (!token) {
         setIsAuthenticated(false);
         setShowAuthPopup(true);
@@ -79,12 +104,10 @@ const Profile = () => {
         return;
       }
 
-      // User is authenticated
       setIsAuthenticated(true);
       setShowAuthPopup(false);
 
       try {
-        // Fetch all user data in parallel
         await Promise.all([
           fetchUserProfile(token),
           fetchUserOrders(token),
@@ -92,7 +115,6 @@ const Profile = () => {
         ]);
       } catch (error) {
         console.error("Error loading user data:", error);
-        // If token is invalid, show auth popup
         if (
           error.message.includes("401") ||
           error.message.includes("Unauthorized")
@@ -113,7 +135,6 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState("profile");
 
-  // ✅ User Data State with default avatar
   const [userData, setUserData] = useState({
     name: "",
     email: "",
@@ -128,7 +149,7 @@ const Profile = () => {
   const [orders, setOrders] = useState([]);
   const [addresses, setAddresses] = useState([]);
 
-  // ✅ Fetch User Profile from Backend
+  // ✅ Fetch User Profile
   const fetchUserProfile = async (token) => {
     try {
       setLoading(true);
@@ -146,7 +167,6 @@ const Profile = () => {
 
       const data = await response.json();
 
-      // ✅ Handle profile picture (Google or default)
       const profileData = {
         ...data.user,
         picture:
@@ -158,15 +178,11 @@ const Profile = () => {
       setUserData(profileData);
       setEditData(profileData);
 
-      console.log("api/profile", data);
-
-      // Save to localStorage
       localStorage.setItem("userData", JSON.stringify(profileData));
     } catch (error) {
       console.error("Error fetching profile:", error);
       setError(error.message);
 
-      // Load from localStorage as fallback
       const savedUser = localStorage.getItem("userData");
       if (savedUser) {
         const parsedUser = JSON.parse(savedUser);
@@ -180,10 +196,8 @@ const Profile = () => {
     }
   };
 
-  // ✅ Get default avatar (UI Avatars API or local icon)
   const getDefaultAvatar = (name) => {
     if (name) {
-      // Use UI Avatars API
       const initials = name
         .split(" ")
         .map((n) => n[0])
@@ -193,7 +207,7 @@ const Profile = () => {
         name
       )}&background=8E6740&color=fff&size=200&bold=true`;
     }
-    return null; // Will show CircleUserRound icon
+    return null;
   };
 
   // ✅ Fetch User Orders
@@ -212,7 +226,7 @@ const Profile = () => {
       }
 
       const data = await response.json();
-      console.log("Orders", data.orders)
+      console.log("Orders", data.orders);
       setOrders(data.orders || []);
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -241,7 +255,6 @@ const Profile = () => {
         id: addr.id,
         type: addr.type || "Home",
         isDefault: addr.isDefault || false,
-        // ✅ Extract from full_details
         area: addr.full_details?.area || "",
         landmark: addr.full_details?.landmark || "",
         town_city: addr.full_details?.town_city || "",
@@ -259,7 +272,210 @@ const Profile = () => {
     }
   };
 
-  // ✅ Handle Edit Address Click
+  // ✅ NEW - Handle Return Button Click
+  const handleReturnClick = (order) => {
+    setSelectedOrder(order);
+    setShowReturnPopup(true);
+    setReturnFormData({
+      reason: "",
+      comments: "",
+      action: "refund",
+      images: [],
+    });
+    setImagePreview([]);
+  };
+
+  // ✅ NEW - Handle Return Form Input Change
+  const handleReturnInputChange = (e) => {
+    const { name, value } = e.target;
+    setReturnFormData({
+      ...returnFormData,
+      [name]: value,
+    });
+  };
+
+  // ✅ NEW - Handle Image Upload
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+
+    if (files.length + returnFormData.images.length > 5) {
+      showToast("Maximum 5 images allowed", "error");
+      return;
+    }
+
+    // Create preview URLs
+    const newPreviews = files.map((file) => URL.createObjectURL(file));
+    setImagePreview([...imagePreview, ...newPreviews]);
+
+    // Store actual files
+    setReturnFormData({
+      ...returnFormData,
+      images: [...returnFormData.images, ...files],
+    });
+  };
+
+  // ✅ NEW - Remove Image
+  const handleRemoveImage = (index) => {
+    const newImages = [...returnFormData.images];
+    const newPreviews = [...imagePreview];
+
+    // Revoke URL to free memory
+    URL.revokeObjectURL(newPreviews[index]);
+
+    newImages.splice(index, 1);
+    newPreviews.splice(index, 1);
+
+    setReturnFormData({
+      ...returnFormData,
+      images: newImages,
+    });
+    setImagePreview(newPreviews);
+  };
+
+  // ✅ NEW - Submit Return Request
+  const handleSubmitReturn = async () => {
+    try {
+      // Validation
+      if (!returnFormData.reason) {
+        showToast("Please select a reason for return", "error");
+        return;
+      }
+
+      if (!returnFormData.comments.trim()) {
+        showToast("Please provide additional comments", "error");
+        return;
+      }
+
+      // ✅ NEW - Validate refund payment details
+      if (returnFormData.action === "refund") {
+        if (refundPaymentMethod === "upi") {
+          if (!refundPaymentDetails.upi_id.trim()) {
+            showToast("Please enter UPI ID for refund", "error");
+            return;
+          }
+          // Basic UPI ID validation
+          if (!refundPaymentDetails.upi_id.includes("@")) {
+            showToast("Please enter a valid UPI ID", "error");
+            return;
+          }
+        } else if (refundPaymentMethod === "bank") {
+          if (
+            !refundPaymentDetails.account_holder_name.trim() ||
+            !refundPaymentDetails.account_number.trim() ||
+            !refundPaymentDetails.ifsc_code.trim()
+          ) {
+            showToast("Please fill all bank details for refund", "error");
+            return;
+          }
+          // IFSC code validation (11 characters)
+          if (refundPaymentDetails.ifsc_code.length !== 11) {
+            showToast("IFSC code must be 11 characters", "error");
+            return;
+          }
+        }
+      }
+
+      setSubmittingReturn(true);
+      const token = localStorage.getItem("token");
+
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append("order_id", selectedOrder.id || selectedOrder._id);
+      formData.append("reason", returnFormData.reason);
+      formData.append("comments", returnFormData.comments);
+      formData.append("action", returnFormData.action);
+
+      // ✅ NEW - Add refund payment details
+      if (returnFormData.action === "refund") {
+        formData.append("refund_method", refundPaymentMethod);
+        if (refundPaymentMethod === "upi") {
+          formData.append("upi_id", refundPaymentDetails.upi_id);
+        } else {
+          formData.append(
+            "account_holder_name",
+            refundPaymentDetails.account_holder_name
+          );
+          formData.append(
+            "account_number",
+            refundPaymentDetails.account_number
+          );
+          formData.append("ifsc_code", refundPaymentDetails.ifsc_code);
+          formData.append("bank_name", refundPaymentDetails.bank_name);
+        }
+      }
+
+      // Append images
+      returnFormData.images.forEach((image, index) => {
+        formData.append("images", image);
+      });
+
+      const response = await fetch(`${BACKEND_URL}/api/orders/return`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        const errorMessage =
+          data.message || data.error || "Failed to submit return request";
+        showToast(errorMessage, "error");
+        return;
+      }
+
+      // Success
+      showToast("Return request submitted successfully!", "success");
+
+      // Refresh orders
+      await fetchUserOrders(token);
+
+      // Close popup
+      handleCancelReturn();
+    } catch (error) {
+      console.error("Error submitting return:", error);
+      showToast(
+        error.message || "Failed to submit return request. Please try again.",
+        "error"
+      );
+    } finally {
+      setSubmittingReturn(false);
+    }
+  };
+
+  // ✅ payment
+  const handlePaymentDetailsChange = (e) => {
+    const { name, value } = e.target;
+    setRefundPaymentDetails({
+      ...refundPaymentDetails,
+      [name]: value,
+    });
+  };
+
+  // ✅ NEW - Cancel Return
+  const handleCancelReturn = () => {
+    setShowReturnPopup(false);
+    setSelectedOrder(null);
+    setReturnFormData({
+      reason: "",
+      comments: "",
+      action: "refund",
+      images: [],
+    });
+    setRefundPaymentMethod("upi");
+    setRefundPaymentDetails({
+      upi_id: "",
+      account_holder_name: "",
+      account_number: "",
+      ifsc_code: "",
+      bank_name: "",
+    });
+    imagePreview.forEach((url) => URL.revokeObjectURL(url));
+    setImagePreview([]);
+  };
+
   const handleEditAddressClick = (address) => {
     setEditingAddress(address);
     setEditAddressData({
@@ -275,7 +491,6 @@ const Profile = () => {
     setShowEditAddressPopup(true);
   };
 
-  // ✅ Handle Edit Address Input Change
   const handleEditAddressInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setEditAddressData({
@@ -284,10 +499,8 @@ const Profile = () => {
     });
   };
 
-  // ✅ Update Address
   const handleUpdateAddress = async () => {
     try {
-      // Validation
       if (
         !editAddressData.area ||
         !editAddressData.town_city ||
@@ -320,21 +533,15 @@ const Profile = () => {
 
       if (!response.ok) {
         const errorMessage = data.message || data.error || "Error occurred";
-        showToast(errorMessage, "error" || "Failed to update address");
+        showToast(errorMessage, "error");
         return;
       }
 
-      // 2️⃣ Database latest data fetching
       await fetchUserAddresses(token);
-
-      // ✅ Close popup
       setShowEditAddressPopup(false);
       setEditingAddress(null);
-
-      // ✅ Show success message
       showToast("Address updated successfully!", "success");
 
-      // ✅ Reset form
       setEditAddressData({
         area: "",
         landmark: "",
@@ -356,7 +563,6 @@ const Profile = () => {
     }
   };
 
-  // ✅ Cancel Edit Address
   const handleCancelEditAddress = () => {
     setShowEditAddressPopup(false);
     setEditingAddress(null);
@@ -372,7 +578,6 @@ const Profile = () => {
     });
   };
 
-  // ✅ Update Profile
   const handleSave = async () => {
     try {
       setSaving(true);
@@ -443,7 +648,6 @@ const Profile = () => {
     });
   };
 
-  // ✅ Delete Address
   const deleteAddress = async (id) => {
     try {
       const token = localStorage.getItem("token");
@@ -470,7 +674,6 @@ const Profile = () => {
     }
   };
 
-  // ✅ Add New Address Handler
   const handleAddAddressClick = () => {
     setShowAddAddressPopup(true);
     setNewAddress({
@@ -485,7 +688,6 @@ const Profile = () => {
     });
   };
 
-  // ✅ Handle Address Input Change
   const handleAddressInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setNewAddress({
@@ -494,10 +696,8 @@ const Profile = () => {
     });
   };
 
-  // ✅ Save New Address
   const handleSaveAddress = async () => {
     try {
-      // Validation
       if (
         !newAddress.area ||
         !newAddress.town_city ||
@@ -530,16 +730,10 @@ const Profile = () => {
 
       const data = await response.json();
 
-      // 2️⃣ Database latest data fetching
       await fetchUserAddresses(token);
-
-      // ✅ Close popup
       setShowAddAddressPopup(false);
-
-      // ✅ Show success message
       showToast("Address added successfully!", "success");
 
-      // ✅ Reset form
       setNewAddress({
         area: "",
         landmark: "",
@@ -561,7 +755,6 @@ const Profile = () => {
     }
   };
 
-  // ✅ Cancel Add Address
   const handleCancelAddAddress = () => {
     setShowAddAddressPopup(false);
     setNewAddress({
@@ -576,39 +769,38 @@ const Profile = () => {
     });
   };
 
-  // ✅ Set Default Address
-  const setDefaultAddress = async (id) => {
-    try {
-      const token = localStorage.getItem("token");
+  // const setDefaultAddress = async (id) => {
+  //   try {
+  //     const token = localStorage.getItem("token");
 
-      const response = await fetch(
-        `${BACKEND_URL}/api/addresses/${id}/default`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+  //     const response = await fetch(
+  //       `${BACKEND_URL}/api/addresses/${id}/default`,
+  //       {
+  //         method: "PUT",
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
 
-      if (!response.ok) {
-        throw new Error("Failed to set default address");
-      }
+  //     if (!response.ok) {
+  //       throw new Error("Failed to set default address");
+  //     }
 
-      setAddresses(
-        addresses.map((addr) => ({
-          ...addr,
-          isDefault: addr.id === id,
-        }))
-      );
+  //     setAddresses(
+  //       addresses.map((addr) => ({
+  //         ...addr,
+  //         isDefault: addr.id === id,
+  //       }))
+  //     );
 
-      alert("Default address updated!");
-    } catch (error) {
-      console.error("Error setting default address:", error);
-      alert("Failed to update default address. Please try again.");
-    }
-  };
+  //     alert("Default address updated!");
+  //   } catch (error) {
+  //     console.error("Error setting default address:", error);
+  //     alert("Failed to update default address. Please try again.");
+  //   }
+  // };
 
   const handleSignInRedirect = () => {
     navigate("/signin");
@@ -643,7 +835,7 @@ const Profile = () => {
 
   const mobileView = window.innerWidth < 480;
 
-  // Animation variants (keep existing ones)
+  // Animation variants
   const pageVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -763,7 +955,6 @@ const Profile = () => {
     },
   };
 
-  // ✅ Loading Screen
   if (loading && !showAuthPopup) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -773,7 +964,7 @@ const Profile = () => {
           className="text-center"
         >
           <Loader className="w-12 h-12 text-white animate-spin mx-auto mb-4" />
-          <p className="text-gray-400 text-lg">Loading your profile...</p>
+          <p className="text-gray-400 text-lg">{t("profile.loading")}</p>
         </motion.div>
       </div>
     );
@@ -786,7 +977,7 @@ const Profile = () => {
       variants={pageVariants}
       className="min-h-screen bg-black text-white mt-20 md:mt-28"
     >
-      {/* Authentication Popup */}
+      {/* Authentication Popup - Keep existing */}
       <AnimatePresence>
         {showAuthPopup && !isAuthenticated && (
           <>
@@ -823,7 +1014,7 @@ const Profile = () => {
                   transition={{ delay: 0.3 }}
                   className="text-2xl md:text-3xl font-bold text-center mb-4 font-heading"
                 >
-                  Sign In Required
+                  {t("profile.auth_popup.title")}
                 </motion.h2>
 
                 <motion.p
@@ -832,7 +1023,7 @@ const Profile = () => {
                   transition={{ delay: 0.4 }}
                   className="text-gray-400 text-center mb-8 font-body"
                 >
-                  Please sign in to access your profile and manage your orders
+                  {t("profile.auth_popup.description")}
                 </motion.p>
 
                 <motion.button
@@ -845,7 +1036,7 @@ const Profile = () => {
                   className="w-full bg-white text-black py-3 rounded-full hover:bg-gray-200 transition-all duration-300 flex items-center justify-center gap-3 font-body text-[14px]"
                 >
                   <LogIn size={20} />
-                  Sign In Now
+                  {t("profile.auth_popup.signin_btn")}
                 </motion.button>
 
                 <motion.button
@@ -857,7 +1048,7 @@ const Profile = () => {
                   onClick={() => navigate("/")}
                   className="w-full mt-4 text-gray-400 hover:text-white transition-all duration-300 font-body"
                 >
-                  Go back to Home
+                  {t("profile.auth_popup.home_btn")}
                 </motion.button>
               </motion.div>
             </div>
@@ -868,7 +1059,7 @@ const Profile = () => {
       {/* Profile Content */}
       {isAuthenticated && (
         <>
-          {/* Header */}
+          {/* Header - Keep existing */}
           <div className="mx-2 lg:mx-0">
             <motion.div
               variants={headerVariants}
@@ -877,17 +1068,17 @@ const Profile = () => {
               className="max-w-7xl mx-auto px-4 py-3 md:py-8"
             >
               <h1 className="text-[35px] md:text-[50px] font-heading font-[950] md:leading-15">
-                My Account
+                {t("profile.header.title")}
               </h1>
               <p className="text-gray-400 font-body text-[10px] md:text-[13px] tracking-wide">
-                Manage your profile and orders
+                {t("profile.header.subtitle")}
               </p>
             </motion.div>
           </div>
 
           <div className="max-w-7xl mx-auto px-4 py-3 md:py-8">
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              {/* Sidebar Navigation */}
+              {/* Sidebar - Keep existing */}
               <motion.div
                 variants={sidebarVariants}
                 initial="hidden"
@@ -901,7 +1092,6 @@ const Profile = () => {
                     transition={{ duration: 0.5, delay: 0.2 }}
                     className="flex lg:flex-col items-center mb-6 ml-0"
                   >
-                    {/* ✅ Profile Picture with Google Image or Default */}
                     {userData.picture ? (
                       <motion.img
                         src={userData.picture}
@@ -909,7 +1099,6 @@ const Profile = () => {
                         whileHover={{ scale: 1.1, rotate: 5 }}
                         transition={{ duration: 0.3 }}
                         onError={(e) => {
-                          // Fallback to default avatar if image fails to load
                           e.target.style.display = "none";
                           e.target.nextSibling.style.display = "flex";
                         }}
@@ -917,7 +1106,6 @@ const Profile = () => {
                       />
                     ) : null}
 
-                    {/* ✅ Default Icon (shown if no image) */}
                     <motion.div
                       whileHover={{ scale: 1.1, rotate: 5 }}
                       transition={{ duration: 0.3 }}
@@ -943,12 +1131,23 @@ const Profile = () => {
                     </div>
                   </motion.div>
 
-                  {/* Navigation Tabs - SAME AS BEFORE */}
                   <nav className="lg:space-y-2 flex lg:flex-col justify-around items-center gap-2">
                     {[
-                      { id: "profile", icon: User, label: "Profile Info" },
-                      { id: "orders", icon: Package, label: "My Orders" },
-                      { id: "addresses", icon: MapPin, label: "Addresses" },
+                      {
+                        id: "profile",
+                        icon: User,
+                        label: t("profile.sidebar.profile_info"),
+                      },
+                      {
+                        id: "orders",
+                        icon: Package,
+                        label: t("profile.sidebar.my_orders"),
+                      },
+                      {
+                        id: "addresses",
+                        icon: MapPin,
+                        label: t("profile.sidebar.addresses"),
+                      },
                     ].map((item, index) => (
                       <motion.button
                         key={item.id}
@@ -972,9 +1171,10 @@ const Profile = () => {
                 </div>
               </motion.div>
 
-              {/* Main Content - Profile Info Tab */}
+              {/* Main Content */}
               <div className="lg:col-span-3">
                 <AnimatePresence mode="wait">
+                  {/* Profile Tab - Keep existing */}
                   {activeTab === "profile" && (
                     <motion.div
                       key="profile"
@@ -986,7 +1186,7 @@ const Profile = () => {
                     >
                       <div className="flex justify-between items-center mb-6">
                         <h2 className="text-[16px] md:text-[24px] font-body font-bold">
-                          Profile Information
+                          {t("profile.personal_info.title")}
                         </h2>
                         <AnimatePresence mode="wait">
                           {!isEditing ? (
@@ -1001,7 +1201,7 @@ const Profile = () => {
                               className="flex items-center font-body gap-2 text-[12px] md:text-[16px] bg-linear-to-tr from-white/20 via-black/10 to-white/20 border border-white/40 text-white px-3 md:px-4 py-2 rounded-lg hover:bg-black transition-all duration-300"
                             >
                               <Edit2 size={mobileView ? 14 : 18} />
-                              Edit Profile
+                              {t("profile.personal_info.edit_btn")}
                             </motion.button>
                           ) : (
                             <motion.div
@@ -1027,7 +1227,7 @@ const Profile = () => {
                                 ) : (
                                   <Save size={mobileView ? 14 : 18} />
                                 )}
-                                Save
+                                {t("profile.personal_info.save_btn")}
                               </motion.button>
                               <motion.button
                                 type="button"
@@ -1037,7 +1237,7 @@ const Profile = () => {
                                 className="flex items-center gap-2 text-[12px] md:text-[16px] bg-red-800/20 border border-red-700 px-3 md:px-4 py-2 rounded-lg hover:bg-red-700 transition-all duration-300"
                               >
                                 <X size={mobileView ? 14 : 18} />
-                                Cancel
+                                {t("profile.personal_info.cancel_btn")}
                               </motion.button>
                             </motion.div>
                           )}
@@ -1048,35 +1248,35 @@ const Profile = () => {
                         {[
                           {
                             name: "name",
-                            label: "Full Name",
+                            label: t("profile.personal_info.labels.full_name"),
                             icon: User,
                             value: userData.name,
                             type: "text",
                           },
                           {
                             name: "email",
-                            label: "Email Address",
+                            label: t("profile.personal_info.labels.email"),
                             icon: Mail,
                             value: userData.email,
                             type: "email",
                           },
                           {
                             name: "phone",
-                            label: "Phone Number",
+                            label: t("profile.personal_info.labels.phone"),
                             icon: Phone,
                             value: userData.phone,
                             type: "tel",
                           },
                           {
                             name: "dob",
-                            label: "Date of Birth",
+                            label: t("profile.personal_info.labels.dob"),
                             icon: Calendar,
                             value: userData.dob,
                             type: "date",
                           },
                           {
                             name: "gender",
-                            label: "Gender",
+                            label: t("profile.personal_info.labels.gender"),
                             icon: User,
                             value: userData.gender,
                             type: "select",
@@ -1108,16 +1308,24 @@ const Profile = () => {
                                     className="outline-none flex-1 text-[14px] md:text-[16px] text-white bg-black"
                                   >
                                     <option value="" className="bg-black">
-                                      Select Gender
+                                      {t(
+                                        "profile.personal_info.gender_options.select"
+                                      )}
                                     </option>
                                     <option value="Male" className="bg-black">
-                                      Male
+                                      {t(
+                                        "profile.personal_info.gender_options.male"
+                                      )}
                                     </option>
                                     <option value="Female" className="bg-black">
-                                      Female
+                                      {t(
+                                        "profile.personal_info.gender_options.female"
+                                      )}
                                     </option>
                                     <option value="Other" className="bg-black">
-                                      Other
+                                      {t(
+                                        "profile.personal_info.gender_options.other"
+                                      )}
                                     </option>
                                   </select>
                                 ) : (
@@ -1143,7 +1351,7 @@ const Profile = () => {
                     </motion.div>
                   )}
 
-                  {/* Orders Tab */}
+                  {/* ✅ UPDATED - Orders Tab with Return Button */}
                   {activeTab === "orders" && (
                     <motion.div
                       key="orders"
@@ -1154,21 +1362,23 @@ const Profile = () => {
                       className="space-y-4 font-body"
                     >
                       <h2 className="text-[24px] font-body font-bold mb-6">
-                        My Orders
+                        {t("profile.orders.title")}
                       </h2>
 
                       {orders.length === 0 ? (
-                        <div className="bg-black rounded-[20px] p-12 border border-gray-800 text-center">
+                        <div className="bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20 rounded-[20px] p-12 text-center">
                           <Package
                             size={48}
                             className="mx-auto mb-4 text-gray-600"
                           />
-                          <p className="text-gray-400 text-lg">No orders yet</p>
+                          <p className="text-gray-400 text-lg">
+                            {t("profile.orders.no_orders")}
+                          </p>
                           <button
                             onClick={() => navigate("/product")}
-                            className="mt-4 bg-white text-black px-6 py-3 rounded-lg hover:bg-gray-200 transition-all"
+                            className="mt-4 bg-white text-black font-body px-6 py-3 rounded-full hover:bg-gray-200 transition-all"
                           >
-                            Start Shopping
+                            {t("profile.orders.start_shopping")}
                           </button>
                         </div>
                       ) : (
@@ -1187,7 +1397,7 @@ const Profile = () => {
                                   {order.order_id || order.id}
                                 </h3>
                                 <p className="text-gray-400 text-[12px] md:text-[14px]">
-                                  Order Date:{" "}
+                                  {t("profile.orders.order_date")}{" "}
                                   {new Date(
                                     order.created_at || order.date
                                   ).toLocaleDateString()}
@@ -1203,7 +1413,8 @@ const Profile = () => {
                                   className="text-gray-400"
                                 />
                                 <span className="text-gray-400">
-                                  {order.items?.length || order.items} Items
+                                  {order.items?.length || order.items}{" "}
+                                  {t("profile.orders.items")}
                                 </span>
                               </div>
                               <div className="flex flex-wrap gap-2 mb-4">
@@ -1226,16 +1437,19 @@ const Profile = () => {
                                 <span className="text-2xl font-sans font-bold text-white">
                                   ₹{order.total || order.total_amount}
                                 </span>
-                                <motion.button
-                                  whileHover={{ scale: 1.05 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  onClick={() =>
-                                    navigate(`/orders/${order.id || order._id}`)
-                                  }
-                                  className="bg-white text-black px-6 py-2 rounded-full hover:bg-gray-200 transition-all duration-300 font-body font-[500]"
-                                >
-                                  View Details
-                                </motion.button>
+
+                                {/* ✅ RETURN BUTTON - Only show for Delivered orders */}
+                                {order.status === "Delivered" && (
+                                  <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleReturnClick(order)}
+                                    className="bg-white text-black px-6 py-2 text-[12px] md:text-[14px] rounded-full hover:bg-gray-200 transition-all duration-300 font-body font-[500] flex items-center gap-2"
+                                  >
+                                    <RefreshCw size={16} />
+                                    Return Order
+                                  </motion.button>
+                                )}
                               </div>
                             </div>
                           </motion.div>
@@ -1244,7 +1458,7 @@ const Profile = () => {
                     </motion.div>
                   )}
 
-                  {/* Addresses Tab */}
+                  {/* Addresses Tab - Keep existing */}
                   {activeTab === "addresses" && (
                     <motion.div
                       key="addresses"
@@ -1255,7 +1469,7 @@ const Profile = () => {
                     >
                       <div className="flex justify-between font-body items-center mb-6">
                         <h2 className="text-[16px] md:text-[24px] font-bold">
-                          Saved Addresses
+                          {t("profile.addresses.title")}
                         </h2>
                         <motion.button
                           whileHover={{ scale: 1.05 }}
@@ -1263,24 +1477,24 @@ const Profile = () => {
                           onClick={handleAddAddressClick}
                           className=" text-white bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20 text-[12px] md:text-[14px] px-4 py-3 rounded-lg hover:bg-white/20 transition-all duration-300 "
                         >
-                          + Add New Address
+                          {t("profile.addresses.add_new_btn")}
                         </motion.button>
                       </div>
 
                       {addresses.length === 0 ? (
-                        <div className="bg-black rounded-[20px] p-12 border border-gray-800 text-center">
+                        <div className="bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20 rounded-[20px] p-12 text-center">
                           <MapPin
                             size={48}
                             className="mx-auto mb-4 text-gray-600"
                           />
                           <p className="text-gray-400 text-lg">
-                            No saved addresses
+                            {t("profile.addresses.no_saved")}
                           </p>
                           <button
                             onClick={handleAddAddressClick}
-                            className="mt-4 bg-white text-black px-6 py-3 rounded-lg hover:bg-gray-200 transition-all"
+                            className="mt-4 bg-white text-black font-body px-6 py-3 rounded-lg hover:bg-gray-200 transition-all"
                           >
-                            Add Address
+                            {t("profile.addresses.add_btn_short")}
                           </button>
                         </div>
                       ) : (
@@ -1311,7 +1525,6 @@ const Profile = () => {
                                       {addr.type}
                                     </span>
                                   </div>
-                                  
                                 </div>
                                 <p className="text-gray-400 text-[14px] font-body md:text-[16px] mb-4">
                                   {addr.area && `${addr.area}, `}
@@ -1322,14 +1535,13 @@ const Profile = () => {
                                   {addr.pincode}
                                 </p>
                                 <div className="flex gap-2">
-                                  
                                   <motion.button
-                                    whileHover={{ scale: 0.90 }}
+                                    whileHover={{ scale: 0.9 }}
                                     whileTap={{ scale: 0.95 }}
                                     onClick={() => handleEditAddressClick(addr)}
                                     className="flex-1 bg-white hover:bg-white/10 hover:text-white border border-white/20 text-[12px] font-body md:text-[16px] px-4 py-2 rounded-full text-black transition-all duration-200"
                                   >
-                                    Edit
+                                    {t("profile.addresses.edit")}
                                   </motion.button>
                                   <motion.button
                                     whileHover={{
@@ -1340,7 +1552,9 @@ const Profile = () => {
                                     onClick={() => {
                                       if (
                                         window.confirm(
-                                          "Are you sure you want to delete this address?"
+                                          `${t(
+                                            "profile.addresses.delete_confirm"
+                                          )}`
                                         )
                                       ) {
                                         deleteAddress(addr.id || addr._id);
@@ -1358,7 +1572,6 @@ const Profile = () => {
                       )}
                     </motion.div>
                   )}
-
                 </AnimatePresence>
               </div>
             </div>
@@ -1366,8 +1579,394 @@ const Profile = () => {
         </>
       )}
 
-      
-      {/* add address popup */}
+      {/* ✅ NEW - Return Order Popup with Refund Details */}
+      <AnimatePresence>
+        {showReturnPopup && selectedOrder && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50"
+              onClick={handleCancelReturn}
+            />
+
+            <div className="fixed inset-0 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <motion.div
+                variants={popupVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="bg-linear-to-br max-h-[90vh] overflow-scroll from-white/10 via-black/10 to-white/10 border border-white/20 rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl my-8"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="flex justify-between items-center mb-6">
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-bold font-heading">
+                      Return Order
+                    </h2>
+                    <p className="text-gray-400 text-sm mt-1">
+                      Order ID: {selectedOrder.order_id || selectedOrder.id}
+                    </p>
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.1, rotate: 90 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={handleCancelReturn}
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    <X size={24} />
+                  </motion.button>
+                </div>
+
+                {/* Form */}
+                <div className="space-y-6">
+                  {/* Reason Dropdown */}
+                  <div>
+                    <label className="text-gray-400 text-sm mb-2 block font-body">
+                      Reason for Return <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="reason"
+                      value={returnFormData.reason}
+                      onChange={handleReturnInputChange}
+                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                    >
+                      <option value="" className="bg-white text-black font-body">
+                        Select a reason
+                      </option>
+                      <option value="size_not_fitting" className="bg-white text-black font-body">
+                        Size not fitting
+                      </option>
+                      <option value="wrong_item" className="bg-white text-black font-body">
+                        Received wrong item
+                      </option>
+                      <option value="damaged" className="bg-white text-black font-body">
+                        Damaged/Defective
+                      </option>
+                      <option value="quality" className="bg-white text-black font-body">
+                        Quality not good
+                      </option>
+                    </select>
+                  </div>
+
+                  {/* Comments Textarea */}
+                  <div>
+                    <label className="text-gray-400 text-sm mb-2 block font-body">
+                      Additional Comments{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      name="comments"
+                      value={returnFormData.comments}
+                      onChange={handleReturnInputChange}
+                      placeholder="Please provide more details about the issue..."
+                      rows="4"
+                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body resize-none"
+                    />
+                  </div>
+
+                  {/* Action Required */}
+                  <div>
+                    <label className="text-gray-400 text-sm mb-3 block font-body">
+                      What would you like?{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <motion.button
+                        type="button"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() =>
+                          setReturnFormData({
+                            ...returnFormData,
+                            action: "refund",
+                          })
+                        }
+                        className={`p-4 rounded-xl border-2 transition-all duration-300 flex flex-col items-center gap-2 ${
+                          returnFormData.action === "refund"
+                            ? "border-green-500 bg-green-500/20 text-white"
+                            : "border-white/20 bg-white/5 text-gray-400 hover:border-white/40"
+                        }`}
+                      >
+                        <DollarSign size={24} />
+                        <span className="font-body font-semibold">Refund</span>
+                      </motion.button>
+
+                      <motion.button
+                        type="button"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() =>
+                          setReturnFormData({
+                            ...returnFormData,
+                            action: "exchange",
+                          })
+                        }
+                        className={`p-4 rounded-xl border-2 transition-all duration-300 flex flex-col items-center gap-2 ${
+                          returnFormData.action === "exchange"
+                            ? "border-blue-500 bg-blue-500/20 text-white"
+                            : "border-white/20 bg-white/5 text-gray-400 hover:border-white/40"
+                        }`}
+                      >
+                        <RefreshCw size={24} />
+                        <span className="font-body font-semibold">
+                          Exchange
+                        </span>
+                      </motion.button>
+                    </div>
+                  </div>
+
+                  {/* ✅ NEW - Refund Payment Details Section */}
+                  <AnimatePresence>
+                    {returnFormData.action === "refund" && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="border-t border-white/20 pt-6 space-y-4"
+                      >
+                        <h3 className="text-white font-body font-bold text-lg mb-4">
+                          Refund Payment Details{" "}
+                          <span className="text-red-500">*</span>
+                        </h3>
+
+                        {/* Payment Method Toggle */}
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <motion.button
+                            type="button"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => setRefundPaymentMethod("upi")}
+                            className={`p-3 rounded-lg border-2 transition-all duration-300 font-body font-semibold ${
+                              refundPaymentMethod === "upi"
+                                ? "border-purple-500 bg-purple-500/20 text-white"
+                                : "border-white/20 bg-white/5 text-gray-400 hover:border-white/40"
+                            }`}
+                          >
+                            UPI ID
+                          </motion.button>
+
+                          <motion.button
+                            type="button"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => setRefundPaymentMethod("bank")}
+                            className={`p-3 rounded-lg border-2 transition-all duration-300 font-body font-semibold ${
+                              refundPaymentMethod === "bank"
+                                ? "border-purple-500 bg-purple-500/20 text-white"
+                                : "border-white/20 bg-white/5 text-gray-400 hover:border-white/40"
+                            }`}
+                          >
+                            Bank Account
+                          </motion.button>
+                        </div>
+
+                        {/* UPI Form */}
+                        {refundPaymentMethod === "upi" && (
+                          <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <label className="text-gray-400 text-sm mb-2 block font-body">
+                              UPI ID <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              name="upi_id"
+                              value={refundPaymentDetails.upi_id}
+                              onChange={handlePaymentDetailsChange}
+                              placeholder="example@upi"
+                              className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-purple-500 transition-colors font-body"
+                            />
+                            <p className="text-xs text-gray-500 mt-2">
+                              Enter your UPI ID (e.g., yourname@paytm,
+                              9876543210@ybl)
+                            </p>
+                          </motion.div>
+                        )}
+
+                        {/* Bank Account Form */}
+                        {refundPaymentMethod === "bank" && (
+                          <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="space-y-4"
+                          >
+                            {/* Account Holder Name */}
+                            <div>
+                              <label className="text-gray-400 text-sm mb-2 block font-body">
+                                Account Holder Name{" "}
+                                <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                name="account_holder_name"
+                                value={refundPaymentDetails.account_holder_name}
+                                onChange={handlePaymentDetailsChange}
+                                placeholder="Enter account holder name"
+                                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-purple-500 transition-colors font-body"
+                              />
+                            </div>
+
+                            {/* Account Number */}
+                            <div>
+                              <label className="text-gray-400 text-sm mb-2 block font-body">
+                                Account Number{" "}
+                                <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                name="account_number"
+                                value={refundPaymentDetails.account_number}
+                                onChange={handlePaymentDetailsChange}
+                                placeholder="Enter account number"
+                                maxLength="18"
+                                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-purple-500 transition-colors font-body"
+                              />
+                            </div>
+
+                            {/* IFSC Code */}
+                            <div>
+                              <label className="text-gray-400 text-sm mb-2 block font-body">
+                                IFSC Code{" "}
+                                <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                name="ifsc_code"
+                                value={refundPaymentDetails.ifsc_code}
+                                onChange={handlePaymentDetailsChange}
+                                placeholder="Enter IFSC code"
+                                maxLength="11"
+                                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-purple-500 transition-colors font-body uppercase"
+                                style={{ textTransform: "uppercase" }}
+                              />
+                              <p className="text-xs text-gray-500 mt-1">
+                                11-character IFSC code (e.g., SBIN0001234)
+                              </p>
+                            </div>
+
+                            {/* Bank Name */}
+                            <div>
+                              <label className="text-gray-400 text-sm mb-2 block font-body">
+                                Bank Name <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                name="bank_name"
+                                value={refundPaymentDetails.bank_name}
+                                onChange={handlePaymentDetailsChange}
+                                placeholder="Enter bank name"
+                                required
+                                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-purple-500 transition-colors font-body"
+                              />
+                            </div>
+                          </motion.div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Image Upload */}
+                  <div>
+                    <label className="text-gray-400 text-sm mb-2 block font-body">
+                      Upload Images (Optional) - Max 5 images
+                    </label>
+                    <div className="space-y-3">
+                      <label className="w-full bg-white/10 border-2 border-dashed border-white/20 rounded-lg px-4 py-6 text-white outline-none hover:border-gray-500 transition-colors font-body cursor-pointer flex flex-col items-center gap-2">
+                        <Upload size={32} className="text-gray-400" />
+                        <span className="text-sm text-gray-400">
+                          Click to upload or drag and drop
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          PNG, JPG, JPEG (Max 5MB each)
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handleImageUpload}
+                          className="hidden"
+                        />
+                      </label>
+
+                      {/* Image Previews */}
+                      {imagePreview.length > 0 && (
+                        <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+                          {imagePreview.map((preview, index) => (
+                            <motion.div
+                              key={index}
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              className="relative group"
+                            >
+                              <img
+                                src={preview}
+                                alt={`Preview ${index + 1}`}
+                                className="w-full h-20 object-cover rounded-lg border border-white/20"
+                              />
+                              <motion.button
+                                type="button"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => handleRemoveImage(index)}
+                                className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <X size={14} />
+                              </motion.button>
+                            </motion.div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 mt-8">
+                  <motion.button
+                    type="button"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleSubmitReturn}
+                    disabled={submittingReturn}
+                    className="flex-1 bg-green-600/20 border border-green-700 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition-all duration-300 flex items-center justify-center gap-2 font-body disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {submittingReturn ? (
+                      <>
+                        <Loader size={20} className="animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw size={20} />
+                        Submit Return Request
+                      </>
+                    )}
+                  </motion.button>
+                  <motion.button
+                    type="button"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleCancelReturn}
+                    className="flex-1 bg-red-600/20 border border-red-700 text-white font-bold py-3 rounded-lg hover:bg-red-700 transition-all duration-300 flex items-center justify-center gap-2 font-body"
+                  >
+                    <X size={20} />
+                    Cancel
+                  </motion.button>
+                </div>
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Add address popup - Keep existing code */}
       <AnimatePresence>
         {showAddAddressPopup && (
           <>
@@ -1388,10 +1987,9 @@ const Profile = () => {
                 className="bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20 rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl my-8"
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Header */}
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl md:text-3xl font-bold font-heading">
-                    Add New Address
+                    {t("profile.address_form.add_title")}
                   </h2>
                   <motion.button
                     whileHover={{ scale: 1.1, rotate: 90 }}
@@ -1403,12 +2001,10 @@ const Profile = () => {
                   </motion.button>
                 </div>
 
-                {/* Form */}
                 <div className="space-y-4">
-                  {/* Area */}
                   <div>
                     <label className="text-gray-400 text-sm mb-2 block font-body">
-                      Area / Locality *
+                      {t("profile.address_form.labels.area")}
                     </label>
                     <input
                       type="text"
@@ -1420,10 +2016,9 @@ const Profile = () => {
                     />
                   </div>
 
-                  {/* Landmark */}
                   <div>
                     <label className="text-gray-400 text-sm mb-2 block font-body">
-                      Landmark (Optional)
+                      {t("profile.address_form.labels.landmark")}
                     </label>
                     <input
                       type="text"
@@ -1435,11 +2030,10 @@ const Profile = () => {
                     />
                   </div>
 
-                  {/* Town/City & State */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="text-gray-400 text-sm mb-2 block font-body">
-                        Town / City *
+                        {t("profile.address_form.labels.city")}
                       </label>
                       <input
                         type="text"
@@ -1452,7 +2046,7 @@ const Profile = () => {
                     </div>
                     <div>
                       <label className="text-gray-400 text-sm mb-2 block font-body">
-                        State *
+                        {t("profile.address_form.labels.state")}
                       </label>
                       <input
                         type="text"
@@ -1465,11 +2059,10 @@ const Profile = () => {
                     </div>
                   </div>
 
-                  {/* Country & Pincode */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="text-gray-400 text-sm mb-2 block font-body">
-                        Country *
+                        {t("profile.address_form.labels.country")}
                       </label>
                       <input
                         type="text"
@@ -1482,7 +2075,7 @@ const Profile = () => {
                     </div>
                     <div>
                       <label className="text-gray-400 text-sm mb-2 block font-body">
-                        Pincode *
+                        {t("profile.address_form.labels.pincode")}
                       </label>
                       <input
                         type="text"
@@ -1496,10 +2089,9 @@ const Profile = () => {
                     </div>
                   </div>
 
-                  {/* Address Type */}
                   <div>
                     <label className="text-gray-400 text-sm mb-2 block font-body">
-                      Address Type
+                      {t("profile.address_form.labels.type")}
                     </label>
                     <select
                       name="type"
@@ -1507,32 +2099,28 @@ const Profile = () => {
                       onChange={handleAddressInputChange}
                       className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
                     >
-                      <option value="Home">Home</option>
-                      <option value="Work">Work</option>
-                      <option value="Other">Other</option>
+                      <option
+                        className="bg-transparent font-body text-black"
+                        value="Home"
+                      >
+                        {t("profile.address_form.types.home")}
+                      </option>
+                      <option
+                        className="bg-transparent font-body text-black"
+                        value="Work"
+                      >
+                        {t("profile.address_form.types.work")}
+                      </option>
+                      <option
+                        className="bg-transparent font-body text-black"
+                        value="Other"
+                      >
+                        {t("profile.address_form.types.other")}
+                      </option>
                     </select>
                   </div>
-
-                  {/* Default Address Checkbox
-                  <div className="flex items-center gap-3 pt-2">
-                    <input
-                      type="checkbox"
-                      name="isDefault"
-                      id="isDefault"
-                      checked={newAddress.isDefault}
-                      onChange={handleAddressInputChange}
-                      className="w-5 h-5 rounded border-gray-700 bg-gray-800/50 text-white focus:ring-2 focus:ring-gray-500 cursor-pointer"
-                    />
-                    <label
-                      htmlFor="isDefault"
-                      className="text-gray-300 font-body cursor-pointer"
-                    >
-                      Set as default address
-                    </label>
-                  </div> */}
                 </div>
 
-                {/* Action Buttons */}
                 <div className="flex gap-3 mt-8">
                   <motion.button
                     type="button"
@@ -1545,12 +2133,12 @@ const Profile = () => {
                     {savingAddress ? (
                       <>
                         <Loader size={20} className="animate-spin" />
-                        Saving...
+                        {t("profile.address_form.buttons.saving")}
                       </>
                     ) : (
                       <>
                         <Save size={20} />
-                        Save Address
+                        {t("profile.address_form.buttons.save")}
                       </>
                     )}
                   </motion.button>
@@ -1562,7 +2150,7 @@ const Profile = () => {
                     className="flex-1 bg-red-600/20 border border-red-700 text-white font-bold py-3 rounded-lg hover:bg-red-700 transition-all duration-300 flex items-center justify-center gap-2 font-body"
                   >
                     <X size={20} />
-                    Cancel
+                    {t("profile.address_form.buttons.cancel")}
                   </motion.button>
                 </div>
               </motion.div>
@@ -1571,7 +2159,7 @@ const Profile = () => {
         )}
       </AnimatePresence>
 
-      {/* edit address popup */}
+      {/* edit address popup - Keep existing code */}
       <AnimatePresence>
         {showEditAddressPopup && (
           <>
@@ -1592,10 +2180,9 @@ const Profile = () => {
                 className="bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20 rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl my-8"
                 onClick={(e) => e.stopPropagation()}
               >
-                {/* Header */}
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl md:text-3xl font-bold font-heading">
-                    Edit Address
+                    {t("profile.address_form.edit_title")}
                   </h2>
                   <motion.button
                     whileHover={{ scale: 1.1, rotate: 90 }}
@@ -1607,12 +2194,10 @@ const Profile = () => {
                   </motion.button>
                 </div>
 
-                {/* Form */}
                 <div className="space-y-4">
-                  {/* Area */}
                   <div>
                     <label className="text-gray-400 text-sm mb-2 block font-body">
-                      Area / Locality *
+                      {t("profile.address_form.labels.area")}
                     </label>
                     <input
                       type="text"
@@ -1624,10 +2209,9 @@ const Profile = () => {
                     />
                   </div>
 
-                  {/* Landmark */}
                   <div>
                     <label className="text-gray-400 text-sm mb-2 block font-body">
-                      Landmark (Optional)
+                      {t("profile.address_form.labels.landmark")}
                     </label>
                     <input
                       type="text"
@@ -1639,11 +2223,10 @@ const Profile = () => {
                     />
                   </div>
 
-                  {/* Town/City & State */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="text-gray-400 text-sm mb-2 block font-body">
-                        Town / City *
+                        {t("profile.address_form.labels.city")}
                       </label>
                       <input
                         type="text"
@@ -1656,7 +2239,7 @@ const Profile = () => {
                     </div>
                     <div>
                       <label className="text-gray-400 text-sm mb-2 block font-body">
-                        State *
+                        {t("profile.address_form.labels.state")}
                       </label>
                       <input
                         type="text"
@@ -1669,11 +2252,10 @@ const Profile = () => {
                     </div>
                   </div>
 
-                  {/* Country & Pincode */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="text-gray-400 text-sm mb-2 block font-body">
-                        Country *
+                        {t("profile.address_form.labels.country")}
                       </label>
                       <input
                         type="text"
@@ -1686,7 +2268,7 @@ const Profile = () => {
                     </div>
                     <div>
                       <label className="text-gray-400 text-sm mb-2 block font-body">
-                        Pincode *
+                        {t("profile.address_form.labels.pincode")}
                       </label>
                       <input
                         type="text"
@@ -1700,10 +2282,9 @@ const Profile = () => {
                     </div>
                   </div>
 
-                  {/* Address Type */}
                   <div>
                     <label className="text-gray-400 text-sm mb-2 block font-body">
-                      Address Type
+                      {t("profile.address_form.labels.type")}
                     </label>
                     <select
                       name="type"
@@ -1711,32 +2292,28 @@ const Profile = () => {
                       onChange={handleEditAddressInputChange}
                       className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
                     >
-                      <option value="Home">Home</option>
-                      <option value="Work">Work</option>
-                      <option value="Other">Other</option>
+                      <option
+                        className="bg-transparent font-body text-black"
+                        value="Home"
+                      >
+                        {t("profile.address_form.types.home")}
+                      </option>
+                      <option
+                        className="bg-transparent font-body text-black"
+                        value="Work"
+                      >
+                        {t("profile.address_form.types.work")}
+                      </option>
+                      <option
+                        className="bg-transparent font-body text-black"
+                        value="Other"
+                      >
+                        {t("profile.address_form.types.other")}
+                      </option>
                     </select>
                   </div>
-
-                  {/* Default Address Checkbox */}
-                  {/* <div className="flex items-center gap-3 pt-2">
-                    <input
-                      type="checkbox"
-                      name="isDefault"
-                      id="editIsDefault"
-                      checked={editAddressData.isDefault}
-                      onChange={handleEditAddressInputChange}
-                      className="w-5 h-5 rounded border-gray-700 bg-gray-800/50 text-white focus:ring-2 focus:ring-gray-500 cursor-pointer"
-                    />
-                    <label
-                      htmlFor="editIsDefault"
-                      className="text-gray-300 font-body cursor-pointer"
-                    >
-                      Set as default address
-                    </label>
-                  </div> */}
                 </div>
 
-                {/* Action Buttons */}
                 <div className="flex gap-3 mt-8">
                   <motion.button
                     type="button"
@@ -1749,12 +2326,12 @@ const Profile = () => {
                     {savingAddress ? (
                       <>
                         <Loader size={20} className="animate-spin" />
-                        Updating...
+                        {t("profile.address_form.buttons.updating")}
                       </>
                     ) : (
                       <>
                         <Save size={20} />
-                        Update Address
+                        {t("profile.address_form.buttons.update")}
                       </>
                     )}
                   </motion.button>
@@ -1766,7 +2343,7 @@ const Profile = () => {
                     className="flex-1 bg-red-600/20 border border-red-700 text-white font-bold py-3 rounded-lg hover:bg-red-700 transition-all duration-300 flex items-center justify-center gap-2 font-body"
                   >
                     <X size={20} />
-                    Cancel
+                    {t("profile.address_form.buttons.cancel")}
                   </motion.button>
                 </div>
               </motion.div>

@@ -6,8 +6,10 @@ import { assets } from "../../../public/assets/asset";
 import { CartContext } from "../../Context/UseCartContext";
 import { motion } from "framer-motion";
 import { getImageUrl } from "../../utils/imageHelper";
+import { useTranslation } from "react-i18next";
 
 function Cart() {
+  const {t} = useTranslation()
   const navigate = useNavigate();
   const {
     cart,
@@ -212,7 +214,7 @@ function Cart() {
           variants={titleVariants}
           className="mb-8 text-[20px] md:text-[50px] font-[950] font-heading capitalize text-white"
         >
-          Shopping Cart
+          {t("cart.page_title")}
         </motion.h1>
       </div>
 
@@ -225,7 +227,7 @@ function Cart() {
                 variants={emptyCartVariants}
                 className="p-8 text-center font-body text-[13px] text-neutral-400"
               >
-                Your cart is empty.
+                {t("cart.empty_message")}
               </motion.div>
             ) : (
               cart.map((it, index) => {
@@ -285,7 +287,7 @@ function Cart() {
                                 className="mt-2 inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-md px-2 py-1 transition-colors"
                               >
                                 <span className="text-gray-400 text-[8px] font-body">
-                                  Size:
+                                  {t('cart.table.size')}:
                                 </span>
                                 <span className="text-white font-bold text-[8px] font-body">
                                   {it.selectedSize}
@@ -387,11 +389,11 @@ function Cart() {
                 variants={headerTableVariants}
                 className="lg:w-full grid grid-cols-12 px-4 py-4 text-[12px] font-body uppercase text-neutral-400"
               >
-                <div className="col-span-5">Product</div>
-                <div className="col-span-2 text-center">Size</div>
-                <div className="col-span-2 text-center">Quantity</div>
-                <div className="col-span-2 text-center">Total</div>
-                <div className="col-span-1 text-right">Action</div>
+                <div className="col-span-5">{t('cart.table.product')}</div>
+                <div className="col-span-2 text-center">{t('cart.table.size')}</div>
+                <div className="col-span-2 text-center">{t('cart.table.quantity')}</div>
+                <div className="col-span-2 text-center">{t('cart.table.total')}</div>
+                <div className="col-span-1 text-right">{t('cart.table.action')}</div>
               </motion.div>
               <div className="h-px bg-neutral-800" />
 
@@ -400,7 +402,7 @@ function Cart() {
                   variants={emptyCartVariants}
                   className="p-8 text-center font-body text-[13px] text-neutral-400"
                 >
-                  Your cart is empty.
+                   {t("cart.empty_message")}
                 </motion.div>
               ) : (
                 cart.map((it, index) => {
@@ -466,7 +468,7 @@ function Cart() {
                             className="inline-flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 rounded-full px-4 py-2 transition-all group"
                           >
                             <span className="text-gray-400 text-[12px] font-body group-hover:text-white">
-                              Size:
+                             {t('cart.table.size')}:
                             </span>
                             <span className="text-white font-bold text-[12px] font-body">
                               {it.selectedSize}
@@ -588,29 +590,29 @@ function Cart() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
               >
-                Order Summary
+                {t('cart.summary.title')}
               </motion.h3>
               <div className="my-5 h-px bg-neutral-800" />
 
               <div className="font-body text-[14px] flex flex-col gap-3">
                 <SummaryRow
-                  label="Total no. of Items"
+                  label={t('cart.summary.total_items')}
                   value={cart.reduce((sum, it) => sum + it.quantity, 0)}
                   delay={0.6}
                 />
                 <SummaryRow
-                  label="Sub Total"
+                  label={t('cart.summary.subtotal')}
                   value={currency(subtotal)}
                   delay={0.7}
                 />
                 <SummaryRow
-                  label="Delivery fee"
+                  label={t('cart.summary.delivery_fee')}
                   value={currency(cart.length ? shipping : 0)}
                   delay={0.8}
                 />
                 <div className="my-4 h-px bg-neutral-800" />
                 <SummaryRow
-                  label="Total"
+                  label={t('cart.summary.total')}
                   value={currency(cart.length ? totalPrice : 0)}
                   bold
                   large
@@ -636,7 +638,7 @@ function Cart() {
                   scale: cart.length === 0 || isProcessing ? 1 : 0.95,
                 }}
               >
-                {isProcessing ? "Processing..." : "Checkout Now"}
+                {isProcessing ? `${t('cart.summary.processing')}` : `${t('cart.summary.checkout_btn')}`}
               </motion.button>
             </motion.div>
           </aside>
