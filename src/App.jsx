@@ -36,6 +36,8 @@ import AdminNotifications from "./Components/Admin/AdminNotifications";
 import './i18n';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import AdminReturnRequests from "./Components/Admin/AdminReturnRequests";
+import VerifyEmail from "./Components/SignUp/VerifyEmail";
+
 const About = lazy(() => import("./Components/About/About"));
 const Faq = lazy(() => import("./Components/FAQ/Faq"));
 const Cart = lazy(() => import("./Components/Cart/Cart"));
@@ -103,6 +105,7 @@ function AppContent() {
     "/terms-and-conditions",
     "/contact",
     "/signup",
+    "/Verify-Email",
     "/b2b-signup",
     "/signin",
     "/order-success",
@@ -175,6 +178,7 @@ function AppContent() {
           <Route path="/contact" element={<ContactForm />} />
           <Route path="/order-success" element={<PaymentSuccess />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/b2b-signup" element={<B2bSignUp />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/b2b-signin" element={<B2bSignIn />} />
