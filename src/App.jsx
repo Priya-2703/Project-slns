@@ -33,7 +33,8 @@ import CustomerManagement from "./Components/Admin/CustomerManagement";
 import BannerManagement from "./Components/Admin/BannerManagement";
 import PaymentSuccess from "./Components/PaymentSuccess";
 import AdminNotifications from "./Components/Admin/AdminNotifications";
-
+import './i18n';
+import LanguageSwitcher from './components/LanguageSwitcher';
 const About = lazy(() => import("./Components/About/About"));
 const Faq = lazy(() => import("./Components/FAQ/Faq"));
 const Cart = lazy(() => import("./Components/Cart/Cart"));
@@ -129,16 +130,17 @@ function AppContent() {
     matchPath({ path: route, end: true }, location.pathname)
   );
 
-  const isMobile = window.innerWidth <=800
+  const isMobile = window.innerWidth <= 800;
 
   return (
     <>
+      {!isAdminRoute && <LanguageSwitcher/>}
       <ScrollToTop behavior="smooth" />
 
       {/* Show Butterfly and Yellow Cursor only for NON-admin routes */}
       {!isAdminRoute && !isMobile && (
         <>
-          <YellowCursor size={18} hideNative />
+          <YellowCursor size={14} hideNative />
           <ButterflyLottieFollower
             hideCursor={false}
             animationData={assets.butterflyAnim}
@@ -151,7 +153,6 @@ function AppContent() {
 
       {/* Show Navbar only if valid route */}
       {isValidRoute && <Navbar />}
-
       <Suspense fallback={<LoaderAni />}>
         <Routes>
           <Route path="/" element={<Landing />} />
@@ -176,7 +177,7 @@ function AppContent() {
           <Route path="/signin" element={<SignIn />} />
           <Route path="/b2b-signin" element={<B2bSignIn />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          //admin new
+          {/* admin new */}
           <Route
             path="/signin"
             element={
@@ -285,7 +286,7 @@ function AppContent() {
       </Suspense>
 
       {/* Show Footer only if valid route */}
-      {isValidRoute && <Footer />}
+      {isValidRoute && !isAdminRoute && <Footer />}
     </>
   );
 }

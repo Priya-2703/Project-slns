@@ -21,6 +21,8 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
+import { TbGenderFemale } from "react-icons/tb";
+import { BsGenderMale } from "react-icons/bs";
 
 export default function CustomerManagement() {
   const API_BASE_URL = import.meta.env.VITE_API_URL;
@@ -55,6 +57,7 @@ export default function CustomerManagement() {
   });
 
   useEffect(() => {
+    fetchCustomersStats();
     fetchCustomers();
   }, []);
 
@@ -62,22 +65,49 @@ export default function CustomerManagement() {
     filterAndSortCustomers();
   }, [customers, searchQuery, statusFilter, sortBy]);
 
+  const fetchCustomersStats = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `${API_BASE_URL}/api/admin/customers/stats`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const stats = data.stats;
+        console.log(stats)
+        calculateStats(stats || []);
+      } else {
+        setError("Failed to fetch customers");
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      setError("Failed to load customers");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch Customers
   const fetchCustomers = async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${API_BASE_URL}/api/customers`, {
+      const response = await fetch(`${API_BASE_URL}/api/admin/customers`, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "ngrok-skip-browser-warning": "true",
         },
       });
 
       if (response.ok) {
         const data = await response.json();
         setCustomers(data.customers || []);
-        calculateStats(data.customers || []);
       } else {
         setError("Failed to fetch customers");
       }
@@ -91,13 +121,10 @@ export default function CustomerManagement() {
 
   // Calculate Statistics
   const calculateStats = (customerData) => {
-    const total = customerData.length;
-    const active = customerData.filter((c) => c.status === "active").length;
+    const total = customerData.total;
+    const active = customerData.active;
     const inactive = total - active;
-    const totalRevenue = customerData.reduce(
-      (sum, c) => sum + (c.total_spent || 0),
-      0
-    );
+    const totalRevenue = customerData.total_revenue;
 
     setStats({ total, active, inactive, totalRevenue });
   };
@@ -193,7 +220,7 @@ export default function CustomerManagement() {
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(
-        `${API_BASE_URL}/api/customers/${selectedCustomer.customer_id}`,
+        `${API_BASE_URL}/api/admin/customers/${selectedCustomer.customer_id}`,
         {
           method: "DELETE",
           headers: {
@@ -281,7 +308,7 @@ export default function CustomerManagement() {
 
   return (
     <div className="min-h-screen bg-black py-20 mt-14">
-      <div className="w-[95%] max-w-7xl mx-auto">
+      <div className="w-[95%] max-w-[90%] mx-auto">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
@@ -310,8 +337,8 @@ export default function CustomerManagement() {
         </div>
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4 backdrop-blur-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white/60 font-body text-sm mb-1">
@@ -327,7 +354,23 @@ export default function CustomerManagement() {
             </div>
           </div>
 
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm">
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4 backdrop-blur-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-white/60 font-body text-sm mb-1">
+                  New Customers <span className="text-[8px] text-white">(last 30 days)</span>
+                </p>
+                <h3 className="text-3xl font-bold text-white font1">
+                  {stats.inactive}
+                </h3>
+              </div>
+              <div className="bg-red-500/20 p-3 rounded-lg">
+                <UserX size={24} className="text-red-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4 backdrop-blur-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white/60 font-body text-sm mb-1">
@@ -341,9 +384,9 @@ export default function CustomerManagement() {
                 <UserCheck size={24} className="text-green-400" />
               </div>
             </div>
-          </div>
+          </div>          
 
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm">
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4 backdrop-blur-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white/60 font-body text-sm mb-1">
@@ -359,14 +402,14 @@ export default function CustomerManagement() {
             </div>
           </div>
 
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6 backdrop-blur-sm">
+          <div className="bg-white/5 border border-white/10 rounded-xl p-4 backdrop-blur-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-white/60 font-body text-sm mb-1">
                   Total Revenue
                 </p>
                 <h3 className="text-3xl font-bold text-white font1 flex items-center">
-                  <IndianRupee size={24} />
+                  <IndianRupee size={14} />
                   {stats.totalRevenue.toLocaleString()}
                 </h3>
               </div>
@@ -471,6 +514,9 @@ export default function CustomerManagement() {
                 <thead className="bg-white/10">
                   <tr>
                     <th className="px-6 py-4 text-left text-white font-body text-sm">
+                      Customer ID
+                    </th>
+                    <th className="px-6 py-4 text-left text-white font-body text-sm">
                       Customer
                     </th>
                     <th className="px-6 py-4 text-left text-white font-body text-sm hidden md:table-cell">
@@ -496,12 +542,18 @@ export default function CustomerManagement() {
                       key={customer.customer_id}
                       className="border-t border-white/10 hover:bg-white/5 transition-colors"
                     >
+                      {/* Customer ID */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <p className="text-white font-body font-semibold capitalize">
+                            #{customer.customer_id}
+                          </p>
+                        </div>
+                      </td>
+
                       {/* Customer Info */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-[#955E30]/20 flex items-center justify-center text-[#955E30] font-bold">
-                            {customer.name?.charAt(0).toUpperCase()}
-                          </div>
                           <div>
                             <p className="text-white font-body font-semibold capitalize">
                               {customer.name}
@@ -663,7 +715,7 @@ export default function CustomerManagement() {
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="bg-gradient-to-br from-black via-gray-900 to-black border border-white/20 rounded-2xl p-6 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              className="bg-gradient-to-br from-white/10 via-black/30 to-white/10 border border-white/20 rounded-2xl p-6 md:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
             >
               {/* Modal Header */}
               <div className="flex justify-between items-center mb-6">
@@ -681,22 +733,39 @@ export default function CustomerManagement() {
               {/* Customer Info */}
               <div className="space-y-6">
                 {/* Avatar & Name */}
-                <div className="flex items-center gap-4 pb-6 border-b border-white/10">
-                  <div className="w-16 h-16 rounded-full bg-[#955E30]/20 flex items-center justify-center text-[#955E30] font-bold text-2xl">
-                    {selectedCustomer.name?.charAt(0).toUpperCase()}
+                <div className="flex items-center justify-between gap-4 pb-6 border-b border-white/10">
+                  <div className="flex justify-center items-center gap-2">
+                    <div className="w-16 h-16 rounded-full bg-[#955E30]/20 flex items-center justify-center text-[#955E30] font-bold text-2xl">
+                      {selectedCustomer.name?.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white capitalize">
+                        {selectedCustomer.name}
+                      </h3>
+                      <span
+                        className={`inline-block mt-1 px-3 py-1 rounded-full text-xs font-semibold ${
+                          selectedCustomer.status === "active"
+                            ? "bg-green-500/20 text-green-400"
+                            : "bg-red-500/20 text-red-400"
+                        }`}
+                      >
+                        {selectedCustomer.status}
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white capitalize">
-                      {selectedCustomer.name}
-                    </h3>
-                    <span
-                      className={`inline-block mt-1 px-3 py-1 rounded-full text-xs font-semibold ${
-                        selectedCustomer.status === "active"
-                          ? "bg-green-500/20 text-green-400"
-                          : "bg-red-500/20 text-red-400"
-                      }`}
-                    >
-                      {selectedCustomer.status}
+                  <div className="flex flex-col items-start justify-center gap-2 text-white font-body">
+                    <p className="flex justify-center items-center gap-2 font-bold underline">
+                      Last order Date
+                    </p>
+                    <span className="flex justify-center items-center gap-1 text-[13px] text-white/80">
+                      <Calendar size={18} className="text-white/60" />{" "}
+                      {new Date(
+                        selectedCustomer.last_order_date
+                      ).toLocaleDateString("en-IN", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
                     </span>
                   </div>
                 </div>
@@ -704,21 +773,52 @@ export default function CustomerManagement() {
                 {/* Contact Information */}
                 <div>
                   <h4 className="text-white/60 font-body text-sm mb-3 uppercase tracking-wide">
-                    Contact Information
+                    User Information
                   </h4>
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3 text-white font-body">
-                      <Mail size={18} className="text-white/60" />
-                      <span>{selectedCustomer.email}</span>
+                    <div className="flex justify-between items-center gap-2">
+                      <div className="flex flex-col gap-2.5">
+                        <div className="flex items-center gap-3 text-white font-body">
+                          <Calendar size={18} className="text-white/60" />
+                          <span>{selectedCustomer.dob || "Not provided"}</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-white font-body">
+                          <BsGenderMale size={18} className="text-white/60" />
+                          <span>{selectedCustomer.gender || "Not provided"}</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-2.5">
+                        <div className="flex items-center gap-3 text-white font-body">
+                          <Mail size={18} className="text-white/60" />
+                          <span>{selectedCustomer.email}</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-white font-body">
+                          <Phone size={18} className="text-white/60" />
+                          <span>{selectedCustomer.phone || "Not provided"}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 text-white font-body">
-                      <Phone size={18} className="text-white/60" />
-                      <span>{selectedCustomer.phone || "Not provided"}</span>
-                    </div>
-                    {selectedCustomer.address && (
-                      <div className="flex items-start gap-3 text-white font-body">
-                        <MapPin size={18} className="text-white/60 mt-1" />
-                        <span>{selectedCustomer.address}</span>
+                    {selectedCustomer.addresses && (
+                      <div className="flex flex-col items-start gap-3 text-white font-body">
+                        <div className="flex justify-center items-center gap-2">
+                          <MapPin size={18} className="text-white/60" />
+                          <h1>Addresses</h1>
+                        </div>
+                        <div className="w-full mx-auto grid grid-cols-3 gap-2">
+                          {selectedCustomer.addresses.map((item, index) => {
+                            return (
+                              <div key={index} className="flex flex-col items-start justify-center gap-1.5 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5">
+                                <p className="text-[8px] bg-white/5 border border-white/10 rounded-r-full px-3 py-1">Addr no. {index +1}</p>
+                                <p className="text-white text-[14px] font-body">
+                                {item.full_address}
+                                </p>
+                                <p className="text-white text-[12px] font-body">
+                                 <span className="text-orange-500">Address ID :</span> #{item.address_id}
+                                </p>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -932,7 +1032,7 @@ export default function CustomerManagement() {
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="bg-gradient-to-br from-black via-gray-900 to-black border border-red-500/30 rounded-2xl p-6 md:p-8 w-full max-w-md"
+              className="bg-gradient-to-br from-white/10 via-black/30 to-white/10 border border-white/20 rounded-2xl p-6 md:p-8 w-full max-w-md"
             >
               {/* Warning Icon */}
               <div className="flex justify-center mb-4">
@@ -959,7 +1059,7 @@ export default function CustomerManagement() {
               <div className="flex gap-4">
                 <button
                   onClick={handleDelete}
-                  className="flex-1 bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-body transition-colors"
+                  className="flex-1 bg-red-800/20 border border-red-900 hover:bg-red-800 text-white px-6 py-3 rounded-lg font-body transition-colors"
                 >
                   Delete
                 </button>

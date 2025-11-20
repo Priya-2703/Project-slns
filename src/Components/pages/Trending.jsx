@@ -12,8 +12,10 @@ import { WishlistContext } from "../../Context/UseWishListContext";
 import { IoHeartSharp } from "react-icons/io5";
 import { ToastContext } from "../../Context/UseToastContext";
 import UseFetchData from "../../Hooks/UseFetchData";
+import { useTranslation } from "react-i18next";
 
 const Trending = () => {
+  const { t } = useTranslation();
   const BACKEND_URL = import.meta.env.VITE_API_URL;
   const location = useLocation();
   const prevRef = useRef(null);
@@ -112,8 +114,8 @@ const Trending = () => {
             location.pathname.startsWith("/product/") ? "hidden" : "block"
           } text-white md:mb-4 lg:mb-8 relative`}
         >
-          <h1 className="text-[30px] md:text-[45px] lg:text-[65px] font-heading font-[950] capitalized leading-14 z-20">
-            Trending Now
+          <h1 className="text-[30px] md:text-[35px] lg:text-[48px] font-heading font-[950] capitalized leading-10 z-20">
+            {t("home.headings.trending")}
           </h1>
         </div>
 
@@ -250,7 +252,6 @@ const Trending = () => {
                               playsInline
                             />
                           )}
-
                         </div>
                       </div>
 

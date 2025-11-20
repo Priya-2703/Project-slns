@@ -1,9 +1,10 @@
 import React, { useState, useRef } from "react";
 import { assets } from "../../../public/assets/asset";
 import "./Review.css";
+import { useTranslation } from "react-i18next";
 
 const Review = () => {
-
+    const {t} = useTranslation()
   const review = [
     {
       rate: "★★★★ 4/5",
@@ -38,11 +39,11 @@ const Review = () => {
         <div className="flex flex-col items-center text-white md:mb-4 lg:mb-8">
           <div className="relative w-[800px] h-[200px] overflow-hidden flex flex-col justify-center items-center">
             {/* Text on top */}
-            <h1 className="text-[30px] md:text-[45px] lg:text-[65px] md:py-1 lg:py-3 font-heading font-black capitalized relative z-20 leading-14">
-              customers Feedback
+            <h1 className="text-[30px] md:text-[35px] lg:text-[48px] md:py-1 lg:py-3 font-heading font-black capitalized relative z-20 leading-14 text-center">
+              {t("home.headings.customer_feedback")}
             </h1>
-            <p className="text-[10px] md:text-[12px] tracking-wide font-medium font-body md:py-4 relative z-20">
-              OVER 10.000+ SATISFIED CUSTOMERS
+            <p className="text-[10px] md:text-[12px] tracking-wide font-medium font-body relative z-20">
+             {t("home.headings.satisfied_customers")}
             </p>
 
           </div>

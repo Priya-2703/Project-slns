@@ -38,12 +38,21 @@ export default function CheckOut() {
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [showNewAddress, setShowNewAddress] = useState(false);
+  const [useNewAddress, setUseNewAddress] = useState(false);
+  const [userDetailsEdited, setUserDetailsEdited] = useState(false); // ✅ NEW STATE
   const [loading, setLoading] = useState(false);
   const [profileLoading, setProfileLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const BACKEND_URL = import.meta.env.VITE_API_URL;
 
-  // ✅ Form Data
+  // ✅ Store both original and edited user details
+  const [originalUserDetails, setOriginalUserDetails] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+  });
+
   const [userDetails, setUserDetails] = useState({
     firstName: "",
     lastName: "",
@@ -69,13 +78,12 @@ export default function CheckOut() {
   const [errors, setErrors] = useState({});
   const [savedAddresses, setSavedAddresses] = useState([]);
 
-  // ✅ Fetch User Details from Checkout API
+  // Fetch User Details from Checkout API
   useEffect(() => {
     const fetchUserDetails = async () => {
       const token = localStorage.getItem("token");
 
       if (!token) {
-        // If no token, try to load from localStorage
         const savedUserData = localStorage.getItem("userData");
         if (savedUserData) {
           const userData = JSON.parse(savedUserData);
@@ -88,7 +96,6 @@ export default function CheckOut() {
       try {
         setProfileLoading(true);
 
-        // ✅ Use checkout API endpoint
         const response = await fetch(
           `${BACKEND_URL}/api/checkout/user-details`,
           {
@@ -106,7 +113,6 @@ export default function CheckOut() {
 
         const data = await response.json();
 
-        // ✅ Auto-populate user details
         if (data.user || data.userDetails) {
           const user = data.user || data.userDetails;
           populateUserDetails(user);
@@ -116,7 +122,6 @@ export default function CheckOut() {
       } catch (error) {
         console.error("Error fetching user details:", error);
 
-        // Fallback to localStorage
         const savedUserData = localStorage.getItem("userData");
         if (savedUserData) {
           const userData = JSON.parse(savedUserData);
@@ -130,21 +135,25 @@ export default function CheckOut() {
     fetchUserDetails();
   }, []);
 
-  // ✅ Helper function to populate user details
+  // ✅ Updated Helper function to populate user details
   const populateUserDetails = (userData) => {
     const nameParts = userData.name ? userData.name.split(" ") : ["", ""];
     const firstName = nameParts[0] || "";
     const lastName = nameParts.slice(1).join(" ") || "";
 
-    setUserDetails({
+    const details = {
       firstName: firstName || userData.firstName || "",
       lastName: lastName || userData.lastName || "",
       email: userData.email || "",
       phone: userData.phone || "",
-    });
+    };
+
+    // ✅ Store original details
+    setOriginalUserDetails(details);
+    setUserDetails(details);
   };
 
-  // ✅ Fetch Addresses from Checkout API
+  // Fetch Addresses from Checkout API
   useEffect(() => {
     const fetchAddresses = async () => {
       const token = localStorage.getItem("token");
@@ -157,7 +166,6 @@ export default function CheckOut() {
       try {
         setLoading(true);
 
-        // ✅ Use checkout addresses API endpoint
         const response = await fetch(`${BACKEND_URL}/api/checkout/addresses`, {
           method: "GET",
           headers: {
@@ -172,7 +180,6 @@ export default function CheckOut() {
 
         const data = await response.json();
 
-        // ✅ Handle different response formats
         let addressList = [];
         if (data.addresses) {
           addressList = data.addresses;
@@ -187,7 +194,6 @@ export default function CheckOut() {
         if (addressList.length > 0) {
           setSavedAddresses(addressList);
 
-          // ✅ Auto-select default address
           const defaultAddress = addressList.find(
             (addr) => addr.isDefault || addr.is_default || addr.default
           );
@@ -195,7 +201,6 @@ export default function CheckOut() {
           if (defaultAddress) {
             setSelectedAddressId(defaultAddress.id || defaultAddress._id);
           } else {
-            // Select first address if no default
             setSelectedAddressId(addressList[0].id || addressList[0]._id);
           }
         }
@@ -209,7 +214,7 @@ export default function CheckOut() {
     fetchAddresses();
   }, []);
 
-  // ✅ Check if cart is empty
+  // Check if cart is empty
   useEffect(() => {
     if (!cartLoading && cart.length === 0) {
       alert("Your cart is empty!");
@@ -217,7 +222,7 @@ export default function CheckOut() {
     }
   }, [cart, cartLoading, navigate]);
 
-  // ✅ Calculate totals
+  // Calculate totals
   const subtotal = totalPrice;
   const shipping = subtotal > 0 ? 99 : 0;
   const tax = subtotal * 0.18;
@@ -234,13 +239,11 @@ export default function CheckOut() {
       if (!userDetails.phone.trim())
         newErrors.phone = "Phone number is required";
 
-      // Email validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (userDetails.email && !emailRegex.test(userDetails.email)) {
         newErrors.email = "Invalid email format";
       }
 
-      // Phone validation
       const phoneRegex = /^[0-9]{10}$/;
       if (
         userDetails.phone &&
@@ -251,13 +254,7 @@ export default function CheckOut() {
     }
 
     if (currentStep === 2) {
-      // If no address is selected and not adding new address
-      if (!selectedAddressId && !showNewAddress) {
-        newErrors.address = "Please select or add an address";
-      }
-
-      // Validate new address form if visible
-      if (showNewAddress) {
+      if (useNewAddress || showNewAddress) {
         if (!newAddress.area.trim()) newErrors.area = "Area is required";
         if (!newAddress.town_city.trim())
           newErrors.town_city = "City is required";
@@ -267,10 +264,11 @@ export default function CheckOut() {
         if (!newAddress.pincode.trim())
           newErrors.pincode = "Pincode is required";
 
-        // Pincode validation
         if (newAddress.pincode && !/^[0-9]{6}$/.test(newAddress.pincode)) {
           newErrors.pincode = "Invalid pincode (6 digits required)";
         }
+      } else if (!selectedAddressId) {
+        newErrors.address = "Please select or add an address";
       }
     }
 
@@ -283,7 +281,6 @@ export default function CheckOut() {
         if (!paymentData.expiry.trim()) newErrors.expiry = "Expiry is required";
         if (!paymentData.cvv.trim()) newErrors.cvv = "CVV is required";
 
-        // Card validation
         if (
           paymentData.cardNumber &&
           !/^[0-9]{16}$/.test(paymentData.cardNumber.replace(/\s/g, ""))
@@ -323,26 +320,38 @@ export default function CheckOut() {
     }
   };
 
-  // ✅ Handle Place Order with Payment Method Logic
+  // ✅ Updated Handle Place Order
   const handlePlaceOrder = async () => {
     try {
       setLoading(true);
 
-      // Get selected address
+      // ✅ Use edited user details if available, otherwise use original
+      const finalUserDetails = userDetailsEdited
+        ? userDetails
+        : originalUserDetails;
+
+      // ✅ Get selected address with priority to new address
       let deliveryAddress;
-      if (selectedAddressId) {
+
+      if (useNewAddress && newAddress.area) {
+        deliveryAddress = newAddress;
+      } else if (selectedAddressId) {
         deliveryAddress = savedAddresses.find(
           (a) => (a.id || a._id) === selectedAddressId
         );
-      } else if (showNewAddress) {
-        deliveryAddress = newAddress;
+      }
+
+      if (!deliveryAddress) {
+        alert("Please select a delivery address");
+        setLoading(false);
+        return;
       }
 
       // Prepare order data
       const orderData = {
         user: {
-          ...userDetails,
-          fullName: `${userDetails.firstName} ${userDetails.lastName}`,
+          ...finalUserDetails,
+          fullName: `${finalUserDetails.firstName} ${finalUserDetails.lastName}`,
         },
         address: deliveryAddress,
         payment: paymentData,
@@ -356,12 +365,9 @@ export default function CheckOut() {
 
       const token = localStorage.getItem("token");
 
-      // ✅ Check payment method
       if (paymentData.method === "onlinePayment") {
-        // 🔥 RAZORPAY PAYMENT
         await handleRazorpayPayment(orderData, token);
       } else if (paymentData.method === "cod") {
-        // 🔥 CASH ON DELIVERY
         await handleCODPayment(orderData, token);
       }
     } catch (error) {
@@ -371,7 +377,7 @@ export default function CheckOut() {
     }
   };
 
-  // ✅ Handle Cash on Delivery Payment
+  // Handle Cash on Delivery Payment
   const handleCODPayment = async (orderData, token) => {
     try {
       const response = await fetch(`${BACKEND_URL}/api/orders/create`, {
@@ -395,7 +401,6 @@ export default function CheckOut() {
       const result = await response.json();
 
       if (result.success) {
-        // ✅ Show loading for 2 seconds before redirect
         setTimeout(async () => {
           await clearCart();
           setLoading(false);
@@ -406,7 +411,7 @@ export default function CheckOut() {
               paymentMethod: "cod",
             },
           });
-        }, 2000); // 2 seconds delay
+        }, 2000);
       } else {
         throw new Error(result.message || "Failed to place order");
       }
@@ -420,13 +425,11 @@ export default function CheckOut() {
     try {
       setIsProcessing(true);
 
-      // 1. Check if cart is empty
       if (cart.length === 0) {
         showToast("Cart is empty!");
         return;
       }
 
-      // 2. Load Razorpay Script
       const scriptLoaded = await loadRazorpayScript();
 
       if (!scriptLoaded) {
@@ -435,7 +438,6 @@ export default function CheckOut() {
         return;
       }
 
-      // ✅ Calculate amounts BEFORE creating order
       const calculatedSubtotal = cart.reduce(
         (sum, it) => sum + it.price * it.quantity,
         0
@@ -444,7 +446,6 @@ export default function CheckOut() {
         calculatedSubtotal > 1000 && calculatedSubtotal < 7000 ? 0 : 100;
       const calculatedTotal = calculatedSubtotal + calculatedShipping;
 
-      // 3. Create Order in Backend
       const orderData = await createRazorpayOrder(calculatedTotal);
 
       if (!orderData.success) {
@@ -453,7 +454,6 @@ export default function CheckOut() {
         return;
       }
 
-      // ✅ Prepare order items BEFORE payment
       const orderItems = cart.map((item) => ({
         product_id: item.product_id,
         product_name: item.product_name,
@@ -464,7 +464,6 @@ export default function CheckOut() {
         selectedSize: item.selectedSize || "One Size",
       }));
 
-      // 4. Razorpay Options Setup
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
         amount: orderData.order.amount,
@@ -474,12 +473,10 @@ export default function CheckOut() {
         image: "/logo.png",
         order_id: orderData.order.id,
 
-        // ✅✅✅ Payment Success Handler - COMPLETELY REWRITTEN
         handler: async function (response) {
           try {
             console.log("💳 Payment successful, processing...");
 
-            // Step 1: Verify payment signature
             const verificationData = await verifyPayment({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
@@ -494,7 +491,6 @@ export default function CheckOut() {
 
             console.log("✅ Payment verified, placing order...");
 
-            // Step 2: Place order in database
             const placeOrderData = await placeOrder({
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_order_id: response.razorpay_order_id,
@@ -516,10 +512,8 @@ export default function CheckOut() {
             setLoading(false);
             setIsProcessing(false);
 
-            // Step 3: Clear cart
             clearCart();
 
-            // Step 4: Navigate to success page
             navigate("/order-success", {
               state: {
                 orderId: placeOrderData.order.order_id,
@@ -543,25 +537,21 @@ export default function CheckOut() {
           }
         },
 
-        // ✅ Customer Details Prefill
         prefill: {
           name: "Customer Name",
           email: "customer@example.com",
           contact: "9999999999",
         },
 
-        // ✅ Notes
         notes: {
           cart_items: cart.length,
           total_amount: calculatedTotal,
         },
 
-        // ✅ Theme
         theme: {
           color: "#815a37",
         },
 
-        // ✅ Modal Close Handler
         modal: {
           ondismiss: function () {
             setIsProcessing(false);
@@ -571,7 +561,6 @@ export default function CheckOut() {
         },
       };
 
-      // 5. Open Razorpay Checkout
       const paymentObject = new window.Razorpay(options);
       paymentObject.open();
     } catch (error) {
@@ -589,7 +578,6 @@ export default function CheckOut() {
     { number: 4, title: "Review", icon: ShieldCheck },
   ];
 
-  // ✅ Show loading state
   if (profileLoading || (cartLoading && cart.length === 0)) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center mt-20">
@@ -673,7 +661,7 @@ export default function CheckOut() {
           {/* Left Side - Form */}
           <div className="lg:col-span-2">
             <div className="bg-gradient-to-br from-gray-900 to-black rounded-3xl shadow-2xl p-6 md:p-10 border border-gray-800 transition-all duration-500">
-              {/* Step 1: User Details */}
+              {/* ✅ STEP 1: USER DETAILS - UPDATED */}
               {currentStep === 1 && (
                 <div className="space-y-6 animate-slideInLeft">
                   <div className="flex items-center gap-3 mb-6">
@@ -685,13 +673,23 @@ export default function CheckOut() {
                     </h2>
                   </div>
 
-                  {/* ✅ Show info if auto-populated */}
-                  {userDetails.email && (
+                  {/* ✅ Show different messages based on edit status */}
+                  {!userDetailsEdited && userDetails.email && (
                     <div className="bg-[#8E6740]/10 border border-[#8E6740]/30 rounded-xl p-4 mb-4">
                       <p className="text-[#8E6740] text-sm flex items-center gap-2">
                         <Check size={16} />
                         Your information has been auto-filled from your profile.
                         You can edit if needed.
+                      </p>
+                    </div>
+                  )}
+
+                  {userDetailsEdited && (
+                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 mb-4">
+                      <p className="text-blue-400 text-sm flex items-center gap-2">
+                        <Check size={16} />
+                        You've edited your information. These changes will be
+                        used for this order.
                       </p>
                     </div>
                   )}
@@ -704,12 +702,13 @@ export default function CheckOut() {
                       <input
                         type="text"
                         value={userDetails.firstName}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           setUserDetails({
                             ...userDetails,
                             firstName: e.target.value,
-                          })
-                        }
+                          });
+                          setUserDetailsEdited(true); // ✅ Mark as edited
+                        }}
                         className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300 
                       ${
                         errors.firstName
@@ -732,20 +731,16 @@ export default function CheckOut() {
                       <input
                         type="text"
                         value={userDetails.lastName}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           setUserDetails({
                             ...userDetails,
                             lastName: e.target.value,
-                          })
-                        }
+                          });
+                          setUserDetailsEdited(true); // ✅ Mark as edited
+                        }}
                         className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300 border-gray-700 focus:shadow-lg focus:shadow-[#8E6740]/20`}
                         placeholder="Enter last name"
                       />
-                      {errors.lastName && (
-                        <span className="text-red-400 text-xs mt-1 block animate-fadeIn">
-                          {errors.lastName}
-                        </span>
-                      )}
                     </div>
                   </div>
 
@@ -756,12 +751,13 @@ export default function CheckOut() {
                     <input
                       type="email"
                       value={userDetails.email}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setUserDetails({
                           ...userDetails,
                           email: e.target.value,
-                        })
-                      }
+                        });
+                        setUserDetailsEdited(true); // ✅ Mark as edited
+                      }}
                       className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
                     ${
                       errors.email
@@ -784,12 +780,13 @@ export default function CheckOut() {
                     <input
                       type="tel"
                       value={userDetails.phone}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setUserDetails({
                           ...userDetails,
                           phone: e.target.value,
-                        })
-                      }
+                        });
+                        setUserDetailsEdited(true); // ✅ Mark as edited
+                      }}
                       className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
                     ${
                       errors.phone
@@ -807,7 +804,7 @@ export default function CheckOut() {
                 </div>
               )}
 
-              {/* Step 2: Address */}
+              {/* STEP 2: ADDRESS - SAME AS BEFORE */}
               {currentStep === 2 && (
                 <div className="space-y-6 animate-slideInLeft">
                   <div className="flex items-center gap-3 mb-6">
@@ -819,7 +816,6 @@ export default function CheckOut() {
                     </h2>
                   </div>
 
-                  {/* ✅ Show error if no address selected */}
                   {errors.address && (
                     <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-4">
                       <p className="text-red-400 text-sm flex items-center gap-2">
@@ -830,8 +826,7 @@ export default function CheckOut() {
 
                   {!showNewAddress ? (
                     <>
-                      {/* ✅ Saved Addresses */}
-                      {savedAddresses.length > 0 ? (
+                      {savedAddresses.length > 0 && (
                         <>
                           <div className="bg-[#8E6740]/10 border border-[#8E6740]/30 rounded-xl p-4 mb-4">
                             <p className="text-[#8E6740] text-sm flex items-center gap-2">
@@ -855,12 +850,23 @@ export default function CheckOut() {
                               return (
                                 <div
                                   key={addressId}
-                                  onClick={() =>
-                                    setSelectedAddressId(addressId)
-                                  }
+                                  onClick={() => {
+                                    setSelectedAddressId(addressId);
+                                    setUseNewAddress(false);
+                                    setNewAddress({
+                                      type: "home",
+                                      address: "",
+                                      area: "",
+                                      landmark: "",
+                                      town_city: "",
+                                      state: "",
+                                      country: "India",
+                                      pincode: "",
+                                    });
+                                  }}
                                   className={`group p-5 border-2 rounded-2xl cursor-pointer transition-all duration-300 transform hover:scale-[1.02]
                             ${
-                              selectedAddressId === addressId
+                              selectedAddressId === addressId && !useNewAddress
                                 ? "border-[#8E6740] bg-gradient-to-br from-[#8E6740]/10 to-transparent shadow-lg shadow-[#8E6740]/20"
                                 : "border-gray-700 bg-black/30 hover:border-gray-600"
                             }`}
@@ -870,7 +876,8 @@ export default function CheckOut() {
                                       <div
                                         className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors
                                 ${
-                                  selectedAddressId === addressId
+                                  selectedAddressId === addressId &&
+                                  !useNewAddress
                                     ? "bg-[#8E6740] text-white"
                                     : "bg-gray-800 text-gray-400"
                                 }`}
@@ -888,17 +895,18 @@ export default function CheckOut() {
                                         )}
                                       </div>
                                     </div>
-                                    {selectedAddressId === addressId && (
-                                      <div className="w-8 h-8 rounded-full bg-[#8E6740] flex items-center justify-center animate-scaleIn">
-                                        <Check
-                                          size={16}
-                                          className="text-white"
-                                        />
-                                      </div>
-                                    )}
+                                    {selectedAddressId === addressId &&
+                                      !useNewAddress && (
+                                        <div className="w-8 h-8 rounded-full bg-[#8E6740] flex items-center justify-center animate-scaleIn">
+                                          <Check
+                                            size={16}
+                                            className="text-white"
+                                          />
+                                        </div>
+                                      )}
                                   </div>
                                   <div className="ml-13 space-y-1">
-                                    <p className="text-sm text-gray-400">
+                                    <p className="text-sm text-gray-400 capitalize">
                                       {addr.area && `${addr.area}, `}
                                       {addr.landmark && `${addr.landmark}, `}
                                       {addr.town_city && `${addr.town_city}, `}
@@ -912,23 +920,14 @@ export default function CheckOut() {
                             })}
                           </div>
                         </>
-                      ) : (
-                        <div className="bg-gray-800/30 border border-gray-700 rounded-xl p-8 text-center">
-                          <MapPin
-                            className="mx-auto text-gray-500 mb-3"
-                            size={48}
-                          />
-                          <p className="text-gray-400 text-lg mb-2">
-                            No saved addresses found
-                          </p>
-                          <p className="text-gray-500 text-sm">
-                            Add a new address to continue
-                          </p>
-                        </div>
                       )}
 
                       <button
-                        onClick={() => setShowNewAddress(true)}
+                        onClick={() => {
+                          setShowNewAddress(true);
+                          setSelectedAddressId(null);
+                          setUseNewAddress(true);
+                        }}
                         className="w-full py-4 border-2 border-dashed border-gray-700 rounded-2xl text-gray-400 hover:border-[#8E6740] hover:text-[#8E6740] hover:bg-[#8E6740]/5 transition-all duration-300 flex items-center justify-center gap-3 font-medium group"
                       >
                         <div className="w-8 h-8 rounded-lg bg-gray-800 group-hover:bg-[#8E6740]/20 flex items-center justify-center transition-colors">
@@ -938,14 +937,21 @@ export default function CheckOut() {
                       </button>
                     </>
                   ) : (
-                    /* New Address Form */
                     <div className="space-y-5 animate-slideInRight">
                       <div className="flex justify-between items-center pb-4 border-b border-gray-800">
                         <h3 className="font-semibold text-white text-lg">
                           Add New Address
                         </h3>
                         <button
-                          onClick={() => setShowNewAddress(false)}
+                          onClick={() => {
+                            setShowNewAddress(false);
+                            setUseNewAddress(false);
+                            if (savedAddresses.length > 0) {
+                              setSelectedAddressId(
+                                savedAddresses[0].id || savedAddresses[0]._id
+                              );
+                            }
+                          }}
                           className="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-all duration-300 flex items-center justify-center"
                         >
                           ✕
@@ -960,12 +966,13 @@ export default function CheckOut() {
                               name="type"
                               value={type}
                               checked={newAddress.type === type}
-                              onChange={(e) =>
+                              onChange={(e) => {
                                 setNewAddress({
                                   ...newAddress,
                                   type: e.target.value,
-                                })
-                              }
+                                });
+                                setUseNewAddress(true);
+                              }}
                               className="peer sr-only"
                             />
                             <div className="flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all duration-300 peer-checked:border-[#8E6740] peer-checked:bg-[#8E6740]/10 border-gray-700 bg-black/30 hover:border-gray-600">
@@ -983,13 +990,14 @@ export default function CheckOut() {
                           type="text"
                           placeholder="Area / Locality *"
                           value={newAddress.area}
-                          onChange={(e) =>
+                          onChange={(e) => {
                             setNewAddress({
                               ...newAddress,
                               area: e.target.value,
-                            })
-                          }
-                          className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
+                            });
+                            setUseNewAddress(true);
+                          }}
+                          className={`w-full px-5 capitalize py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
                         ${
                           errors.area
                             ? "border-red-500"
@@ -1007,13 +1015,14 @@ export default function CheckOut() {
                         type="text"
                         placeholder="Landmark (Optional)"
                         value={newAddress.landmark}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           setNewAddress({
                             ...newAddress,
                             landmark: e.target.value,
-                          })
-                        }
-                        className="w-full px-5 py-3.5 bg-black/50 border-2 border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300"
+                          });
+                          setUseNewAddress(true);
+                        }}
+                        className="w-full px-5 py-3.5 capitalize bg-black/50 border-2 border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300"
                       />
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1022,13 +1031,14 @@ export default function CheckOut() {
                             type="text"
                             placeholder="Town / City *"
                             value={newAddress.town_city}
-                            onChange={(e) =>
+                            onChange={(e) => {
                               setNewAddress({
                                 ...newAddress,
                                 town_city: e.target.value,
-                              })
-                            }
-                            className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
+                              });
+                              setUseNewAddress(true);
+                            }}
+                            className={`w-full px-5 py-3.5 capitalize bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
                           ${
                             errors.town_city
                               ? "border-red-500"
@@ -1047,13 +1057,14 @@ export default function CheckOut() {
                             type="text"
                             placeholder="State *"
                             value={newAddress.state}
-                            onChange={(e) =>
+                            onChange={(e) => {
                               setNewAddress({
                                 ...newAddress,
                                 state: e.target.value,
-                              })
-                            }
-                            className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
+                              });
+                              setUseNewAddress(true);
+                            }}
+                            className={`w-full px-5 py-3.5 capitalize bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
                           ${
                             errors.state
                               ? "border-red-500"
@@ -1074,12 +1085,13 @@ export default function CheckOut() {
                             type="text"
                             placeholder="Country *"
                             value={newAddress.country}
-                            onChange={(e) =>
+                            onChange={(e) => {
                               setNewAddress({
                                 ...newAddress,
                                 country: e.target.value,
-                              })
-                            }
+                              });
+                              setUseNewAddress(true);
+                            }}
                             className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
                           ${
                             errors.country
@@ -1100,12 +1112,13 @@ export default function CheckOut() {
                             placeholder="Pincode *"
                             maxLength="6"
                             value={newAddress.pincode}
-                            onChange={(e) =>
+                            onChange={(e) => {
                               setNewAddress({
                                 ...newAddress,
                                 pincode: e.target.value,
-                              })
-                            }
+                              });
+                              setUseNewAddress(true);
+                            }}
                             className={`w-full px-5 py-3.5 bg-black/50 border-2 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#8E6740] transition-all duration-300
                           ${
                             errors.pincode
@@ -1125,7 +1138,7 @@ export default function CheckOut() {
                 </div>
               )}
 
-              {/* Step 3: Payment - SAME AS BEFORE */}
+              {/* Step 3: Payment */}
               {currentStep === 3 && (
                 <div className="space-y-6 animate-slideInLeft">
                   <div className="flex items-center gap-3 mb-6">
@@ -1215,7 +1228,7 @@ export default function CheckOut() {
                 </div>
               )}
 
-              {/* Step 4: Review */}
+              {/* ✅ STEP 4: REVIEW - UPDATED USER INFO + ADDRESS DISPLAY */}
               {currentStep === 4 && (
                 <div className="space-y-6 animate-slideInLeft">
                   <div className="flex items-center gap-3 mb-6">
@@ -1227,7 +1240,7 @@ export default function CheckOut() {
                     </h2>
                   </div>
 
-                  {/* ✅ Order Items from Cart Context */}
+                  {/* Order Items */}
                   <div className="border-2 border-gray-800 rounded-2xl p-6 bg-gradient-to-br from-gray-900/50 to-black/50">
                     <div className="flex items-center gap-3 mb-4">
                       <Package className="text-[#8E6740]" size={20} />
@@ -1236,7 +1249,6 @@ export default function CheckOut() {
                       </h3>
                     </div>
                     <div className="space-y-3">
-                      {/* ✅ Map through cart from context */}
                       {cart.map((item) => (
                         <div
                           key={item.product_id}
@@ -1298,7 +1310,7 @@ export default function CheckOut() {
                     </div>
                   </div>
 
-                  {/* Delivery Info - SAME AS BEFORE */}
+                  {/* ✅ Delivery Info - UPDATED USER INFO DISPLAY */}
                   <div className="border-2 border-gray-800 rounded-2xl p-6 bg-gradient-to-br from-gray-900/50 to-black/50">
                     <div className="flex items-center gap-3 mb-4">
                       <MapPin className="text-[#8E6740]" size={20} />
@@ -1307,7 +1319,17 @@ export default function CheckOut() {
                       </h3>
                     </div>
                     <div className="space-y-2">
-                      <p className="text-gray-200 font-medium">
+                      {/* ✅ Show edited user info or original */}
+                      {userDetailsEdited && (
+                        <div className="mb-2 p-2 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                          <p className="text-blue-400 text-xs flex items-center gap-1">
+                            <Check size={12} />
+                            Using edited information
+                          </p>
+                        </div>
+                      )}
+
+                      <p className="text-gray-200 font-medium capitalize">
                         {userDetails.firstName} {userDetails.lastName}
                       </p>
                       <p className="text-sm text-gray-400">
@@ -1316,45 +1338,70 @@ export default function CheckOut() {
                       <p className="text-sm text-gray-400">
                         {userDetails.phone}
                       </p>
-                      {selectedAddressId && (
-                        <div className="mt-4 pt-4 border-t border-gray-800">
-                          <p className="text-sm text-gray-300 leading-relaxed">
-                            {
-                              savedAddresses.find(
-                                (a) => a.id === selectedAddressId
-                              )?.address
-                            }
-                            ,{" "}
-                            {
-                              savedAddresses.find(
-                                (a) => a.id === selectedAddressId
-                              )?.area
-                            }
-                            <br />
-                            {
-                              savedAddresses.find(
-                                (a) => a.id === selectedAddressId
-                              )?.city
-                            }
-                            ,{" "}
-                            {
-                              savedAddresses.find(
-                                (a) => a.id === selectedAddressId
-                              )?.state
-                            }{" "}
-                            -{" "}
-                            {
-                              savedAddresses.find(
-                                (a) => a.id === selectedAddressId
-                              )?.pincode
-                            }
+
+                      {/* ✅ ADDRESS DISPLAY LOGIC */}
+                      <div className="mt-4 pt-4 border-t border-gray-800">
+                        {useNewAddress && newAddress.area ? (
+                          <div>
+                            <p className="text-xs text-gray-500 mb-2 uppercase flex items-center gap-2">
+                              <Check size={14} className="text-green-500" />
+                              {newAddress.type || "Home"} Address (New)
+                            </p>
+                            <p className="text-sm text-gray-300 capitalize leading-relaxed">
+                              {newAddress.area && `${newAddress.area}, `}
+                              {newAddress.landmark &&
+                                `${newAddress.landmark}, `}
+                              <br />
+                              {newAddress.town_city &&
+                                `${newAddress.town_city}, `}
+                              {newAddress.state && `${newAddress.state} - `}
+                              {newAddress.pincode}
+                              <br />
+                              {newAddress.country || "India"}
+                            </p>
+                          </div>
+                        ) : selectedAddressId ? (
+                          (() => {
+                            const selectedAddr = savedAddresses.find(
+                              (a) => (a.id || a._id) === selectedAddressId
+                            );
+                            return selectedAddr ? (
+                              <div>
+                                <p className="text-xs text-gray-500 mb-2 uppercase flex items-center gap-2">
+                                  <Check size={14} className="text-green-500" />
+                                  {selectedAddr.type || "Home"} Address
+                                </p>
+                                <p className="text-sm text-gray-300 capitalize leading-relaxed">
+                                  {selectedAddr.area &&
+                                    `${selectedAddr.area}, `}
+                                  {selectedAddr.landmark &&
+                                    `${selectedAddr.landmark}, `}
+                                  <br />
+                                  {selectedAddr.town_city &&
+                                    `${selectedAddr.town_city}, `}
+                                  {selectedAddr.state &&
+                                    `${selectedAddr.state} - `}
+                                  {selectedAddr.pincode}
+                                  <br />
+                                  {selectedAddr.country || "India"}
+                                </p>
+                              </div>
+                            ) : (
+                              <p className="text-sm text-red-400">
+                                ⚠️ No address selected
+                              </p>
+                            );
+                          })()
+                        ) : (
+                          <p className="text-sm text-red-400">
+                            ⚠️ No address selected
                           </p>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Payment Info - SAME AS BEFORE */}
+                  {/* Payment Info */}
                   <div className="border-2 border-gray-800 rounded-2xl p-6 bg-gradient-to-br from-gray-900/50 to-black/50">
                     <div className="flex items-center gap-3 mb-4">
                       <CreditCard className="text-[#8E6740]" size={20} />
@@ -1389,7 +1436,7 @@ export default function CheckOut() {
 
                 <button
                   onClick={handleNext}
-                  disabled={loading}
+                  disabled={loading || isProcessing}
                   className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#8E6740] to-[#6b4e2f] text-white rounded-xl font-semibold hover:from-[#6b4e2f] hover:to-[#8E6740] transition-all duration-300 shadow-lg shadow-[#8E6740]/50 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isProcessing ? (
@@ -1417,7 +1464,6 @@ export default function CheckOut() {
                   Order Summary
                 </h3>
 
-                {/* ✅ Cart items from context */}
                 <div className="space-y-2 mb-6 max-h-64 overflow-y-auto custom-scrollbar">
                   {cart.map((item) => (
                     <div
@@ -1482,10 +1528,8 @@ export default function CheckOut() {
         </div>
       </div>
 
-      {/* CSS Animations - SAME AS BEFORE */}
+      {/* CSS Animations */}
       <style jsx>{`
-        /* Your existing styles */
-
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
         }
@@ -1502,6 +1546,79 @@ export default function CheckOut() {
 
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: #6b4e2f;
+        }
+
+        @keyframes slideInLeft {
+          from {
+            opacity: 0;
+            transform: translateX(-30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        @keyframes slideInRight {
+          from {
+            opacity: 0;
+            transform: translateX(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes scaleIn {
+          from {
+            transform: scale(0);
+          }
+          to {
+            transform: scale(1);
+          }
+        }
+
+        @keyframes shake {
+          0%,
+          100% {
+            transform: translateX(0);
+          }
+          25% {
+            transform: translateX(-5px);
+          }
+          75% {
+            transform: translateX(5px);
+          }
+        }
+
+        .animate-slideInLeft {
+          animation: slideInLeft 0.5s ease-out;
+        }
+
+        .animate-slideInRight {
+          animation: slideInRight 0.5s ease-out;
+        }
+
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+
+        .animate-scaleIn {
+          animation: scaleIn 0.3s ease-out;
+        }
+
+        .shake {
+          animation: shake 0.3s ease-out;
         }
       `}</style>
     </div>
