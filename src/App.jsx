@@ -35,7 +35,8 @@ import PaymentSuccess from "./Components/PaymentSuccess";
 import AdminNotifications from "./Components/Admin/AdminNotifications";
 import './i18n';
 import LanguageSwitcher from './components/LanguageSwitcher';
-import AdminReturnRequests from "./Components/Admin/AdminReturnRequests";import VerifyEmail from "./Components/SignUp/VerifyEmail";
+import AdminReturnRequests from "./Components/Admin/AdminReturnRequests";
+import VerifyEmail from "./Components/SignUp/VerifyEmail";
 
 const About = lazy(() => import("./Components/About/About"));
 const Faq = lazy(() => import("./Components/FAQ/Faq"));
