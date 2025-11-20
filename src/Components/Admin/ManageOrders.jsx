@@ -38,7 +38,6 @@ export default function ManageOrders() {
       const data = await response.json();
       if (response.ok) {
         setOrders(data.orders);
-        console.log("orders", data.orders);
         calculateStats(data.orders);
       }
     } catch (err) {

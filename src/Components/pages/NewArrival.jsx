@@ -12,8 +12,10 @@ import { WishlistContext } from "../../Context/UseWishListContext";
 import { IoHeartSharp } from "react-icons/io5";
 import { ToastContext } from "../../Context/UseToastContext";
 import UseFetchData from "../../Hooks/UseFetchData";
+import { useTranslation } from "react-i18next";
 
 const NewArrival = () => {
+  const { t } = useTranslation();
   const BACKEND_URL = import.meta.env.VITE_API_URL;
   const prevRef = useRef(null);
   const nextRef = useRef(null);
@@ -116,8 +118,8 @@ const NewArrival = () => {
     <>
       <div className="w-full mx-auto py-1 md:py-4 md:px-6 lg:px-8 bg-black">
         <div className="w-[90%] mx-auto flex flex-col justify-center items-center text-white md:mb-4 lg:mb-8 relative">
-          <h1 className="text-[30px] md:text-[45px] lg:text-[65px] font-heading font-[950] capitalized leading-14 z-20">
-            New Arrival
+          <h1 className="text-[30px] md:text-[35px] lg:text-[48px] font-heading font-[950] capitalized leading-10 z-20">
+            {t("home.headings.new_arrival")}
           </h1>
         </div>
 
@@ -255,7 +257,6 @@ const NewArrival = () => {
                               playsInline
                             />
                           )}
-
                         </div>
                       </div>
 

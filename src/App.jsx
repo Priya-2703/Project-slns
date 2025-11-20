@@ -33,7 +33,9 @@ import CustomerManagement from "./Components/Admin/CustomerManagement";
 import BannerManagement from "./Components/Admin/BannerManagement";
 import PaymentSuccess from "./Components/PaymentSuccess";
 import AdminNotifications from "./Components/Admin/AdminNotifications";
-import VerifyEmail from "./Components/SignUp/VerifyEmail";
+import './i18n';
+import LanguageSwitcher from './components/LanguageSwitcher';
+import AdminReturnRequests from "./Components/Admin/AdminReturnRequests";import VerifyEmail from "./Components/SignUp/VerifyEmail";
 
 const About = lazy(() => import("./Components/About/About"));
 const Faq = lazy(() => import("./Components/FAQ/Faq"));
@@ -113,6 +115,7 @@ function AppContent() {
     "/admin/products/edit/:id",
     "/admin/categories",
     "/admin/orders",
+    "/admin/return",
     "/admin/import",
     "/admin/customers",
     "/forgot-password",
@@ -131,16 +134,17 @@ function AppContent() {
     matchPath({ path: route, end: true }, location.pathname)
   );
 
-  const isMobile = window.innerWidth <=800
+  const isMobile = window.innerWidth <= 800;
 
   return (
     <>
+      {!isAdminRoute && <LanguageSwitcher/>}
       <ScrollToTop behavior="smooth" />
 
       {/* Show Butterfly and Yellow Cursor only for NON-admin routes */}
       {!isAdminRoute && !isMobile && (
         <>
-          <YellowCursor size={18} hideNative />
+          <YellowCursor size={14} hideNative />
           <ButterflyLottieFollower
             hideCursor={false}
             animationData={assets.butterflyAnim}
@@ -153,7 +157,6 @@ function AppContent() {
 
       {/* Show Navbar only if valid route */}
       {isValidRoute && <Navbar />}
-
       <Suspense fallback={<LoaderAni />}>
         <Routes>
           <Route path="/" element={<Landing />} />
@@ -179,7 +182,7 @@ function AppContent() {
           <Route path="/signin" element={<SignIn />} />
           <Route path="/b2b-signin" element={<B2bSignIn />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          //admin new
+          {/* admin new */}
           <Route
             path="/signin"
             element={
@@ -259,6 +262,14 @@ function AppContent() {
             }
           />
           <Route
+            path="/admin/return"
+            element={
+              <ProtectedAdminRoute>
+                <AdminReturnRequests />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
             path="/admin/customers"
             element={
               <ProtectedAdminRoute>
@@ -288,7 +299,7 @@ function AppContent() {
       </Suspense>
 
       {/* Show Footer only if valid route */}
-      {isValidRoute && <Footer />}
+      {isValidRoute && !isAdminRoute && <Footer />}
     </>
   );
 }

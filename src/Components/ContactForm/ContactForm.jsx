@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import "./ContactForm.css";
+import { useTranslation } from "react-i18next";
 
 const ContactForm = () => {
+  const {t} = useTranslation()
   const BACKEND_URL = import.meta.env.VITE_API_URL;
   const [formData, setFormData] = useState({
     name: "",
@@ -173,22 +175,19 @@ const ContactForm = () => {
         {/* Page Title */}
         <motion.div className="contact-header" variants={titleVariants}>
           <motion.h1 className="contact-main-title">
-            Get In <span className="title-accent">Touch</span>
+            {t("contact.header.main")} <span className="title-accent">{t("contact.header.accent")}</span>
           </motion.h1>
           <motion.p className="contact-subtitle font-body ">
-            We'd love to hear from you. Send us a message and we'll respond as
-            soon as possible.
+            {t("contact.header.subtitle")}
           </motion.p>
         </motion.div>
 
         {/* Main Content Grid */}
         <motion.div className="w-[95%] md:w-[90%] lg:w-[75%] mx-auto contact-grid font-body" variants={pageVariants}>
-          {/* Left Side - Info Cards */}
           <motion.div
             className="contact-info-section order-2"
             variants={cardVariants}
           >
-            {/* Contact Details Cards */}
             <div className="contact-details-grid">
               <motion.div
                 className="detail-card"
@@ -211,7 +210,7 @@ const ContactForm = () => {
                   </svg>
                 </div>
                 <div className="detail-content">
-                  <h3 className="detail-label">Phone</h3>
+                  <h3 className="detail-label">{t("contact.details.phone")}</h3>
                   <p className="detail-value">+91 97862 87848</p>
                 </div>
               </motion.div>
@@ -237,7 +236,7 @@ const ContactForm = () => {
                   </svg>
                 </div>
                 <div className="detail-content">
-                  <h3 className="detail-label">Email</h3>
+                  <h3 className="detail-label">{t("contact.details.email")}</h3>
                   <p className="detail-value">slns@email.com</p>
                 </div>
               </motion.div>
@@ -268,23 +267,21 @@ const ContactForm = () => {
                   </svg>
                 </div>
                 <div className="detail-content">
-                  <h3 className="detail-label">Address</h3>
+                  <h3 className="detail-label">{t("contact.details.address")}</h3>
                   <p className="detail-value">
-                    J256+6M4, Salem Main Rd, Elumathanoor, Elampillai, Tamil
-                    Nadu 637502
+                    {t("about.address")}
                   </p>
                 </div>
               </motion.div>
             </div>
           </motion.div>
 
-          {/* Right Side - Contact Form */}
           <motion.div
             className="contact-form-section order-1"
             variants={cardVariants}
           >
-            <div className="form-card">
-              <div className="form-card-glow"></div>
+            <div className="form-card bg-linear-to-br from-white/10 via-black/30 to-white/10 border border-white/20 backdrop-blur-md rounded-[28px] p-10 relative overflow-hidden shadow-md">
+              <div className="form-card-gl ow"></div>
 
               {/* Success/Error Messages */}
               <AnimatePresence mode="wait">
@@ -350,7 +347,7 @@ const ContactForm = () => {
                     variants={formGroupVariants}
                   >
                     <label htmlFor="name" className="field-label">
-                      <span className="label-text">Your Name</span>
+                      <span className="label-text">{t("contact.form.name_label")}</span>
                       <span className="label-required">*</span>
                     </label>
                     <div className="input-wrapper">
@@ -390,7 +387,7 @@ const ContactForm = () => {
                     variants={formGroupVariants}
                   >
                     <label htmlFor="email" className="field-label">
-                      <span className="label-text">Email Address</span>
+                      <span className="label-text">{t("contact.form.email_label")}</span>
                       <span className="label-required">*</span>
                     </label>
                     <div className="input-wrapper">
@@ -433,7 +430,7 @@ const ContactForm = () => {
                     variants={formGroupVariants}
                   >
                     <label htmlFor="location" className="field-label">
-                      <span className="label-text">Location</span>
+                      <span className="label-text">{t("contact.form.location_label")}</span>
                       <span className="label-required">*</span>
                     </label>
                     <div className="input-wrapper">
@@ -448,25 +445,25 @@ const ContactForm = () => {
                         whileFocus={{ scale: 1.01 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <option value="">Select your state</option>
-                        <option value="Andhra Pradesh">Andhra Pradesh</option>
+                        <option value="">{t("contact.form.location_placeholder")}</option>
+                        <option value="Andhra Pradesh">{t("contact.states.andhra_pradesh")}</option>
                         <option value="Arunachal Pradesh">
-                          Arunachal Pradesh
+                          {t("contact.states.arunachal_pradesh")}
                         </option>
-                        <option value="Assam">Assam</option>
-                        <option value="Bihar">Bihar</option>
-                        <option value="Chhattisgarh">Chhattisgarh</option>
-                        <option value="Goa">Goa</option>
-                        <option value="Gujarat">Gujarat</option>
-                        <option value="Haryana">Haryana</option>
+                        <option value="Assam">{t("contact.states.assam")}</option>
+                        <option value="Bihar">{t("contact.states.bihar")}</option>
+                        <option value="Chhattisgarh">{t("contact.states.chhattisgarh")}</option>
+                        <option value="Goa">{t("contact.states.goa")}</option>
+                        <option value="Gujarat">{t("contact.states.gujarat")}</option>
+                        <option value="Haryana">{t("contact.states.haryana")}</option>
                         <option value="Himachal Pradesh">
-                          Himachal Pradesh
+                          {t("contact.states.himachal_pradesh")}
                         </option>
-                        <option value="Karnataka">Karnataka</option>
-                        <option value="Kerala">Kerala</option>
-                        <option value="Tamil Nadu">Tamil Nadu</option>
-                        <option value="Telangana">Telangana</option>
-                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                        <option value="Karnataka">{t("contact.states.karnataka")}</option>
+                        <option value="Kerala">{t("contact.states.kerala")}</option>
+                        <option value="Tamil Nadu">{t("contact.states.tamil_nadu")}</option>
+                        <option value="Telangana">{t("contact.states.telangana")}</option>
+                        <option value="Uttar Pradesh">{t("contact.states.uttar_pradesh")}</option>
                       </motion.select>
                       <div className="select-icon">
                         <svg
@@ -496,7 +493,7 @@ const ContactForm = () => {
                     variants={formGroupVariants}
                   >
                     <label htmlFor="subject" className="field-label">
-                      <span className="label-text">Subject</span>
+                      <span className="label-text">{t("contact.form.subject_label")}</span>
                       <span className="label-required">*</span>
                     </label>
                     <div className="input-wrapper">
@@ -511,14 +508,14 @@ const ContactForm = () => {
                         whileFocus={{ scale: 1.01 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <option value="">Select a subject</option>
-                        <option value="product-inquiry">Product Inquiry</option>
-                        <option value="order-support">Order Support</option>
-                        <option value="bulk-order">Bulk Order</option>
-                        <option value="partnership">Partnership</option>
-                        <option value="b2b-inquiry">B2B Inquiry</option>
-                        <option value="feedback">Feedback</option>
-                        <option value="other">Other</option>
+                        <option value="">{t("contact.form.subject_placeholder")}</option>
+                        <option value="product-inquiry">{t("contact.subjects.product_inquiry")}</option>
+                        <option value="order-support">{t("contact.subjects.order_support")}</option>
+                        <option value="bulk-order">{t("contact.subjects.bulk_order")}</option>
+                        <option value="partnership">{t("contact.subjects.partnership")}</option>
+                        <option value="b2b-inquiry">{t("contact.subjects.b2b_inquiry")}</option>
+                        <option value="feedback">{t("contact.subjects.feedback")}</option>
+                        <option value="other">{t("contact.subjects.other")}</option>
                       </motion.select>
                       <div className="select-icon">
                         <svg
@@ -547,7 +544,7 @@ const ContactForm = () => {
                 {/* Message Field */}
                 <motion.div className="form-field" variants={formGroupVariants}>
                   <label htmlFor="message" className="field-label">
-                    <span className="label-text">Your Message</span>
+                    <span className="label-text">{t("contact.form.message_label")}</span>
                   </label>
                   <div className="input-wrapper">
                     <motion.textarea
@@ -555,7 +552,7 @@ const ContactForm = () => {
                       name="message"
                       value={formData.message}
                       onChange={handleChange}
-                      placeholder="Tell us more about your inquiry..."
+                      placeholder={t("contact.form.message_placeholder")}
                       rows="6"
                       className="field-textarea"
                       disabled={loading}
@@ -623,11 +620,11 @@ const ContactForm = () => {
                             ></path>
                           </svg>
                         </motion.span>
-                        <span>Sending...</span>
+                        <span>{t("contact.form.btn_sending")}</span>
                       </>
                     ) : (
                       <>
-                        <span>Send Message</span>
+                        <span>{t("contact.form.btn_send")}</span>
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"

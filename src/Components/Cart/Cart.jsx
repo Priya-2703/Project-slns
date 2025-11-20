@@ -6,8 +6,10 @@ import { assets } from "../../../public/assets/asset";
 import { CartContext } from "../../Context/UseCartContext";
 import { motion } from "framer-motion";
 import { getImageUrl } from "../../utils/imageHelper";
+import { useTranslation } from "react-i18next";
 
 function Cart() {
+  const {t} = useTranslation()
   const navigate = useNavigate();
   const {
     cart,
@@ -24,12 +26,11 @@ function Cart() {
 
   console.log("cart", cart);
 
-// Replace your handleCheckout function with this:
+  // Replace your handleCheckout function with this:
 
-
-const handleCheckout =()=>{
-  navigate("/checkout")
-}
+  const handleCheckout = () => {
+    navigate("/checkout");
+  };
 
   // Math
   const currency = (n) =>
@@ -208,16 +209,16 @@ const handleCheckout =()=>{
         </Link>
       </motion.div>
 
-      <div className="w-[90%] lg:w-[80%] mx-auto flex justify-start items-center py-3 px-10">
+      <div className="w-[90%] lg:w-[80%] mx-auto flex justify-center items-center py-3 px-10">
         <motion.h1
           variants={titleVariants}
           className="mb-8 text-[20px] md:text-[50px] font-[950] font-heading capitalize text-white"
         >
-          Shopping Cart
+          {t("cart.page_title")}
         </motion.h1>
       </div>
 
-      <div className="mx-auto max-w-6xl px-4 py-2 md:py-10">
+      <div className="mx-auto max-w-[90%] px-4 py-2 md:py-5">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* mobile view */}
           <section className="grid md:hidden grid-cols-1 gap-3 mb-[350px]">
@@ -226,7 +227,7 @@ const handleCheckout =()=>{
                 variants={emptyCartVariants}
                 className="p-8 text-center font-body text-[13px] text-neutral-400"
               >
-                Your cart is empty.
+                {t("cart.empty_message")}
               </motion.div>
             ) : (
               cart.map((it, index) => {
@@ -242,7 +243,7 @@ const handleCheckout =()=>{
                       y: -4,
                       transition: { duration: 0.3 },
                     }}
-                    className="w-full border border-neutral-800 bg-black/20 rounded-xl px-3 py-3"
+                    className="w-full bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20 rounded-xl px-3 py-3"
                   >
                     <div className="flex justify-between items-center gap-4">
                       <div className="flex justify-center items-center gap-3">
@@ -286,7 +287,7 @@ const handleCheckout =()=>{
                                 className="mt-2 inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-md px-2 py-1 transition-colors"
                               >
                                 <span className="text-gray-400 text-[8px] font-body">
-                                  Size:
+                                  {t('cart.table.size')}:
                                 </span>
                                 <span className="text-white font-bold text-[8px] font-body">
                                   {it.selectedSize}
@@ -382,17 +383,17 @@ const handleCheckout =()=>{
             <motion.div
               variants={itemVariants}
               custom={0}
-              className="w-full rounded-2xl border border-neutral-800 bg-black/20"
+              className="w-full rounded-2xl  bg-linear-to-br from-white/5 via-black/10 to-white/5 border border-white/20 "
             >
               <motion.div
                 variants={headerTableVariants}
                 className="lg:w-full grid grid-cols-12 px-4 py-4 text-[12px] font-body uppercase text-neutral-400"
               >
-                <div className="col-span-5">Product</div>
-                <div className="col-span-2 text-center">Size</div>
-                <div className="col-span-2 text-center">Quantity</div>
-                <div className="col-span-2 text-center">Total</div>
-                <div className="col-span-1 text-right">Action</div>
+                <div className="col-span-5">{t('cart.table.product')}</div>
+                <div className="col-span-2 text-center">{t('cart.table.size')}</div>
+                <div className="col-span-2 text-center">{t('cart.table.quantity')}</div>
+                <div className="col-span-2 text-center">{t('cart.table.total')}</div>
+                <div className="col-span-1 text-right">{t('cart.table.action')}</div>
               </motion.div>
               <div className="h-px bg-neutral-800" />
 
@@ -401,7 +402,7 @@ const handleCheckout =()=>{
                   variants={emptyCartVariants}
                   className="p-8 text-center font-body text-[13px] text-neutral-400"
                 >
-                  Your cart is empty.
+                   {t("cart.empty_message")}
                 </motion.div>
               ) : (
                 cart.map((it, index) => {
@@ -467,7 +468,7 @@ const handleCheckout =()=>{
                             className="inline-flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 rounded-full px-4 py-2 transition-all group"
                           >
                             <span className="text-gray-400 text-[12px] font-body group-hover:text-white">
-                              Size:
+                             {t('cart.table.size')}:
                             </span>
                             <span className="text-white font-bold text-[12px] font-body">
                               {it.selectedSize}
@@ -577,13 +578,11 @@ const handleCheckout =()=>{
           <aside className="lg:col-span-1 ">
             <motion.div
               variants={summaryVariants}
-              className="rounded-t-2xl fixed bottom-0 left-0 right-0 
-    lg:sticky lg:top-24
-    w-full lg:w-auto lg:rounded-2xl border border-neutral-800 bg-black md:bg-black/20 z-50 p-5"
-              whileHover={{
-                borderColor: "#815a37",
-                transition: { duration: 0.3 },
-              }}
+              className="rounded-t-2xl fixed bottom-0 left-0 right-0 lg:sticky lg:top-24 w-full lg:w-auto lg:rounded-2xl bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20 z-50 p-5"
+              // whileHover={{
+              //   borderColor: "#815a37",
+              //   transition: { duration: 0.3 },
+              // }}
             >
               <motion.h3
                 className="mb-1 text-[25px] font-heading capitalize font-[950]"
@@ -591,29 +590,29 @@ const handleCheckout =()=>{
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
               >
-                Order Summary
+                {t('cart.summary.title')}
               </motion.h3>
               <div className="my-5 h-px bg-neutral-800" />
 
               <div className="font-body text-[14px] flex flex-col gap-3">
                 <SummaryRow
-                  label="Total no. of Items"
+                  label={t('cart.summary.total_items')}
                   value={cart.reduce((sum, it) => sum + it.quantity, 0)}
                   delay={0.6}
                 />
                 <SummaryRow
-                  label="Sub Total"
+                  label={t('cart.summary.subtotal')}
                   value={currency(subtotal)}
                   delay={0.7}
                 />
                 <SummaryRow
-                  label="Delivery fee"
+                  label={t('cart.summary.delivery_fee')}
                   value={currency(cart.length ? shipping : 0)}
                   delay={0.8}
                 />
                 <div className="my-4 h-px bg-neutral-800" />
                 <SummaryRow
-                  label="Total"
+                  label={t('cart.summary.total')}
                   value={currency(cart.length ? totalPrice : 0)}
                   bold
                   large
@@ -624,7 +623,7 @@ const handleCheckout =()=>{
               <motion.button
                 onClick={handleCheckout} // ✅ Itha add pannunga
                 disabled={cart.length === 0 || isProcessing}
-                className="mt-5 w-full rounded-full cursor-pointer font-body bg-[#815a37] px-5 py-3 font-semibold text-white hover:text-black hover:bg-[#8f673f] transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50"
+                className="mt-5 w-full rounded-full cursor-pointer font-body hover:bg-accet px-5 py-3 font-semibold text-white  bg-accet/30 hover:border-0 border border-accet transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1, duration: 0.5 }}
@@ -639,7 +638,7 @@ const handleCheckout =()=>{
                   scale: cart.length === 0 || isProcessing ? 1 : 0.95,
                 }}
               >
-                {isProcessing ? "Processing..." : "Checkout Now"}
+                {isProcessing ? `${t('cart.summary.processing')}` : `${t('cart.summary.checkout_btn')}`}
               </motion.button>
             </motion.div>
           </aside>

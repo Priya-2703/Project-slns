@@ -10,8 +10,10 @@ import { ToastContext } from "../../Context/UseToastContext";
 import { CartContext } from "../../Context/UseCartContext";
 import { AuthContext } from "../../Context/UseAuthContext";
 import AdminNotifications from "../Admin/AdminNotifications";
+import { useTranslation } from "react-i18next";
 
 const Navbar = () => {
+  const { t } = useTranslation();
   const BACKEND_URL = import.meta.env.VITE_API_URL;
   const { logout } = useContext(AuthContext);
   const { cart } = useContext(CartContext);
@@ -149,7 +151,6 @@ const Navbar = () => {
       );
       const data = await response.json();
 
-      console.log("notify", data)
       if (data.success) {
         setNotificationCount(data.unread_count);
       }
@@ -163,23 +164,24 @@ const Navbar = () => {
 
   // ⭐ NEW: Admin menu items
   const adminMenuItems = [
-    { path: "/admin/dashboard", label: "Dashboard", icon: "📊" },
-    { path: "/admin/products", label: "View Products", icon: "📦" },
-    { path: "/admin/products/add", label: "Add Product", icon: "➕" },
-    { path: "/admin/categories", label: "Manage Categories", icon: "🏷️" },
-    { path: "/admin/import", label: "Bulk Import", icon: "📥" },
-    { path: "/admin/orders", label: "Order Management", icon: "🛒" },
-    { path: "/admin/customers", label: "Customer Management", icon: "👥" },
+    { path: "/admin/dashboard", label: "Dashboard" },
+    { path: "/admin/products", label: "View Products" },
+    { path: "/admin/products/add", label: "Add Product" },
+    { path: "/admin/categories", label: "Manage Categories" },
+    { path: "/admin/import", label: "Bulk Import" },
+    { path: "/admin/orders", label: "Order Management" },
+    { path: "/admin/return", label: "Return Requests" },
+    { path: "/admin/customers", label: "Customer Management" },
   ];
 
   const userMenuItems = [
-    { path: "/", label: "Home" },
-    { path: "/about", label: "About Us" },
-    { path: "/product", label: "Product" },
-    { path: "/wishlist", label: "Wishlist" },
-    { path: "/profile", label: "Profile" },
-    { path: "/faq", label: "FAQ" },
-    { path: "/contact", label: "Contact" },
+    { path: "/", label: `${t("navbar.home")}` },
+    { path: "/about", label: `${t("navbar.about_us")}` },
+    { path: "/product", label: `${t("navbar.products")}` },
+    { path: "/wishlist", label: `${t("navbar.wishlist")}` },
+    { path: "/profile", label: `${t("navbar.profile")}` },
+    { path: "/faq", label: `${t("navbar.faq")}` },
+    { path: "/contact", label: `${t("navbar.contact")}` },
   ];
 
   return (
@@ -324,18 +326,17 @@ const Navbar = () => {
 
             {user?.role === "admin" && (
               <>
-              <AdminNotifications/>
-              <div className="hidden md:flex items-center gap-2 bg-[#955E30] px-3 py-1 rounded-full">
-                <svg
-                  className="w-4 h-4 text-white"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
-                </svg>
-                <span className="text-white text-xs font2">Admin</span>
-              </div>
-
+                <AdminNotifications />
+                <div className="hidden md:flex items-center gap-2 bg-[#955E30] px-3 py-1 rounded-full">
+                  <svg
+                    className="w-4 h-4 text-white"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
+                  </svg>
+                  <span className="text-white text-xs font2">Admin</span>
+                </div>
               </>
             )}
 
@@ -444,7 +445,7 @@ const Navbar = () => {
 
       {/* Side Menu */}
       <div
-        className={`fixed z-50 left-0 top-20 md:top-[120px] w-[200px] md:w-[330px] h-full px-4 md:px-8 py-4 md:py-8 rounded-r-[20px] bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-white/5 justify-center overflow-hidden transform transition-transform duration-300 ease-in-out ${
+        className={`fixed z-50 left-0 top-20 md:top-[120px] w-[200px] md:w-[330px] h-full px-4 md:px-8 py-4 md:py-8 rounded-r-[20px] bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-linear-to-br from-white/10 via-black/30 to-white/20 border border-white/20 justify-center overflow-hidden transform transition-transform duration-300 ease-in-out ${
           menuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
         aria-hidden={!menuOpen}
@@ -470,8 +471,7 @@ const Navbar = () => {
                     onClick={() => setMenuOpen(false)}
                     className="cursor-pointer select-none"
                   >
-                    <p className="tracking-wide uppercase cursor-pointer select-none text-white hover:text-ac transition-colors flex items-center gap-2">
-                      <span>{item.icon}</span>
+                    <p className="tracking-wide uppercase cursor-pointer select-none text-white hover:text-accet transition-colors flex items-center gap-2">
                       {item.label}
                     </p>
                   </Link>
@@ -500,7 +500,7 @@ const Navbar = () => {
                   className="tracking-wide uppercase text-white hover:text-red-500 transition-colors flex items-center gap-2"
                 >
                   <FaCircleArrowLeft className="text-[15px]" />
-                  Sign Out
+                  {t("sign_out")}
                 </button>
               </>
             )}
