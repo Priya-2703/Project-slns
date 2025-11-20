@@ -7,8 +7,10 @@ import { CartContext } from "../../Context/UseCartContext";
 import { ToastContext } from "../../Context/UseToastContext";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import SizeChangeModal from "../SizeChangeModal";
+import { useTranslation } from "react-i18next";
 
 const WishList = () => {
+  const {t} = useTranslation()
   const BACKEND_URL = import.meta.env.VITE_API_URL;
   const { wishlist, removeFromWishlist } = useContext(WishlistContext);
   const { cart, addToCart } = useContext(CartContext);
@@ -264,9 +266,9 @@ const WishList = () => {
       <div className="w-[90%] md:w-[80%] mx-auto flex justify-start items-center py-3 px-10">
         <motion.h1
           variants={titleVariants}
-          className="mb-8 text-[20px] md:text-[50px] leading-none font-heading capitalize font-[950] text-white"
+          className="mb-8 text-[20px] md:text-[45px] leading-none font-heading capitalize font-[950] text-white"
         >
-          My Wishlist
+          {t('wishlist.title')}
         </motion.h1>
       </div>
 
@@ -282,7 +284,7 @@ const WishList = () => {
               exit="hidden"
               className="h-fit flex justify-center items-center p-8 text-center font-body font-medium text-[13px] text-neutral-400"
             >
-              Your wishlist is empty.
+              {t('wishlist.empty_message')}
             </motion.div>
           ) : (
             <motion.div

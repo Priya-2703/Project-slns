@@ -1,0 +1,89 @@
+{
+  "navbar": {
+    "home": "Home",
+    "about_us": "About Us",
+    "products": "Products",
+    "wishlist": "Wishlist",
+    "profile": "Profile",
+    "faq": "FAQ",
+    "contact": "Contact",
+    "sign_out": "Sign out"
+  },
+  "home": {
+    "welcome": "Welcome to",
+    "hero_carousel": {
+      "special_offers": "Special Offers",
+      "exclusive_deals": "Exclusive deals just for you"
+    },
+    "style_section": {
+      "title": "Elevating Your Style",
+      "subtitle": "Discover the Perfect Blend of Comfort and Trend with Our Exclusive Collection. Explore Deals on our finest wears!"
+    },
+    "grid": {
+      "banarasi": "Banarasi Silk Sarees",
+      "banarasi_desc": "Traditionally, Banarasi sarees were woven exclusively for royalty and aristocracy, and they remain a popular choice for weddings, grand celebrations, and festive occasions.",
+      "mysore": "Mysore Silk Sarees",
+      "kanchipuram": "Kanchipuram Silk Sarees",
+      "kanchipuram_desc": "Explore exclusive deals on our top products. The perfect opportunity to enrich your wardrobe with trendy pieces at affordable prices.",
+      "pochampally": "Pochampally Sarees",
+      "cotton": "Cotton Sarees",
+      "cotton_desc": "Passion for fashion and comfort is reflected in every piece. Experience style and functionality in a single step."
+    },
+    "headings": {
+      "trending": "Trending Now",
+      "new_arrival": "New Arrival",
+      "customer_feedback": "Customers Feedback",
+      "satisfied_customers": "OVER 10,000+ SATISFIED CUSTOMERS"
+    }
+  },
+  "footer": {
+    "brand_text": "Timeless traditions, modern elegance. Discover our collection of hand-picked sarees and find the perfect piece to tell your story.",
+    "columns": {
+      "product_title": "Product",
+      "home": "Home",
+      "advisable": "Advisable",
+      "promotions": "Promotions",
+      "company_title": "Company",
+      "contact": "Contact",
+      "faq": "FAQ",
+      "legal_title": "Legal",
+      "privacy": "Privacy",
+      "terms": "Terms"
+    },
+    "copyright": "© 2025 lunai. All rights reserved."
+  },
+  "about": {
+    "title": "About us",
+    "owner_name": "Ashok",
+    "company_name": "Sri Lakshmi Narayana Sarees",
+    "description_main": "Sri Lakshmi Narayana Sarees has been a prominent and trusted name in the saree business for over 40 years. Based in Elampillai, Salem, the company is recognized as the leading wholesaler in the region. The company has cultivated a reputation for its authentic handloom sarees and commitment to customer satisfaction. Sri Lakshmi Narayana Sarees boasts a network of over 50,000 satisfied customers and offers worldwide shipping, extending its reach beyond India's borders.",
+    "description_sub": "Preserving Tradition: Sri Lakshmi Narayana Sarees is dedicated to safeguarding the rich heritage of Elampillai Silk and producing sarees of unmatched elegance. Purest Quality: The company takes pride in using only the finest mulberry silk, known for its softness, luster, and durability, ensuring that each saree exudes luxury and comfort. Timeless Designs: Weavers at Sri Lakshmi Narayana Sarees meticulously craft each saree using traditional motifs, temple borders, and artistic patterns, reflecting the rich cultural heritage of Tamil Nadu. Sarees for Every Occasion: Sri Lakshmi Narayana Sarees offers a diverse collection of sarees suitable for various occasions, from grand weddings to festive gatherings and formal events. Blending Tradition with Innovation: While upholding traditional craftsmanship, Sri Lakshmi Narayana Sarees embraces innovation by exploring new techniques and design elements to meet the evolving preferences of contemporary saree enthusiasts.",
+    "address": "J256+6M4, Salem Main Rd, Elumathanoor, Elampillai, Tamil Nadu 637502"
+  },
+  "shop": {
+    "breadcrumb1": "Home",
+    "breadcrumb2": "/ Product",
+    "search_placeholder": "Search product...",
+    "no_product_found": "No product found",
+    "sort_by": "Sort By",
+    "more": "More",
+    "show_less": "Show Less",
+    "categories": {
+      "sarees": "Sarees",
+      "half_sarees": "Half Sarees",
+      "chudidhars": "Chudidhars",
+      "mens_dhotis": "Mens Dhotis",
+      "kids_dhotis": "Kids Dhotis"
+    },
+    "sort_options": {
+      "price_low_high": "Price: Low to High",
+      "price_high_low": "Price: High to Low",
+      "name_a_z": "Name: A - Z",
+      "name_z_a": "Name: Z - A"
+    }
+  },
+  "wishlist": {
+    "title": "My Wishlist",
+    "empty_message": "Your wishlist is empty"
+  }
+}

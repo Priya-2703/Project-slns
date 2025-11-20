@@ -794,7 +794,7 @@ const Profile = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
+              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50"
               onClick={() => setShowAuthPopup(false)}
             />
 
@@ -804,7 +804,7 @@ const Profile = () => {
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-                className="bg-gradient-to-br from-gray-900 to-black border-2 border-gray-800 rounded-3xl p-8 md:p-12 max-w-md w-full shadow-2xl"
+                className="bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20 rounded-3xl p-8 md:p-12 max-w-md w-full shadow-2xl"
               >
                 <motion.div
                   initial={{ scale: 0 }}
@@ -842,7 +842,7 @@ const Profile = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleSignInRedirect}
-                  className="w-full bg-white text-black font-bold py-4 rounded-full hover:bg-gray-200 transition-all duration-300 flex items-center justify-center gap-3 font-body text-lg"
+                  className="w-full bg-white text-black py-3 rounded-full hover:bg-gray-200 transition-all duration-300 flex items-center justify-center gap-3 font-body text-[14px]"
                 >
                   <LogIn size={20} />
                   Sign In Now
@@ -894,7 +894,7 @@ const Profile = () => {
                 animate="visible"
                 className="lg:col-span-1"
               >
-                <div className="bg-black rounded-[20px] lg:p-6 p-3 border border-gray-900 lg:sticky lg:top-6">
+                <div className="bg-black rounded-[20px] lg:p-6 p-3 bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20 lg:sticky lg:top-6">
                   <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -913,7 +913,7 @@ const Profile = () => {
                           e.target.style.display = "none";
                           e.target.nextSibling.style.display = "flex";
                         }}
-                        className="md:w-20 md:h-20 w-16 h-16 rounded-full object-cover flex justify-center items-center border-4 border-white/10 md:mb-3"
+                        className="md:w-20 md:h-20 w-16 h-16 rounded-full object-cover flex justify-center items-center border-2 border-white/10 md:mb-3"
                       />
                     ) : null}
 
@@ -921,7 +921,7 @@ const Profile = () => {
                     <motion.div
                       whileHover={{ scale: 1.1, rotate: 5 }}
                       transition={{ duration: 0.3 }}
-                      className={`md:w-20 md:h-20 w-16 h-16 rounded-full flex justify-center items-center border-4 border-white/10 md:mb-3 bg-gradient-to-br from-[#8E6740] to-[#6b4e2f] ${
+                      className={`md:w-20 md:h-20 w-16 h-16 rounded-full flex justify-center items-center border-4 border-white/10 md:mb-3 bg-linear-to-br from-[#8E6740] to-[#6b4e2f] ${
                         userData.picture ? "hidden" : "flex"
                       }`}
                     >
@@ -958,10 +958,10 @@ const Profile = () => {
                         whileHover={{ scale: 1.05, x: 5 }}
                         whileTap={{ scale: 0.95 }}
                         transition={{ duration: 0.2 }}
-                        className={`lg:w-full flex items-center justify-center lg:justify-start gap-3 p-3 md:px-4 md:py-3 font-body font-extrabold text-[14px] md:text-[16px] rounded-[50px] transition-all duration-300 ${
+                        className={`lg:w-full flex items-center justify-center lg:justify-start gap-3 p-3 md:px-4 md:py-3 font-body font-extrabold text-[14px] md:text-[16px] rounded-[50px] transition-all duration-200 ${
                           activeTab === item.id
                             ? "bg-white text-black font-black"
-                            : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                            : "text-gray-400 hover:bg-white/10 border-0 hover:border hover:border-white/20 hover:text-white"
                         }`}
                       >
                         <item.icon size={20} />
@@ -982,7 +982,7 @@ const Profile = () => {
                       initial="hidden"
                       animate="visible"
                       exit="exit"
-                      className="bg-black rounded-[20px] p-6 md:p-8 border border-gray-900"
+                      className=" rounded-[20px] p-6 md:p-8 bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20"
                     >
                       <div className="flex justify-between items-center mb-6">
                         <h2 className="text-[16px] md:text-[24px] font-body font-bold">
@@ -998,7 +998,7 @@ const Profile = () => {
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
                               onClick={handleEdit}
-                              className="flex items-center font-body gap-2 text-[12px] md:text-[16px] bg-white text-black px-3 md:px-4 py-2 rounded-lg hover:bg-gray-200 transition-all duration-300"
+                              className="flex items-center font-body gap-2 text-[12px] md:text-[16px] bg-linear-to-tr from-white/20 via-black/10 to-white/20 border border-white/40 text-white px-3 md:px-4 py-2 rounded-lg hover:bg-black transition-all duration-300"
                             >
                               <Edit2 size={mobileView ? 14 : 18} />
                               Edit Profile
@@ -1017,7 +1017,7 @@ const Profile = () => {
                                 whileTap={{ scale: 0.95 }}
                                 onClick={handleSave}
                                 disabled={saving}
-                                className="flex items-center gap-2 text-[12px] md:text-[16px] bg-green-600 px-3 md:px-4 py-2 rounded-lg hover:bg-green-700 transition-all duration-300 disabled:opacity-50"
+                                className="flex items-center gap-2 text-[12px] md:text-[16px] bg-green-800/20 border border-green-700 px-3 md:px-4 py-2 rounded-lg hover:bg-green-700 transition-all duration-300 disabled:opacity-50"
                               >
                                 {saving ? (
                                   <Loader
@@ -1034,7 +1034,7 @@ const Profile = () => {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={handleCancel}
-                                className="flex items-center gap-2 text-[12px] md:text-[16px] bg-red-600 px-3 md:px-4 py-2 rounded-lg hover:bg-red-700 transition-all duration-300"
+                                className="flex items-center gap-2 text-[12px] md:text-[16px] bg-red-800/20 border border-red-700 px-3 md:px-4 py-2 rounded-lg hover:bg-red-700 transition-all duration-300"
                               >
                                 <X size={mobileView ? 14 : 18} />
                                 Cancel
@@ -1093,7 +1093,7 @@ const Profile = () => {
                             <motion.div
                               whileHover={{ scale: 1.02 }}
                               transition={{ duration: 0.2 }}
-                              className="flex items-center gap-3 bg-black px-3 py-2 md:px-4 md:py-3 font-body rounded-[60px] border border-gray-800"
+                              className="flex items-center gap-3  px-3 py-2 md:px-4 md:py-3 font-body rounded-[60px] bg-linear-to-r from-white/10 to-black/20 border border-white/20"
                             >
                               <field.icon
                                 size={mobileView ? 14 : 20}
@@ -1179,7 +1179,7 @@ const Profile = () => {
                             custom={index}
                             whileHover={{ scale: 1.02, y: -5 }}
                             transition={{ duration: 0.3 }}
-                            className="bg-black rounded-[20px] p-6 border border-gray-800 hover:border-gray-700"
+                            className="rounded-[20px] p-6 bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20"
                           >
                             <div className="flex flex-wrap justify-between items-start mb-4">
                               <div>
@@ -1196,7 +1196,7 @@ const Profile = () => {
                               <StatusBadge status={order.status} />
                             </div>
 
-                            <div className="border-t border-gray-800 pt-4 mt-4">
+                            <div className="border-t border-white/20 pt-4 mt-4">
                               <div className="flex items-center gap-2 mb-3">
                                 <ShoppingBag
                                   size={mobileView ? 14 : 18}
@@ -1215,7 +1215,7 @@ const Profile = () => {
                                       animate={{ opacity: 1, scale: 1 }}
                                       transition={{ delay: idx * 0.1 }}
                                       whileHover={{ scale: 1.1 }}
-                                      className="bg-gray-800 px-3 py-1 rounded-full text-[12px] md:text-[14px]"
+                                      className="bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20 px-3 py-1 rounded-full text-[11px] md:text-[12px]"
                                     >
                                       {product.name || product}
                                     </motion.span>
@@ -1223,7 +1223,7 @@ const Profile = () => {
                                 )}
                               </div>
                               <div className="flex justify-between items-center">
-                                <span className="text-2xl font-bold text-green-400">
+                                <span className="text-2xl font-sans font-bold text-white">
                                   ₹{order.total || order.total_amount}
                                 </span>
                                 <motion.button
@@ -1232,7 +1232,7 @@ const Profile = () => {
                                   onClick={() =>
                                     navigate(`/orders/${order.id || order._id}`)
                                   }
-                                  className="bg-white text-black px-6 py-2 rounded-lg hover:bg-gray-200 transition-all duration-300 font-semibold"
+                                  className="bg-white text-black px-6 py-2 rounded-full hover:bg-gray-200 transition-all duration-300 font-body font-[500]"
                                 >
                                   View Details
                                 </motion.button>
@@ -1261,7 +1261,7 @@ const Profile = () => {
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           onClick={handleAddAddressClick}
-                          className="bg-white text-black text-[12px] md:text-[16px] px-4 py-2 rounded-lg hover:bg-gray-200 transition-all duration-300 font-semibold"
+                          className=" text-white bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20 text-[12px] md:text-[14px] px-4 py-3 rounded-lg hover:bg-white/20 transition-all duration-300 "
                         >
                           + Add New Address
                         </motion.button>
@@ -1299,7 +1299,7 @@ const Profile = () => {
                                 }}
                                 whileHover={{ scale: 1.03, y: -5 }}
                                 transition={{ duration: 0.3 }}
-                                className="bg-black rounded-xl font-body p-4 md:p-6 border border-gray-800 hover:border-gray-700"
+                                className="rounded-xl font-body p-4 md:p-6 bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20"
                               >
                                 <div className="flex justify-between items-start mb-3">
                                   <div className="flex items-center gap-2">
@@ -1324,10 +1324,10 @@ const Profile = () => {
                                 <div className="flex gap-2">
                                   
                                   <motion.button
-                                    whileHover={{ scale: 1.05 }}
+                                    whileHover={{ scale: 0.90 }}
                                     whileTap={{ scale: 0.95 }}
                                     onClick={() => handleEditAddressClick(addr)}
-                                    className="flex-1 bg-gray-800 hover:bg-gray-700 text-[12px] font-body md:text-[16px] px-4 py-2 rounded-lg transition-all duration-300"
+                                    className="flex-1 bg-white hover:bg-white/10 hover:text-white border border-white/20 text-[12px] font-body md:text-[16px] px-4 py-2 rounded-full text-black transition-all duration-200"
                                   >
                                     Edit
                                   </motion.button>
@@ -1346,7 +1346,7 @@ const Profile = () => {
                                         deleteAddress(addr.id || addr._id);
                                       }
                                     }}
-                                    className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition-all duration-300"
+                                    className="bg-red-600/20 border border-red-700 hover:bg-red-700 px-4 py-2 rounded-lg transition-all duration-300"
                                   >
                                     <X size={mobileView ? 14 : 18} />
                                   </motion.button>
@@ -1365,6 +1365,8 @@ const Profile = () => {
           </div>
         </>
       )}
+
+      
       {/* add address popup */}
       <AnimatePresence>
         {showAddAddressPopup && (
@@ -1373,7 +1375,7 @@ const Profile = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
+              className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50"
               onClick={handleCancelAddAddress}
             />
 
@@ -1383,7 +1385,7 @@ const Profile = () => {
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-                className="bg-gradient-to-br from-gray-900 to-black border-2 border-gray-800 rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl my-8"
+                className="bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20 rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl my-8"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Header */}
@@ -1414,7 +1416,7 @@ const Profile = () => {
                       value={newAddress.area}
                       onChange={handleAddressInputChange}
                       placeholder="Enter area or locality"
-                      className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
                     />
                   </div>
 
@@ -1429,7 +1431,7 @@ const Profile = () => {
                       value={newAddress.landmark}
                       onChange={handleAddressInputChange}
                       placeholder="Enter nearby landmark"
-                      className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
                     />
                   </div>
 
@@ -1445,7 +1447,7 @@ const Profile = () => {
                         value={newAddress.town_city}
                         onChange={handleAddressInputChange}
                         placeholder="Enter city"
-                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                        className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
                       />
                     </div>
                     <div>
@@ -1458,7 +1460,7 @@ const Profile = () => {
                         value={newAddress.state}
                         onChange={handleAddressInputChange}
                         placeholder="Enter state"
-                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                        className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
                       />
                     </div>
                   </div>
@@ -1475,7 +1477,7 @@ const Profile = () => {
                         value={newAddress.country}
                         onChange={handleAddressInputChange}
                         placeholder="Enter country"
-                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                        className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
                       />
                     </div>
                     <div>
@@ -1489,7 +1491,7 @@ const Profile = () => {
                         onChange={handleAddressInputChange}
                         placeholder="Enter pincode"
                         maxLength="6"
-                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                        className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
                       />
                     </div>
                   </div>
@@ -1503,7 +1505,7 @@ const Profile = () => {
                       name="type"
                       value={newAddress.type}
                       onChange={handleAddressInputChange}
-                      className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
                     >
                       <option value="Home">Home</option>
                       <option value="Work">Work</option>
@@ -1511,7 +1513,7 @@ const Profile = () => {
                     </select>
                   </div>
 
-                  {/* Default Address Checkbox */}
+                  {/* Default Address Checkbox
                   <div className="flex items-center gap-3 pt-2">
                     <input
                       type="checkbox"
@@ -1527,7 +1529,7 @@ const Profile = () => {
                     >
                       Set as default address
                     </label>
-                  </div>
+                  </div> */}
                 </div>
 
                 {/* Action Buttons */}
@@ -1538,7 +1540,7 @@ const Profile = () => {
                     whileTap={{ scale: 0.98 }}
                     onClick={handleSaveAddress}
                     disabled={savingAddress}
-                    className="flex-1 bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200 transition-all duration-300 flex items-center justify-center gap-2 font-body disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 bg-green-600/20 border border-green-700 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition-all duration-300 flex items-center justify-center gap-2 font-body disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {savingAddress ? (
                       <>
@@ -1557,7 +1559,7 @@ const Profile = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleCancelAddAddress}
-                    className="flex-1 bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-700 transition-all duration-300 flex items-center justify-center gap-2 font-body"
+                    className="flex-1 bg-red-600/20 border border-red-700 text-white font-bold py-3 rounded-lg hover:bg-red-700 transition-all duration-300 flex items-center justify-center gap-2 font-body"
                   >
                     <X size={20} />
                     Cancel
@@ -1570,7 +1572,6 @@ const Profile = () => {
       </AnimatePresence>
 
       {/* edit address popup */}
-      {/* ✅ EDIT ADDRESS POPUP */}
       <AnimatePresence>
         {showEditAddressPopup && (
           <>
@@ -1578,7 +1579,7 @@ const Profile = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
+              className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50"
               onClick={handleCancelEditAddress}
             />
 
@@ -1588,7 +1589,7 @@ const Profile = () => {
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-                className="bg-gradient-to-br from-gray-900 to-black border-2 border-gray-800 rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl my-8"
+                className="bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20 rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl my-8"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Header */}
@@ -1619,7 +1620,7 @@ const Profile = () => {
                       value={editAddressData.area}
                       onChange={handleEditAddressInputChange}
                       placeholder="Enter area or locality"
-                      className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
                     />
                   </div>
 
@@ -1634,7 +1635,7 @@ const Profile = () => {
                       value={editAddressData.landmark}
                       onChange={handleEditAddressInputChange}
                       placeholder="Enter nearby landmark"
-                      className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
                     />
                   </div>
 
@@ -1650,7 +1651,7 @@ const Profile = () => {
                         value={editAddressData.town_city}
                         onChange={handleEditAddressInputChange}
                         placeholder="Enter city"
-                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                        className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
                       />
                     </div>
                     <div>
@@ -1663,7 +1664,7 @@ const Profile = () => {
                         value={editAddressData.state}
                         onChange={handleEditAddressInputChange}
                         placeholder="Enter state"
-                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                        className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
                       />
                     </div>
                   </div>
@@ -1680,7 +1681,7 @@ const Profile = () => {
                         value={editAddressData.country}
                         onChange={handleEditAddressInputChange}
                         placeholder="Enter country"
-                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                        className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
                       />
                     </div>
                     <div>
@@ -1694,7 +1695,7 @@ const Profile = () => {
                         onChange={handleEditAddressInputChange}
                         placeholder="Enter pincode"
                         maxLength="6"
-                        className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                        className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
                       />
                     </div>
                   </div>
@@ -1708,7 +1709,7 @@ const Profile = () => {
                       name="type"
                       value={editAddressData.type}
                       onChange={handleEditAddressInputChange}
-                      className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
+                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
                     >
                       <option value="Home">Home</option>
                       <option value="Work">Work</option>
@@ -1717,7 +1718,7 @@ const Profile = () => {
                   </div>
 
                   {/* Default Address Checkbox */}
-                  <div className="flex items-center gap-3 pt-2">
+                  {/* <div className="flex items-center gap-3 pt-2">
                     <input
                       type="checkbox"
                       name="isDefault"
@@ -1732,7 +1733,7 @@ const Profile = () => {
                     >
                       Set as default address
                     </label>
-                  </div>
+                  </div> */}
                 </div>
 
                 {/* Action Buttons */}
@@ -1743,7 +1744,7 @@ const Profile = () => {
                     whileTap={{ scale: 0.98 }}
                     onClick={handleUpdateAddress}
                     disabled={savingAddress}
-                    className="flex-1 bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200 transition-all duration-300 flex items-center justify-center gap-2 font-body disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 bg-green-600/20 border border-green-700 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition-all duration-300 flex items-center justify-center gap-2 font-body disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {savingAddress ? (
                       <>
@@ -1762,7 +1763,7 @@ const Profile = () => {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleCancelEditAddress}
-                    className="flex-1 bg-gray-800 text-white font-bold py-3 rounded-lg hover:bg-gray-700 transition-all duration-300 flex items-center justify-center gap-2 font-body"
+                    className="flex-1 bg-red-600/20 border border-red-700 text-white font-bold py-3 rounded-lg hover:bg-red-700 transition-all duration-300 flex items-center justify-center gap-2 font-body"
                   >
                     <X size={20} />
                     Cancel

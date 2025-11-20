@@ -1,8 +1,10 @@
 import React, { useEffect, useLayoutEffect, useRef } from "react";
 import { assets } from "../../../public/assets/asset";
 import { gsap } from "gsap";
+import { useTranslation } from "react-i18next";
 
 const About = () => {
+  const {t} = useTranslation()
   const container = useRef(null); // <-- ref object
 
     //dynamic title
@@ -26,14 +28,14 @@ const About = () => {
 
   return (
     <>
-      <div ref={container} className="w-full mx-auto bg-black mt-20 md:mt-28 py-5">
+      <div ref={container} className="w-full mx-auto bg-black mt-20 py-5">
         <div className="flex justify-center items-center">
-          <h1 className="about-reveal text-[28px] md:text-[65px] md:py-3 font-heading font-[800] capitalize text-white">
-            About us
+          <h1 className="about-reveal text-[28px] md:text-[48px] font-heading font-[800] capitalize text-white">
+            {t('about.title')}
           </h1>
         </div>
 
-        <div className="flex flex-col lg:flex-row justify-center items-center lg:items-start gap-8 lg:gap-20 md:mt-4 py-3 lg:py-10">
+        <div className="flex flex-col lg:flex-row justify-center items-center lg:items-start gap-8 lg:gap-20 py-3 lg:py-10">
           <div className="about-reveal flex justify-center items-center flex-col order-2 lg:order-1">
             <img
               src={assets.owner}
@@ -41,46 +43,24 @@ const About = () => {
               loading="lazy"
               className="md:w-[450px] md:h-[500px] w-[300px] h-[350px] object-cover rounded-[10px]"
             />
-            <p className="text-[25px] md:text-[45px] font-heading font-extrabold capitalize text-white">
-              Ashok
+            <p className="text-[20px] md:text-[35px] font-heading font-extrabold capitalize text-white">
+              {t('about.owner_name')}
             </p>
           </div>
 
           <div className="about-reveal w-[90%] lg:w-[32%] flex flex-col justify-center items-center gap-5 py-2 md:py-7 order-1 lg:order-2">
-            <h1 className="text-[24px] md:text-[65px] py-3 font-heading text-center font-[800] capitalize leading-none text-accet">
-              Sri Lakshmi Narayana <br className="hidden md:block"/> Sarees
+            <h1 className="text-[24px] md:text-[45px] py-3 font-heading text-center font-extrabold capitalize leading-none text-accet">
+              {t('about.company_name')}
             </h1>
-            <p className="text-[16px] leading-normal tracking-normal capitalize font-body text-justify font-[400] text-white/90">
-              Sri Lakshmi Narayana Sarees has been a prominent and trusted name
-              in the saree business for over 40 years. Based in Elampillai,
-              Salem, the company is recognized as the leading wholesaler in the
-              region. The company has cultivated a reputation for its authentic
-              handloom sarees and commitment to customer satisfaction. Sri
-              Lakshmi Narayana Sarees boasts a network of over 50,000 satisfied
-              customers and offers worldwide shipping, extending its reach
-              beyond India's borders
+            <p className="text-[16px] leading-normal tracking-normal capitalize font-body text-justify font-normal text-white/90">
+              {t('about.description_main')}
             </p>
           </div>
         </div>
 
         <div className="flex justify-center items-center py-5">
           <p className="about-reveal w-[90%] lg:w-[70%] text-[12px] md:text-[16px] leading-normal tracking-normal font-body text-justify  font-[300] text-white/90">
-            Preserving Tradition: Sri Lakshmi Narayana Sarees is dedicated to
-            safeguarding the rich heritage of Elampillai Silk and producing
-            sarees of unmatched elegance. Purest Quality: The company takes
-            pride in using only the finest mulberry silk, known for its
-            softness, luster, and durability, ensuring that each saree exudes
-            luxury and comfort. Timeless Designs: Weavers at Sri Lakshmi
-            Narayana Sarees meticulously craft each saree using traditional
-            motifs, temple borders, and artistic patterns, reflecting the rich
-            cultural heritage of Tamil Nadu. Sarees for Every Occasion: Sri
-            Lakshmi Narayana Sarees offers a diverse collection of sarees
-            suitable for various occasions, from grand weddings to festive
-            gatherings and formal events. Blending Tradition with Innovation:
-            While upholding traditional craftsmanship, Sri Lakshmi Narayana
-            Sarees embraces innovation by exploring new techniques and design
-            elements to meet the evolving preferences of contemporary saree
-            enthusiasts. Commitment to Sustainability.
+            {t('about.description_sub')}
           </p>
         </div>
 
@@ -90,7 +70,7 @@ const About = () => {
               We'd love to hear from you. Send us a message.
             </p> */}
             <p className="text-[16px] md:text-[20px] leading-snug font-body text-center font-[400] text-white mt-3 md:mt-10">
-              J256+6M4, Salem Main Rd, Elumathanoor, Elampillai, Tamil Nadu 637502
+             {t('about.address')}
             </p>
             <p className="text-[16px] md:text-[20px] leading-snug font-body font-[400] text-white">
               +91 97862 87848

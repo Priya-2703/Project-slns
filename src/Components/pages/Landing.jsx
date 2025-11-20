@@ -9,12 +9,14 @@ import { assets } from "../../../public/assets/asset";
 import "./Landing.css";
 import LoaderAni from "../LoaderAni";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 const Trending = lazy(() => import("./Trending"));
 const NewArrival = lazy(() => import("./NewArrival"));
 const Review = lazy(() => import("./Review"));
 
 // 🎯 3D Banner Carousel Component
 const BannerCarousel3D = () => {
+  const { t } = useTranslation();
   const [activeIndex, setActiveIndex] = useState(0);
 
   const adBanners = [
@@ -106,10 +108,10 @@ const BannerCarousel3D = () => {
         className="text-center mb-3 md:mb-10"
       >
         <h2 className="text-white text-3xl md:text-5xl font-heading font-bold md:mb-3">
-          Special Offers
+          {t("home.hero_carousel.special_offers")}
         </h2>
         <p className="text-white/60 text-[10px] md:text-base font-body">
-          Exclusive deals just for you
+          {t("home.hero_carousel.exclusive_deals")}
         </p>
       </motion.div>
 
@@ -270,6 +272,7 @@ const BannerCarousel3D = () => {
 };
 
 const Landing = () => {
+  const { t } = useTranslation();
   const images = [
     {
       img: "https://framerusercontent.com/images/Ji1Tq0FNqXyLQJOCZw9kgzRpR4.png",
@@ -461,7 +464,7 @@ const Landing = () => {
               className="capitalize tracking-wide text-[20px] font-heading font-[950] text-white"
               variants={fadeIn}
             >
-              Welcome To
+              {t("home.welcome")}
             </motion.h1>
             <motion.img
               src={assets.logo}
@@ -512,7 +515,7 @@ const Landing = () => {
 
         {/* 🔹 CAROUSEL BANNER - Auto-change every 3 seconds */}
         <div
-          className="relative w-full h-[120px] md:h-[200px] lg:h-[400px] mx-auto flex justify-center items-start overflow-hidden my-8 md:my-10 lg:my-40"
+          className="relative w-full h-[120px] md:h-[200px] lg:h-[400px] mx-auto flex justify-center items-start overflow-hidden my-8 md:my-10 lg:my-20"
           onMouseEnter={() => setIsBannerPaused(true)}
           onMouseLeave={() => setIsBannerPaused(false)}
         >
@@ -563,7 +566,7 @@ const Landing = () => {
                 alt={`banner-${currentBanner + 1}`}
                 loading="lazy"
                 className="object-cover w-full h-full object-top pointer-events-none select-none"
-                draggable="false" 
+                draggable="false"
               />
             </motion.div>
           </AnimatePresence>
@@ -573,7 +576,7 @@ const Landing = () => {
             {banners.map((_, index) => (
               <button
                 key={index}
-                 onClick={() => {
+                onClick={() => {
                   setCurrentBanner(index);
                   setDirection(index > currentBanner ? 1 : -1);
                 }}
@@ -597,17 +600,16 @@ const Landing = () => {
         >
           <div className="flex flex-col justify-center items-center text-white">
             <motion.h1
-              className="text-[40px] md:text-[65px] font-[950] md:py-3 lg:py-5 font-heading capitalize leading-13 md:leading-14"
+              className="text-[30px] md:text-[48px] font-[950] md:py-3 lg:py-5 font-heading capitalize leading-13 md:leading-8"
               variants={fadeInUp}
             >
-              Elevating Your Style
+              {t("home.style_section.title")}
             </motion.h1>
             <motion.p
               className="w-[90%] md:w-[60%] lg:w-[40%] text-[8px] md:text-[12px] font-body tracking-wide font-thin capitalize text-center"
               variants={fadeIn}
             >
-              Discover the Perfect Blend of Comfort and Trend with Our Exclusive
-              Collection. Explore Deals on Jeans, Sneakers, and More!
+              {t("home.style_section.subtitle")}
             </motion.p>
           </div>
 
@@ -630,12 +632,10 @@ const Landing = () => {
                   }}
                 >
                   <h1 className="font-spectral text-center text-[30px] uppercase text-white leading-[40px] py-3">
-                    Banarasi Silk Sarees
+                    {t("home.grid.banarasi")}
                   </h1>
                   <p className="font-body tracking-wide text-[12px] text-white/65 text-center py-4">
-                    Traditionally, Banarasi sarees were woven exclusively for
-                    royalty and aristocracy, and they remain a popular choice
-                    for weddings, grand celebrations, and festive occasions.
+                    {t("home.grid.banarasi_desc")}
                   </p>
                   <div className="absolute bottom-[-70px] flex justify-center w-full">
                     <img
@@ -653,7 +653,7 @@ const Landing = () => {
                   }}
                 >
                   <h1 className="font-spectral font-[950] text-center text-[30px] uppercase text-white leading-[40px] py-3">
-                    Mysore silk sarees
+                    {t("home.grid.mysore")}
                   </h1>
                   <div className="absolute bottom-[-120px] flex justify-center w-full">
                     <img
@@ -683,12 +683,10 @@ const Landing = () => {
                   />
                 </div>
                 <h1 className="font-spectral text-center text-[30px] uppercase text-white leading-10 py-3">
-                  Kanchipuram Silk sarees
+                  {t("home.grid.kanchipuram")}
                 </h1>
                 <p className="font-body text-[12px] tracking-wide text-white/65 text-center py-4">
-                  Explore exclusive deals on our top products. The perfect
-                  opportunity to enrich your wardrobe with trendy pieces at
-                  affordable prices.
+                  {t("home.grid.kanchipuram_desc")}
                 </p>
                 <div className="absolute bottom-[-180px] flex justify-center w-full">
                   <img
@@ -711,7 +709,7 @@ const Landing = () => {
                   }}
                 >
                   <h1 className="font-spectral text-center text-[30px] uppercase text-white leading-[40px] py-3">
-                    Pochampally sarees
+                    {t("home.grid.pochampally")}
                   </h1>
 
                   <div className="absolute bottom-[-170px] right-0 md:right-10 lg:right-0">
@@ -731,12 +729,10 @@ const Landing = () => {
                   }}
                 >
                   <h1 className="font-spectral text-center md:text-[23px] lg:text-[30px] text-[30px] uppercase text-white leading-[40px] pt-4">
-                    Cotton sarees
+                    {t("home.grid.cotton")}
                   </h1>
                   <p className="font-body tracking-wide lg:tracking-wide md:tracking-normal text-[12px] lg:text-[12px] md:text-[10px] text-white/65 text-center py-4 md:py-1 lg:py-4">
-                    Passion for fashion and comfort is reflected in every pair
-                    of sneakers. Experience style and functionality in a single
-                    step.
+                    {t("home.grid.cotton_desc")}
                   </p>
                   <div className="absolute lg:bottom-[-180px] md:bottom-[-220px] bottom-[-180px] flex justify-center w-full">
                     <img

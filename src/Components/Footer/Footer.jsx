@@ -5,10 +5,12 @@ import gsap from "gsap";
 import _ScrollTrigger from "gsap/ScrollTrigger";
 import { Link, useLocation } from "react-router-dom";
 import { useIsMobile } from "../../Hooks/useIsMobile";
+import { useTranslation } from "react-i18next";
 
 gsap.registerPlugin(_ScrollTrigger);
 
 const Footer = () => {
+  const {t} = useTranslation()
   const logoRef = useRef(null);
   const socialIconsRef = useRef(null);
   const footerTextRef = useRef(null);
@@ -381,40 +383,38 @@ const Footer = () => {
                 </a>
               </div>
               <p className="footer-text" ref={footerTextRef}>
-                Timeless traditions, modern elegance. Discover our collection of
-                hand-picked sarees and find the perfect piece to tell your
-                story.
+                {t('footer.brand_text')}
               </p>
             </div>
             <div className="footer-links" ref={footerLinksRef}>
               <div className="footer-column">
-                <h4>Product</h4>
+                <h4>{t('footer.columns.product_title')}</h4>
                 <Link to={"/"}>
-                  <a>Home</a>
+                  <a>{t('footer.columns.home')}</a>
                 </Link>
-                <a href="./sort-by/all-products">Advisable</a>
-                <a href="./sort-by/churidars">Promotions</a>
+                <a href="./sort-by/all-products">{t('footer.columns.advisable')}</a>
+                <a href="./sort-by/churidars">{t('footer.columns.promotions')}</a>
               </div>
               <div className="footer-column">
-                <h4>Company</h4>
+                <h4>{t('footer.columns.company_title')}</h4>
                 <Link to={"/contact"}>
-                  <a>Contact</a>
+                  <a>{t('footer.columns.contact')}</a>
                 </Link>
                 <Link to={"/faq"}>
-                  <a>FAQ</a>
+                  <a>{t('footer.columns.faq')}</a>
                 </Link>
               </div>
               <div className="footer-column">
-                <h4>Legal</h4>
-                <Link to={"/privacy-policy"}>Privacy</Link>
-                <Link to={"/terms-and-conditions"}>Terms</Link>
+                <h4>{t('footer.columns.legal_title')}</h4>
+                <Link to={"/privacy-policy"}>{t('footer.columns.privacy')}</Link>
+                <Link to={"/terms-and-conditions"}>{t('footer.columns.terms')}</Link>
                 <Link to={"*"}>404</Link>
               </div>
             </div>
           </div>
           <div className="footer-bottom" ref={footerBottomRef}>
             <p className="copyright order-2 md:order-1">
-              © 2025 lunai. All rights reserved.
+              {t('footer.copyright')}
             </p>
             <div className="payment-methods order-1 md:order-2">
               <div className="payment-icon">

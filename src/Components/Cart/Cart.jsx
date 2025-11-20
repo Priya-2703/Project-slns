@@ -24,12 +24,11 @@ function Cart() {
 
   console.log("cart", cart);
 
-// Replace your handleCheckout function with this:
+  // Replace your handleCheckout function with this:
 
-
-const handleCheckout =()=>{
-  navigate("/checkout")
-}
+  const handleCheckout = () => {
+    navigate("/checkout");
+  };
 
   // Math
   const currency = (n) =>
@@ -208,7 +207,7 @@ const handleCheckout =()=>{
         </Link>
       </motion.div>
 
-      <div className="w-[90%] lg:w-[80%] mx-auto flex justify-start items-center py-3 px-10">
+      <div className="w-[90%] lg:w-[80%] mx-auto flex justify-center items-center py-3 px-10">
         <motion.h1
           variants={titleVariants}
           className="mb-8 text-[20px] md:text-[50px] font-[950] font-heading capitalize text-white"
@@ -217,7 +216,7 @@ const handleCheckout =()=>{
         </motion.h1>
       </div>
 
-      <div className="mx-auto max-w-6xl px-4 py-2 md:py-10">
+      <div className="mx-auto max-w-[90%] px-4 py-2 md:py-5">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* mobile view */}
           <section className="grid md:hidden grid-cols-1 gap-3 mb-[350px]">
@@ -242,7 +241,7 @@ const handleCheckout =()=>{
                       y: -4,
                       transition: { duration: 0.3 },
                     }}
-                    className="w-full border border-neutral-800 bg-black/20 rounded-xl px-3 py-3"
+                    className="w-full bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20 rounded-xl px-3 py-3"
                   >
                     <div className="flex justify-between items-center gap-4">
                       <div className="flex justify-center items-center gap-3">
@@ -382,7 +381,7 @@ const handleCheckout =()=>{
             <motion.div
               variants={itemVariants}
               custom={0}
-              className="w-full rounded-2xl border border-neutral-800 bg-black/20"
+              className="w-full rounded-2xl  bg-linear-to-br from-white/5 via-black/10 to-white/5 border border-white/20 "
             >
               <motion.div
                 variants={headerTableVariants}
@@ -577,13 +576,11 @@ const handleCheckout =()=>{
           <aside className="lg:col-span-1 ">
             <motion.div
               variants={summaryVariants}
-              className="rounded-t-2xl fixed bottom-0 left-0 right-0 
-    lg:sticky lg:top-24
-    w-full lg:w-auto lg:rounded-2xl border border-neutral-800 bg-black md:bg-black/20 z-50 p-5"
-              whileHover={{
-                borderColor: "#815a37",
-                transition: { duration: 0.3 },
-              }}
+              className="rounded-t-2xl fixed bottom-0 left-0 right-0 lg:sticky lg:top-24 w-full lg:w-auto lg:rounded-2xl bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20 z-50 p-5"
+              // whileHover={{
+              //   borderColor: "#815a37",
+              //   transition: { duration: 0.3 },
+              // }}
             >
               <motion.h3
                 className="mb-1 text-[25px] font-heading capitalize font-[950]"
@@ -624,7 +621,7 @@ const handleCheckout =()=>{
               <motion.button
                 onClick={handleCheckout} // ✅ Itha add pannunga
                 disabled={cart.length === 0 || isProcessing}
-                className="mt-5 w-full rounded-full cursor-pointer font-body bg-[#815a37] px-5 py-3 font-semibold text-white hover:text-black hover:bg-[#8f673f] transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50"
+                className="mt-5 w-full rounded-full cursor-pointer font-body hover:bg-accet px-5 py-3 font-semibold text-white  bg-accet/30 hover:border-0 border border-accet transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1, duration: 0.5 }}

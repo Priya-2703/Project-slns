@@ -183,12 +183,10 @@ const ContactForm = () => {
 
         {/* Main Content Grid */}
         <motion.div className="w-[95%] md:w-[90%] lg:w-[75%] mx-auto contact-grid font-body" variants={pageVariants}>
-          {/* Left Side - Info Cards */}
           <motion.div
             className="contact-info-section order-2"
             variants={cardVariants}
           >
-            {/* Contact Details Cards */}
             <div className="contact-details-grid">
               <motion.div
                 className="detail-card"
@@ -278,13 +276,12 @@ const ContactForm = () => {
             </div>
           </motion.div>
 
-          {/* Right Side - Contact Form */}
           <motion.div
             className="contact-form-section order-1"
             variants={cardVariants}
           >
-            <div className="form-card">
-              <div className="form-card-glow"></div>
+            <div className="form-card bg-linear-to-br from-white/10 via-black/30 to-white/10 border border-white/20 backdrop-blur-md rounded-[28px] p-10 relative overflow-hidden shadow-md">
+              <div className="form-card-gl ow"></div>
 
               {/* Success/Error Messages */}
               <AnimatePresence mode="wait">

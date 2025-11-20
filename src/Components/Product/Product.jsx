@@ -12,29 +12,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { assets } from "../../../public/assets/asset";
 import axios from "axios";
-
-const categories = [
-  {
-    name: "Sarees",
-    img: "https://framerusercontent.com/images/Q0ih86EcQhWKKGCX5VU05ql9c.jpg",
-  },
-  {
-    name: "Half Sarees",
-    img: "https://framerusercontent.com/images/kw9cJ8cAr3HMqNCZMrzald2zdH4.jpg",
-  },
-  {
-    name: "Chudidhars",
-    img: "https://framerusercontent.com/images/Wa9VEYx9s6XaxR5umPBFrfvfyY.jpg",
-  },
-  {
-    name: "Mens Dhosti's",
-    img: "https://framerusercontent.com/images/xWh57g9CWUCZz6Uf9bKYhaOKmg.jpg",
-  },
-  {
-    name: "Kids Dhosti's",
-    img: "https://framerusercontent.com/images/flRrM6HvTySSlzWRjQ26HxK6M.jpg",
-  },
-];
+import { useTranslation } from "react-i18next";
 
 const banners = [
   {
@@ -277,6 +255,29 @@ const BannerCarousel = () => {
 };
 
 const Product = () => {
+  const {t} = useTranslation()
+  const categories = [
+  {
+    name: `${t('shop.categories.sarees')}`,
+    img: "https://framerusercontent.com/images/Q0ih86EcQhWKKGCX5VU05ql9c.jpg",
+  },
+  {
+    name: `${t('shop.categories.half_sarees')}`,
+    img: "https://framerusercontent.com/images/kw9cJ8cAr3HMqNCZMrzald2zdH4.jpg",
+  },
+  {
+    name: `${t('shop.categories.chudidhars')}`,
+    img: "https://framerusercontent.com/images/Wa9VEYx9s6XaxR5umPBFrfvfyY.jpg",
+  },
+  {
+    name: `${t('shop.categories.mens_dhotis')}`,
+    img: "https://framerusercontent.com/images/xWh57g9CWUCZz6Uf9bKYhaOKmg.jpg",
+  },
+  {
+    name: `${t('shop.categories.kids_dhotis')}`,
+    img: "https://framerusercontent.com/images/flRrM6HvTySSlzWRjQ26HxK6M.jpg",
+  },
+];
   const BACKEND_URL = import.meta.env.VITE_API_URL;
   const { data, loading } = UseFetchData();
   const [search, setSearch] = useState("");
@@ -417,10 +418,10 @@ const Product = () => {
   };
 
   const options = [
-    "Price: Low to High",
-    "Price: High to Low",
-    "Name: A - Z",
-    "Name: Z - A",
+    `${t('shop.sort_options.price_low_high')}`,
+    `${t('shop.sort_options.price_high_low')}`,
+    `${t('shop.sort_options.name_a_z')}`,
+    `${t('shop.sort_options.name_z_a')}`
   ];
 
   const mobileView = window.innerWidth < 480;
@@ -476,52 +477,6 @@ const Product = () => {
       },
     }),
   };
-
-  // 🎯 NEW: Subcategory animation variants
-  // const subcategoryContainerVariants = {
-  //   hidden: {
-  //     opacity: 0,
-  //     height: 0,
-  //     marginTop: 0,
-  //   },
-  //   visible: {
-  //     opacity: 1,
-  //     height: "auto",
-  //     marginTop: 20,
-  //     transition: {
-  //       duration: 0.5,
-  //       ease: [0.22, 1, 0.36, 1],
-  //       staggerChildren: 0.03,
-  //       delayChildren: 0.1,
-  //     },
-  //   },
-  //   exit: {
-  //     opacity: 0,
-  //     height: 0,
-  //     marginTop: 0,
-  //     transition: {
-  //       duration: 0.4,
-  //       ease: [0.22, 1, 0.36, 1],
-  //     },
-  //   },
-  // };
-
-  // const subcategoryItemVariants = {
-  //   hidden: {
-  //     opacity: 0,
-  //     y: -10,
-  //     scale: 0.8,
-  //   },
-  //   visible: {
-  //     opacity: 1,
-  //     y: 0,
-  //     scale: 1,
-  //     transition: {
-  //       duration: 0.3,
-  //       ease: [0.22, 1, 0.36, 1],
-  //     },
-  //   },
-  // };
 
   const getColumnDelay = (index) => {
     const isMobile = window.innerWidth < 768;
@@ -583,9 +538,9 @@ const Product = () => {
         >
           <p className="text-white font-body text-[10px] md:text-[12px] tracking-wide font2">
             <Link to={"/"} className="text-white/80 hover:text-white">
-              Home
+              {t('shop.breadcrumb1')}
             </Link>{" "}
-            / Product
+            {t('shop.breadcrumb2')}
           </p>
         </motion.div>
 
@@ -602,7 +557,7 @@ const Product = () => {
                 if (e.key === "Enter") handleSearch(e);
               }}
               className="bg-transparent px-2 py-1 w-full text-[11px] md:text-[13px] font-['Poppins'] capitalize text-white placeholder:text-gray-700 outline-none"
-              placeholder="Search product..."
+              placeholder={t('shop.search_placeholder')}
             />
             <AnimatePresence>
               {search && (
@@ -691,7 +646,7 @@ const Product = () => {
             className="flex items-center gap-2 px-3 md:px-5 py-1.5 md:py-2 border border-accet rounded-full shadow-sm hover:bg-accet transition duration-300"
           >
             <span className="text-white font-['Poppins'] text-[8px] md:text-[12px] font-normal">
-              {selected}
+              {selected === "Sort By" ? t('shop.sort_by') : selected}
             </span>
             <motion.svg
               animate={{ rotate: isOpen ? 180 : 0 }}
@@ -825,7 +780,7 @@ const Product = () => {
               animate={{ opacity: 1, scale: 1 }}
               className="text-white font-body text-[16px] md:text-[20px] font-medium"
             >
-              No product found
+              {t('shop.no_product_found')}
             </motion.p>
           </div>
         ) : (
