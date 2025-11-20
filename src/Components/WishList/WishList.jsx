@@ -263,7 +263,7 @@ const WishList = () => {
       </motion.div>
 
       {/* Title */}
-      <div className="w-[90%] md:w-[80%] mx-auto flex justify-start items-center py-3 px-10">
+      <div className="w-[90%] md:w-[80%] mx-auto flex justify-center items-center py-3 px-10">
         <motion.h1
           variants={titleVariants}
           className="mb-8 text-[20px] md:text-[45px] leading-none font-heading capitalize font-[950] text-white"

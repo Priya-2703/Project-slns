@@ -35,6 +35,7 @@ import PaymentSuccess from "./Components/PaymentSuccess";
 import AdminNotifications from "./Components/Admin/AdminNotifications";
 import './i18n';
 import LanguageSwitcher from './components/LanguageSwitcher';
+import AdminReturnRequests from "./Components/Admin/AdminReturnRequests";
 const About = lazy(() => import("./Components/About/About"));
 const Faq = lazy(() => import("./Components/FAQ/Faq"));
 const Cart = lazy(() => import("./Components/Cart/Cart"));
@@ -112,6 +113,7 @@ function AppContent() {
     "/admin/products/edit/:id",
     "/admin/categories",
     "/admin/orders",
+    "/admin/return",
     "/admin/import",
     "/admin/customers",
     "/forgot-password",
@@ -253,6 +255,14 @@ function AppContent() {
             element={
               <ProtectedAdminRoute>
                 <ManageOrders />
+              </ProtectedAdminRoute>
+            }
+          />
+          <Route
+            path="/admin/return"
+            element={
+              <ProtectedAdminRoute>
+                <AdminReturnRequests />
               </ProtectedAdminRoute>
             }
           />

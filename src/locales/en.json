@@ -85,5 +85,253 @@
   "wishlist": {
     "title": "My Wishlist",
     "empty_message": "Your wishlist is empty"
+  },
+  "cart": {
+    "document_title": "Cart",
+    "page_title": "Shopping Cart",
+    "empty_message": "Your cart is empty.",
+    "table": {
+      "product": "Product",
+      "size": "Size",
+      "quantity": "Quantity",
+      "total": "Total",
+      "action": "Action"
+    },
+    "item": {
+      "size_label": "Size:",
+      "not_available": "N/A"
+    },
+    "summary": {
+      "title": "Order Summary",
+      "total_items": "Total no. of Items",
+      "subtotal": "Sub Total",
+      "delivery_fee": "Delivery fee",
+      "total": "Total",
+      "checkout_btn": "Checkout Now",
+      "processing": "Processing..."
+    }
+  },
+  "profile": {
+    "loading": "Loading your profile...",
+    "auth_popup": {
+      "title": "Sign In Required",
+      "description": "Please sign in to access your profile and manage your orders",
+      "signin_btn": "Sign In Now",
+      "home_btn": "Go back to Home"
+    },
+    "header": {
+      "title": "My Account",
+      "subtitle": "Manage your profile and orders"
+    },
+    "sidebar": {
+      "profile_info": "Profile Info",
+      "my_orders": "My Orders",
+      "addresses": "Addresses"
+    },
+    "personal_info": {
+      "title": "Profile Information",
+      "edit_btn": "Edit Profile",
+      "save_btn": "Save",
+      "cancel_btn": "Cancel",
+      "labels": {
+        "full_name": "Full Name",
+        "email": "Email Address",
+        "phone": "Phone Number",
+        "dob": "Date of Birth",
+        "gender": "Gender"
+      },
+      "gender_options": {
+        "select": "Select Gender",
+        "male": "Male",
+        "female": "Female",
+        "other": "Other"
+      },
+      "not_set": "Not set"
+    },
+    "orders": {
+      "title": "My Orders",
+      "no_orders": "No orders yet",
+      "start_shopping": "Start Shopping",
+      "order_date": "Order Date:",
+      "items": "Items",
+      "return": "Return/Ex"
+    },
+    "addresses": {
+      "title": "Saved Addresses",
+      "add_new_btn": "+ Add New Address",
+      "no_saved": "No saved addresses",
+      "add_btn_short": "Add Address",
+      "edit": "Edit",
+      "delete_confirm": "Are you sure you want to delete this address?"
+    },
+    "address_form": {
+      "add_title": "Add New Address",
+      "edit_title": "Edit Address",
+      "labels": {
+        "area": "Area / Locality *",
+        "landmark": "Landmark (Optional)",
+        "city": "Town / City *",
+        "state": "State *",
+        "country": "Country *",
+        "pincode": "Pincode *",
+        "type": "Address Type"
+      },
+      "types": {
+        "home": "Home",
+        "work": "Work",
+        "other": "Other"
+      },
+      "buttons": {
+        "save": "Save Address",
+        "update": "Update Address",
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "updating": "Updating..."
+      }
+    }
+  },
+  "contact": {
+    "meta_title": "Contact",
+    "header": {
+      "main": "Get In",
+      "accent": "Touch",
+      "subtitle": "We'd love to hear from you. Send us a message and we'll respond as soon as possible."
+    },
+    "details": {
+      "phone": "Phone",
+      "email": "Email",
+      "address": "Address"
+    },
+    "messages": {
+      "success": "Your message has been sent successfully!",
+      "error": "Failed to send message. Please try again.",
+      "network_error": "Unable to connect to server. Please check your connection and try again."
+    },
+    "form": {
+      "name_label": "Your Name",
+      "email_label": "Email Address",
+      "location_label": "Location",
+      "location_placeholder": "Select your state",
+      "subject_label": "Subject",
+      "subject_placeholder": "Select a subject",
+      "message_label": "Your Message",
+      "message_placeholder": "Tell us more about your inquiry...",
+      "btn_send": "Send Message",
+      "btn_sending": "Sending..."
+    },
+    "subjects": {
+      "product_inquiry": "Product Inquiry",
+      "order_support": "Order Support",
+      "bulk_order": "Bulk Order",
+      "partnership": "Partnership",
+      "b2b_inquiry": "B2B Inquiry",
+      "feedback": "Feedback",
+      "other": "Other"
+    },
+    "states": {
+      "andhra_pradesh": "Andhra Pradesh",
+      "arunachal_pradesh": "Arunachal Pradesh",
+      "assam": "Assam",
+      "bihar": "Bihar",
+      "chhattisgarh": "Chhattisgarh",
+      "goa": "Goa",
+      "gujarat": "Gujarat",
+      "haryana": "Haryana",
+      "himachal_pradesh": "Himachal Pradesh",
+      "karnataka": "Karnataka",
+      "kerala": "Kerala",
+      "tamil_nadu": "Tamil Nadu",
+      "telangana": "Telangana",
+      "uttar_pradesh": "Uttar Pradesh"
+    }
+  },
+  "product_detail": {
+    "not_found": "Product not found",
+    "tax_text": "Inclusive of all taxes",
+    "off_text": "% OFF",
+    "choose_versions": "Choose Other Versions",
+    "select_size": "Select Size:",
+    "size_warning": "Please select a size to continue",
+    "add_to_cart": "Add to Cart",
+    "select_size_btn": "Select Size to Add",
+    "virtual_try_on": "Virtual Try-On",
+    "write_review_btn": "Write a Review for this Product ✍️",
+    "load_more_reviews": "Show {{count}} More Reviews",
+    "no_reviews": "No reviews yet. Be the first to review this product!",
+    "verified_buyer": "Verified Buyer",
+    "video_label": "Product Video",
+    
+    "sections": {
+      "description": "Product Description",
+      "details": "Item Details",
+      "delivery_return": "Delivery and Return"
+    },
+    
+    "delivery_info": {
+      "title": "Delivery:",
+      "text_1": "Delivery is made by express courier, within 2-5 working days from the confirmation of the order.",
+      "text_2": "The delivery cost is 100 INR for orders under 1000 INR and free for orders over 1000 INR.",
+      "text_3": "You can choose to have your order delivered to an address specified by you or to a pick-up point.",
+      "text_4": "You will receive an email with the delivery confirmation and a tracking code for the parcel."
+    },
+    
+    "return_info": {
+      "title": "Return:",
+      "text_1": "You can return the products within 14 days of receipt, without giving any reason.",
+      "text_2": "The cost of returning the products is borne by the customer.",
+      "text_3": "Products can be returned by express courier or to a pick-up point.",
+      "text_4": "Products must be returned in their original packaging, with labels intact and with the documents received in the parcel.",
+      "text_5": "The refund of the value of the products will be made within 14 days of receipt of the return."
+    },
+    
+    "exceptions_info": {
+      "title": "Exceptions to return:",
+      "text_1": "Products that have been worn, damaged or modified cannot be returned.",
+      "text_2": "Products that have been made to order or personalized cannot be returned."
+    },
+
+    "wardrobe_hub": {
+      "subtitle": "We give you more",
+      "title": "The Wardrobe Hub"
+    },
+    
+    "similar_products": {
+      "subtitle": "RECOMMENDATIONS FOR YOU",
+      "title": "Similar products",
+      "no_products": "No similar products found"
+    },
+    
+    "curated_styles": {
+      "title": "Curated Styles for Everyone"
+    },
+
+    "try_on_modal": {
+      "title": "Virtual Try-On",
+      "subtitle": "See how it looks on you!",
+      "coming_soon": "Coming Soon",
+      "coming_soon_desc": "Revolutionary AI-powered virtual try-on experience"
+    },
+    
+    "reviews": {
+      "title": "Reviews",
+      "subtitle": "verified customer reviews"
+    }
+  },
+  "product_review": {
+    "title": "Write a Review",
+    "labels": {
+      "name": "Your Name *",
+      "rating": "Rating *",
+      "review": "Your Review *",
+      "quality": "Product Quality"
+    },
+    "placeholders": {
+      "name": "Enter your name",
+      "review": "Write your review here..."
+    },
+    "buttons": {
+      "submit": "Submit Review",
+      "cancel": "Cancel"
+    }
   }
 }
