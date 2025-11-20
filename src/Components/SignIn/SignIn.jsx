@@ -1,8 +1,7 @@
 import { useContext, useEffect, useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Mail } from "lucide-react";
 import { assets } from "../../../public/assets/asset";
 import { Link, useNavigate } from "react-router-dom";
-// ⭐ NEW: Google Login Import
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { AuthContext } from "../../Context/UseAuthContext";
@@ -22,8 +21,11 @@ export default function SignIn() {
   const navigate = useNavigate();
   const { fetchCart } = useContext(CartContext);
 
+  // ⭐ NEW: Email verification states
+  const [emailNotVerified, setEmailNotVerified] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState("");
 
-  // ⭐ NEW: Initialize the Google Login Hook
+  // Initialize the Google Login Hook
   const googleSignIn = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       // Get Google user info using the access token
@@ -36,14 +38,13 @@ export default function SignIn() {
         }
       ).then((res) => res.json());
 
-
       // Send to backend
       handleGoogleSuccess(userInfo);
     },
     onError: () => {
       setError("Google Sign-In failed. Please try again.");
     },
-    flow: "implicit", // still fine
+    flow: "implicit",
   });
 
   const handleChange = (e) => {
@@ -53,14 +54,16 @@ export default function SignIn() {
       [name]: value,
     }));
     if (error) setError("");
+    setEmailNotVerified(false); // ⭐ NEW: Reset email verification error
   };
 
-  // ⭐ UPDATED: Role-based redirect
+  // Role-based redirect with email verification check
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
     setSuccess("");
+    setEmailNotVerified(false); // ⭐ NEW: Reset before submission
 
     try {
       // 🔗 CONNECTION POINT: Send POST request to Flask backend
@@ -78,7 +81,7 @@ export default function SignIn() {
         // ✅ Success: Store token and user data
         login(data.user, data.token);
 
-        // ⭐ NEW: Check user role and redirect accordingly
+        // Check user role and redirect accordingly
         if (data.user.role === "admin") {
           setSuccess("Admin login successful! Redirecting to dashboard...");
           setTimeout(() => {
@@ -91,6 +94,11 @@ export default function SignIn() {
           }, 1000);
         }
       } else {
+        // ⭐ NEW: Check if email is not verified
+        if (data.email_not_verified) {
+          setEmailNotVerified(true);
+          setUnverifiedEmail(data.email);
+        }
         setError(data.error || "Login failed. Please try again.");
       }
     } catch (err) {
@@ -103,7 +111,26 @@ export default function SignIn() {
     }
   };
 
-  // ⭐ NEW: Google Login Success Handler
+  // ⭐ NEW: Handle resend verification email
+  const handleResendVerification = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        `${BACKEND_URL}/api/resend-verification`,
+        { email: unverifiedEmail }
+      );
+
+      setSuccess(response.data.message);
+      setError("");
+      setEmailNotVerified(false);
+    } catch (err) {
+      setError(err.response?.data?.error || "Failed to resend email");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Google Login Success Handler
   const handleGoogleSuccess = async (userInfo) => {
     const { name, email, picture, sub } = userInfo;
 
@@ -129,7 +156,7 @@ export default function SignIn() {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center overflow-hidden sign_page">
-      {/* Background Video and Overlay - same as your code */}
+      {/* Background Video and Overlay */}
       {/* <div className="w-full h-full mx-auto flex justify-center items-center absolute py-5">
         <video
           autoPlay
@@ -151,8 +178,40 @@ export default function SignIn() {
 
         <div className="bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-40 bg-white/5 justify-center overflow-hidden rounded-[25px] px-4 md:px-10 py-4">
           <div className="w-[80%] mx-auto space-y-3">
-            {/* Error/Success Alerts - same as your code */}
-            {error && (
+            {/* ⭐ NEW: Email Not Verified Alert */}
+            {emailNotVerified && (
+              <div className="mb-4 p-4 bg-yellow-500 bg-opacity-90 text-white rounded-lg">
+                <div className="flex items-start gap-3">
+                  <Mail className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1">
+                    <h3 className="font-semibold mb-1 text-[14px]">
+                      Email Not Verified
+                    </h3>
+                    <p className="text-[12px] mb-2">
+                      Please verify your email address before signing in.
+                    </p>
+                    <p className="text-[12px] mb-3">
+                      Check your inbox at <strong>{unverifiedEmail}</strong>
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      <p className="text-[11px]">
+                        Didn't receive the email? Check your spam folder or
+                      </p>
+                      <button
+                        onClick={handleResendVerification}
+                        disabled={loading}
+                        className="text-[12px] underline hover:no-underline disabled:opacity-50 text-left"
+                      >
+                        {loading ? "Sending..." : "Resend verification email"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Error/Success Alerts */}
+            {error && !emailNotVerified && (
               <div className="mb-6 p-4 bg-red-500 bg-opacity-90 text-white rounded-lg font-medium animate-pulse">
                 {error}
               </div>
@@ -164,7 +223,7 @@ export default function SignIn() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-2">
-              {/* Email and Password Inputs - same as your code */}
+              {/* Email Input */}
               <div className="py-2">
                 <label className="block text-[12px] font-['Poppins'] font-semibold text-white py-1">
                   Email
@@ -178,6 +237,8 @@ export default function SignIn() {
                   className="w-full px-4 py-2 rounded-lg font-['Poppins'] bg-white/60 text-[11px] md:text-[13px] bg-opacity-80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-600"
                 />
               </div>
+
+              {/* Password Input */}
               <div className="pb-1">
                 <label className="block font-['Poppins'] text-[12px] font-semibold text-white py-1">
                   Password
@@ -203,6 +264,7 @@ export default function SignIn() {
                 </div>
               </div>
 
+              {/* Sign In Button */}
               <button
                 type="submit"
                 disabled={loading}
@@ -238,7 +300,7 @@ export default function SignIn() {
               </button>
             </form>
 
-            {/* ⭐ NEW: Google Sign-In Button */}
+            {/* Google Sign-In Button */}
             <div className="relative flex py-3 items-center">
               <div className="flex-grow border-t border-gray-600"></div>
               <span className="flex-shrink mx-4 font-body font-extrabold text-white text-sm">
@@ -275,7 +337,7 @@ export default function SignIn() {
               </button>
             </div>
 
-            {/* Links - same as your code */}
+            {/* Links */}
             <div className="mt-6 space-y-2 py-4">
               <p className="text-center">
                 <Link
