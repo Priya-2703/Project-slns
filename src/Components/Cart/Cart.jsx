@@ -9,14 +9,13 @@ import { getImageUrl } from "../../utils/imageHelper";
 import { useTranslation } from "react-i18next";
 
 function Cart() {
-  const {t} = useTranslation()
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const {
     cart,
     totalPrice,
     removeFromCart,
     updateCartItemQuantity,
-    clearCart,
   } = useContext(CartContext);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -26,7 +25,6 @@ function Cart() {
 
   console.log("cart", cart);
 
-  // Replace your handleCheckout function with this:
 
   const handleCheckout = () => {
     navigate("/checkout");
@@ -218,7 +216,7 @@ function Cart() {
         </motion.h1>
       </div>
 
-      <div className="mx-auto max-w-[90%] px-4 py-2 md:py-5">
+      <div className="mx-auto w-[96%] md:max-w-[90%] px-4 py-2 md:py-5">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* mobile view */}
           <section className="grid md:hidden grid-cols-1 gap-3 mb-[350px]">
@@ -287,7 +285,7 @@ function Cart() {
                                 className="mt-2 inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-md px-2 py-1 transition-colors"
                               >
                                 <span className="text-gray-400 text-[8px] font-body">
-                                  {t('cart.table.size')}:
+                                  {t("cart.table.size")}:
                                 </span>
                                 <span className="text-white font-bold text-[8px] font-body">
                                   {it.selectedSize}
@@ -327,14 +325,14 @@ function Cart() {
 
                       <div className="flex flex-col justify-center">
                         <motion.div
-                          className="flex flex-col items-center gap-4 rounded-[10px] border border-neutral-800 bg-gray-900/40 py-3"
+                          className="flex flex-col items-center gap-4 rounded-[10px] border border-neutral-800 bg-white/5 py-3"
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ delay: index * 0.1 + 0.3 }}
                         >
                           <motion.button
                             onClick={() =>
-                              updateCartItemQuantity(it.product_id, -1)
+                              updateCartItemQuantity(it, -1)
                             }
                             className="h-3 w-3 inline-flex items-center justify-center rounded-full hover:bg-neutral-800"
                             aria-label="Decrease"
@@ -358,18 +356,36 @@ function Cart() {
                             transition={{ duration: 0.3 }}
                           />
                           <motion.button
-                            onClick={() =>
-                              updateCartItemQuantity(it.product_id, 1)
-                            }
-                            className="h-3 w-3 inline-flex items-center justify-center rounded-full hover:bg-neutral-800"
+                            onClick={() => updateCartItemQuantity(it, 1)}
+                            disabled={it.quantity >= it.stock_quantity}
+                            className={`h-3 w-3 inline-flex items-center justify-center rounded-full transition-all ${
+                              it.quantity >= it.stock_quantity
+                                ? "opacity-30 cursor-not-allowed bg-gray-800"
+                                : "hover:bg-neutral-800 hover:bg-accet"
+                            }`}
                             aria-label="Increase"
-                            whileHover={{ scale: 1.4 }}
-                            whileTap={{ scale: 0.75 }}
+                            whileHover={{
+                              scale: it.quantity >= it.stock_quantity ? 1 : 1.4,
+                            }}
+                            whileTap={{
+                              scale:
+                                it.quantity >= it.stock_quantity ? 1 : 0.75,
+                            }}
                             transition={{ type: "spring", stiffness: 400 }}
                           >
                             <FaPlus />
                           </motion.button>
                         </motion.div>
+                        {/* ✅ Stock Warning - Mobile */}
+                          {it.quantity >= it.stock_quantity && (
+                            <motion.p
+                              initial={{ opacity: 0, y: -5 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="text-red-400 text-[8px] mt-1 flex items-center gap-1"
+                            >
+                              ⚠️ Max stock reached
+                            </motion.p>
+                          )}
                       </div>
                     </div>
                   </motion.div>
@@ -389,11 +405,19 @@ function Cart() {
                 variants={headerTableVariants}
                 className="lg:w-full grid grid-cols-12 px-4 py-4 text-[12px] font-body uppercase text-neutral-400"
               >
-                <div className="col-span-5">{t('cart.table.product')}</div>
-                <div className="col-span-2 text-center">{t('cart.table.size')}</div>
-                <div className="col-span-2 text-center">{t('cart.table.quantity')}</div>
-                <div className="col-span-2 text-center">{t('cart.table.total')}</div>
-                <div className="col-span-1 text-right">{t('cart.table.action')}</div>
+                <div className="col-span-5">{t("cart.table.product")}</div>
+                <div className="col-span-2 text-center">
+                  {t("cart.table.size")}
+                </div>
+                <div className="col-span-2 text-center">
+                  {t("cart.table.quantity")}
+                </div>
+                <div className="col-span-2 text-center">
+                  {t("cart.table.total")}
+                </div>
+                <div className="col-span-1 text-right">
+                  {t("cart.table.action")}
+                </div>
               </motion.div>
               <div className="h-px bg-neutral-800" />
 
@@ -402,7 +426,7 @@ function Cart() {
                   variants={emptyCartVariants}
                   className="p-8 text-center font-body text-[13px] text-neutral-400"
                 >
-                   {t("cart.empty_message")}
+                  {t("cart.empty_message")}
                 </motion.div>
               ) : (
                 cart.map((it, index) => {
@@ -468,7 +492,7 @@ function Cart() {
                             className="inline-flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 rounded-full px-4 py-2 transition-all group"
                           >
                             <span className="text-gray-400 text-[12px] font-body group-hover:text-white">
-                             {t('cart.table.size')}:
+                              {t("cart.table.size")}:
                             </span>
                             <span className="text-white font-bold text-[12px] font-body">
                               {it.selectedSize}
@@ -482,7 +506,7 @@ function Cart() {
                       </div>
 
                       {/* Quantity */}
-                      <div className="col-span-2 flex justify-center">
+                      <div className="col-span-2 flex flex-col gap-1 items-center justify-center">
                         <motion.div
                           className="inline-flex items-center gap-2 rounded-full border border-neutral-700 bg-neutral-900 px-2 py-1"
                           initial={{ opacity: 0, scale: 0.8 }}
@@ -521,18 +545,44 @@ function Cart() {
                           />
                           <motion.button
                             onClick={() => updateCartItemQuantity(it, 1)}
-                            className="h-5 w-5 inline-flex items-center justify-center rounded-full hover:bg-neutral-800"
+                            disabled={it.quantity >= it.stock_quantity} // ✅ Add this
+                            className={`h-5 w-5 inline-flex items-center justify-center rounded-full transition-all ${
+                              it.quantity >= it.stock_quantity
+                                ? "opacity-30 cursor-not-allowed bg-gray-800"
+                                : "hover:bg-neutral-800"
+                            }`}
                             aria-label="Increase"
                             whileHover={{
-                              scale: 1.3,
-                              backgroundColor: "#815a37",
+                              scale: it.quantity >= it.stock_quantity ? 1 : 1.3,
+                              backgroundColor:
+                                it.quantity >= it.stock_quantity
+                                  ? undefined
+                                  : "#815a37",
                             }}
-                            whileTap={{ scale: 0.8 }}
+                            whileTap={{
+                              scale: it.quantity >= it.stock_quantity ? 1 : 0.8,
+                            }}
                             transition={{ type: "spring", stiffness: 400 }}
+                            title={
+                              it.quantity >= it.stock_quantity
+                                ? `Maximum stock (${it.stock_quantity}) reached`
+                                : "Increase quantity"
+                            }
                           >
                             <FaPlus />
                           </motion.button>
                         </motion.div>
+
+                        {/* ✅ Stock Warning - Desktop */}
+                        {it.quantity >= it.stock_quantity && (
+                          <motion.p
+                            initial={{ opacity: 0, y: -5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-red-400 text-[10px] flex items-center mt-1"
+                          >
+                            Maximum stock reached
+                          </motion.p>
+                        )}
                       </div>
 
                       {/* Total info */}
@@ -578,41 +628,41 @@ function Cart() {
           <aside className="lg:col-span-1 ">
             <motion.div
               variants={summaryVariants}
-              className="rounded-t-2xl fixed bottom-0 left-0 right-0 lg:sticky lg:top-24 w-full lg:w-auto lg:rounded-2xl bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20 z-50 p-5"
+              className="rounded-t-2xl fixed bottom-0 left-0 right-0 lg:sticky lg:top-24 w-full lg:w-auto lg:rounded-2xl bg-black md:bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20 z-50 p-5"
               // whileHover={{
               //   borderColor: "#815a37",
               //   transition: { duration: 0.3 },
               // }}
             >
               <motion.h3
-                className="mb-1 text-[25px] font-heading capitalize font-[950]"
+                className="mb-1 text-[14px] md:text-[25px] font-heading capitalize font-[950]"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
               >
-                {t('cart.summary.title')}
+                {t("cart.summary.title")}
               </motion.h3>
-              <div className="my-5 h-px bg-neutral-800" />
+              <div className="my-2 md:my-5 h-px bg-neutral-800" />
 
-              <div className="font-body text-[14px] flex flex-col gap-3">
+              <div className="font-body text-[10px] md:text-[14px] flex flex-col gap-3">
                 <SummaryRow
-                  label={t('cart.summary.total_items')}
+                  label={t("cart.summary.total_items")}
                   value={cart.reduce((sum, it) => sum + it.quantity, 0)}
                   delay={0.6}
                 />
                 <SummaryRow
-                  label={t('cart.summary.subtotal')}
+                  label={t("cart.summary.subtotal")}
                   value={currency(subtotal)}
                   delay={0.7}
                 />
                 <SummaryRow
-                  label={t('cart.summary.delivery_fee')}
+                  label={t("cart.summary.delivery_fee")}
                   value={currency(cart.length ? shipping : 0)}
                   delay={0.8}
                 />
-                <div className="my-4 h-px bg-neutral-800" />
+                <div className="my-2 md:my-4 h-px bg-neutral-800" />
                 <SummaryRow
-                  label={t('cart.summary.total')}
+                  label={t("cart.summary.total")}
                   value={currency(cart.length ? totalPrice : 0)}
                   bold
                   large
@@ -623,7 +673,7 @@ function Cart() {
               <motion.button
                 onClick={handleCheckout} // ✅ Itha add pannunga
                 disabled={cart.length === 0 || isProcessing}
-                className="mt-5 w-full rounded-full cursor-pointer font-body hover:bg-accet px-5 py-3 font-semibold text-white  bg-accet/30 hover:border-0 border border-accet transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50"
+                className="mt-3 md:mt-5 text-[12px] md:text-[16px] w-full rounded-full cursor-pointer font-body hover:bg-accet px-5  py-2 md:py-3 font-semibold text-white  bg-accet/30 hover:border-0 border border-accet transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1, duration: 0.5 }}
@@ -638,7 +688,9 @@ function Cart() {
                   scale: cart.length === 0 || isProcessing ? 1 : 0.95,
                 }}
               >
-                {isProcessing ? `${t('cart.summary.processing')}` : `${t('cart.summary.checkout_btn')}`}
+                {isProcessing
+                  ? `${t("cart.summary.processing")}`
+                  : `${t("cart.summary.checkout_btn")}`}
               </motion.button>
             </motion.div>
           </aside>
@@ -681,7 +733,7 @@ function SummaryRow({ label, value, bold = false, large = false, delay = 0 }) {
         className={[
           "text-neutral-300",
           bold ? "font-semibold" : "",
-          large ? "text-base" : "text-sm",
+          large ? "text-base" : "text-[12px]",
         ].join(" ")}
       >
         {label}
@@ -690,7 +742,7 @@ function SummaryRow({ label, value, bold = false, large = false, delay = 0 }) {
         className={[
           "tabular-nums",
           bold ? "font-semibold" : "",
-          large ? "text-base" : "text-sm",
+          large ? "text-base" : "text-[12px]",
         ].join(" ")}
         initial={{ scale: 0.8 }}
         animate={{ scale: 1 }}

@@ -126,7 +126,6 @@ const CartProvider = ({ children }) => {
     return true;
   };
 
-  // ✅ 1. Add to Cart - OPTIMISTIC UPDATE (UI first, backend second)
   const addToCart = async (product) => {
     if (!requireAuth("add to cart")) {
       setTimeout(() => {
@@ -143,11 +142,33 @@ const CartProvider = ({ children }) => {
       return;
     }
 
-    // ✅ Extract selected size
+    if (!product.stock_quantity || product.stock_quantity === 0) {
+      showToast("❌ Product is out of stock!", "error");
+      return;
+    }
+
     const selectedSize = product.selectedSize || product.size || null;
 
+    const existingItem = cart.find(
+      (item) =>
+        item.product_id === product.product_id &&
+        item.selectedSize === selectedSize
+    );
+
+    // ✅ Check if adding will exceed stock
+    if (existingItem) {
+      const newQuantity = existingItem.quantity + 1;
+      if (newQuantity > product.stock_quantity) {
+        showToast(
+          `⚠️ Only ${product.stock_quantity} items available in stock!`,
+          "error"
+        );
+        return;
+      }
+    }
+
     // ✅ IMMEDIATE UI UPDATE (Optimistic)
-    setCart((prevCart) => {
+ setCart((prevCart) => {
       const existingItem = prevCart.find(
         (item) =>
           item.product_id === product.product_id &&
@@ -156,6 +177,11 @@ const CartProvider = ({ children }) => {
 
       let updatedCart;
       if (existingItem) {
+        // ✅ Double-check stock before updating
+        if (existingItem.quantity + 1 > product.stock_quantity) {
+          return prevCart; // Don't update if exceeds stock
+        }
+
         updatedCart = prevCart.map((item) =>
           item.product_id === product.product_id &&
           (item.selectedSize || item.size) === selectedSize
@@ -170,6 +196,7 @@ const CartProvider = ({ children }) => {
             quantity: 1,
             selectedSize: selectedSize,
             size: selectedSize,
+            stock_quantity: product.stock_quantity, // ✅ Store stock info
           },
         ];
       }
@@ -199,6 +226,7 @@ const CartProvider = ({ children }) => {
         }
 
         await fetchCart();
+
       } catch (error) {
         console.error("Error syncing cart with backend:", error);
         // ✅ STEP 4: ROLLBACK on error (remove optimistic update)
@@ -217,7 +245,6 @@ const CartProvider = ({ children }) => {
     }
   };
 
-  // ✅ 2. Remove from Cart - OPTIMISTIC UPDATE
   const removeFromCart = async (cartItem) => {
     const token = getToken();
 
@@ -278,23 +305,19 @@ const CartProvider = ({ children }) => {
     }
   };
 
-  // ✅ 3. Update Cart Item Quantity - OPTIMISTIC UPDATE
   const updateCartItemQuantity = async (cartItem, amount) => {
     const token = getToken();
     const { product_id, selectedSize } = cartItem;
 
-    // ✅ IMMEDIATE UI UPDATE - Match by product_id AND size
     setCart((prevCart) => {
       const updatedCart = prevCart
         .map((item) => {
-          // Match specific item (product_id + size)
           if (
             item.product_id === product_id &&
             item.selectedSize === selectedSize
           ) {
             const newQuantity = item.quantity + amount;
 
-            // Remove if quantity <= 0
             if (newQuantity <= 0) {
               return null;
             }
@@ -303,13 +326,12 @@ const CartProvider = ({ children }) => {
           }
           return item;
         })
-        .filter(Boolean); // Remove null items
+        .filter(Boolean); 
 
       localStorage.setItem("cart", JSON.stringify(updatedCart));
       return updatedCart;
     });
 
-    // ✅ Sync with backend
     if (token) {
       try {
         const currentItem = cart.find(
@@ -344,7 +366,6 @@ const CartProvider = ({ children }) => {
           throw new Error("Failed to update backend");
         }
 
-        // Re-fetch to confirm
         await fetchCart();
       } catch (error) {
         console.error("Error updating cart:", error);
@@ -352,7 +373,6 @@ const CartProvider = ({ children }) => {
     }
   };
 
-  // ✅ 4. Clear entire cart - OPTIMISTIC UPDATE
   const clearCart = async () => {
     const token = getToken();
 
@@ -380,41 +400,6 @@ const CartProvider = ({ children }) => {
     }
   };
 
-  // ✅ NEW: Change Cart Item Size
-  // const changeCartItemSize = (productId, oldSize, newSize) => {
-  //   setCart((prevCart) => {
-  //     // Check if new size already exists
-  //     const existingNewSizeIndex = prevCart.findIndex(
-  //       (item) => item.product_id === productId && item.selectedSize === newSize
-  //     );
-
-  //     const oldSizeIndex = prevCart.findIndex(
-  //       (item) => item.product_id === productId && item.selectedSize === oldSize
-  //     );
-
-  //     if (oldSizeIndex === -1) return prevCart;
-
-  //     const updatedCart = [...prevCart];
-
-  //     if (existingNewSizeIndex > -1) {
-  //       // New size already exists - merge quantities
-  //       updatedCart[existingNewSizeIndex].quantity +=
-  //         updatedCart[oldSizeIndex].quantity;
-  //       // Remove old size item
-  //       updatedCart.splice(oldSizeIndex, 1);
-  //     } else {
-  //       // Just update the size
-  //       updatedCart[oldSizeIndex] = {
-  //         ...updatedCart[oldSizeIndex],
-  //         selectedSize: newSize,
-  //       };
-  //     }
-
-  //     return updatedCart;
-  //   });
-  // };
-
-  // ✅ Calculate values (memoized for performance)
   const getCartItems = () => cart;
 
   const totalPrice = cart.reduce(
@@ -449,11 +434,10 @@ const CartProvider = ({ children }) => {
         totalPrice,
         totalItems,
         cartLength,
-        loading, // Only true during initial load
+        loading, 
         error,
         fetchCart,
         isInCart,
-        // changeCartItemSize,
         getItemQuantity,
       }}
     >
