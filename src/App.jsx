@@ -36,6 +36,7 @@ import AdminNotifications from "./Components/Admin/AdminNotifications";
 import './i18n';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import AdminReturnRequests from "./Components/Admin/AdminReturnRequests";
+import OrderSuccess from "./Components/OrderSuccess";
 const About = lazy(() => import("./Components/About/About"));
 const Faq = lazy(() => import("./Components/FAQ/Faq"));
 const Cart = lazy(() => import("./Components/Cart/Cart"));
@@ -147,8 +148,11 @@ function AppContent() {
             hideCursor={false}
             animationData={assets.butterflyAnim}
             size={50}
+            hoverDistance={100}
             faceOffsetDeg={90}
             wingSpeed={3}
+            idleWingSpeed={0.9}
+            idleThreshold={2} 
           />
         </>
       )}
@@ -173,7 +177,7 @@ function AppContent() {
           <Route path="/privacy-policy" element={<Privacy />} />
           <Route path="/terms-and-conditions" element={<Terms />} />
           <Route path="/contact" element={<ContactForm />} />
-          <Route path="/order-success" element={<PaymentSuccess />} />
+          <Route path="/order-success" element={<OrderSuccess />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/b2b-signup" element={<B2bSignUp />} />
           <Route path="/signin" element={<SignIn />} />

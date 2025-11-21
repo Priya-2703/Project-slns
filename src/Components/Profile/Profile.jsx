@@ -2,10 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import {
   User,
   Package,
-  Eye,
-  Heart,
   MapPin,
-  Settings,
   Edit2,
   Save,
   X,
@@ -19,11 +16,13 @@ import {
   LogIn,
   CircleUserRound,
   Loader,
-  EyeOff,
-  Lock,
   Upload,
   RefreshCw,
   DollarSign,
+  XCircle, // ✅ NEW - For Cancel Icon
+  AlertCircle,
+  ArrowBigRight,
+  MousePointerClick, // ✅ NEW - For Warning
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -62,16 +61,16 @@ const Profile = () => {
   });
   const [error, setError] = useState(null);
 
-  // ✅ NEW - Return Order States
+  // Return Order States
   const [showReturnPopup, setShowReturnPopup] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [returnFormData, setReturnFormData] = useState({
     reason: "",
     comments: "",
-    action: "refund", // 'refund' or 'exchange'
+    action: "refund",
     images: [],
   });
-  const [refundPaymentMethod, setRefundPaymentMethod] = useState("upi"); // 'upi' or 'bank'
+  const [refundPaymentMethod, setRefundPaymentMethod] = useState("upi");
   const [refundPaymentDetails, setRefundPaymentDetails] = useState({
     upi_id: "",
     account_holder_name: "",
@@ -81,6 +80,14 @@ const Profile = () => {
   });
   const [submittingReturn, setSubmittingReturn] = useState(false);
   const [imagePreview, setImagePreview] = useState([]);
+
+  // ✅ NEW - Cancel Order States
+  const [showCancelPopup, setShowCancelPopup] = useState(false);
+  const [cancelOrderData, setCancelOrderData] = useState({
+    reason: "",
+    comments: "",
+  });
+  const [submittingCancel, setSubmittingCancel] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -147,6 +154,10 @@ const Profile = () => {
 
   const [editData, setEditData] = useState({ ...userData });
   const [orders, setOrders] = useState([]);
+  const [showOrderDetailsPopup, setShowOrderDetailsPopup] = useState(false);
+  const [selectedOrderDetails, setSelectedOrderDetails] = useState(null);
+  const [loadingOrderDetails, setLoadingOrderDetails] = useState(false);
+
   const [addresses, setAddresses] = useState([]);
 
   // ✅ Fetch User Profile
@@ -224,14 +235,62 @@ const Profile = () => {
       if (!response.ok) {
         throw new Error("Failed to fetch orders");
       }
-
       const data = await response.json();
-      console.log("Orders", data.orders);
+
+      console.log("📋 Orders List:", data.orders);
+      console.log("📋 First Order:", data.orders?.[0]);
+
       setOrders(data.orders || []);
     } catch (error) {
       console.error("Error fetching orders:", error);
       setOrders([]);
     }
+  };
+
+  // ✅ Fetch Specific Order Details from Backend
+  const fetchOrderDetails = async (orderId) => {
+    try {
+      setLoadingOrderDetails(true);
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(`${BACKEND_URL}/api/orders/${orderId}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch order details");
+      }
+
+      const data = await response.json();
+      console.log("Order Details:", data); // For debugging
+
+      setSelectedOrderDetails(data.order || data);
+      setShowOrderDetailsPopup(true);
+    } catch (error) {
+      console.error("Error fetching order details:", error);
+      showToast(
+        error.message || "Failed to load order details. Please try again.",
+        "error"
+      );
+    } finally {
+      setLoadingOrderDetails(false);
+    }
+  };
+
+  // ✅ Handle Order Details Click
+  const handleOrderDetailsClick = (order) => {
+    const orderId = order.order_id || order._id || order.order_id;
+    fetchOrderDetails(orderId);
+  };
+
+  // ✅ Close Order Details Popup
+  const handleCloseOrderDetails = () => {
+    setShowOrderDetailsPopup(false);
+    setSelectedOrderDetails(null);
   };
 
   // ✅ Fetch User Addresses
@@ -272,7 +331,101 @@ const Profile = () => {
     }
   };
 
-  // ✅ NEW - Handle Return Button Click
+  // ✅ NEW - Handle Cancel Order Click
+  const handleCancelClick = (order) => {
+    setSelectedOrder(order);
+    setShowCancelPopup(true);
+    setCancelOrderData({
+      reason: "",
+      comments: "",
+    });
+  };
+
+  // ✅ NEW - Handle Cancel Form Input Change
+  const handleCancelInputChange = (e) => {
+    const { name, value } = e.target;
+    setCancelOrderData({
+      ...cancelOrderData,
+      [name]: value,
+    });
+  };
+
+  // ✅ NEW - Submit Cancel Order Request
+  const handleSubmitCancel = async (order) => {
+    try {
+      // Validation
+      if (!cancelOrderData.reason) {
+        showToast("Please select a reason for cancellation", "error");
+        return;
+      }
+
+      if (!cancelOrderData.comments.trim()) {
+        showToast("Please provide additional comments", "error");
+        return;
+      }
+      
+      setSubmittingCancel(true);
+      
+      const orderId = order.order_id
+      console.log(orderId)
+
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `${BACKEND_URL}/api/orders/${orderId}/cancel`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            order_id: selectedOrder.id || selectedOrder._id,
+            reason: cancelOrderData.reason,
+            comments: cancelOrderData.comments,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        const errorMessage =
+          data.message || data.error || "Failed to cancel order";
+        showToast(errorMessage, "error");
+        return;
+      }
+
+      // Success
+      showToast("Order cancelled successfully!", "success");
+
+      // Refresh orders
+      await fetchUserOrders(token);
+
+      // Close popup
+      handleCancelClose();
+    } catch (error) {
+      console.error("Error cancelling order:", error);
+      showToast(
+        error.message || "Failed to cancel order. Please try again.",
+        "error"
+      );
+    } finally {
+      setSubmittingCancel(false);
+    }
+  };
+
+  // ✅ NEW - Close Cancel Popup
+  const handleCancelClose = () => {
+    setShowCancelPopup(false);
+    setSelectedOrder(null);
+    setCancelOrderData({
+      reason: "",
+      comments: "",
+    });
+  };
+
+  // Handle Return Button Click
   const handleReturnClick = (order) => {
     setSelectedOrder(order);
     setShowReturnPopup(true);
@@ -285,7 +438,7 @@ const Profile = () => {
     setImagePreview([]);
   };
 
-  // ✅ NEW - Handle Return Form Input Change
+  // Handle Return Form Input Change
   const handleReturnInputChange = (e) => {
     const { name, value } = e.target;
     setReturnFormData({
@@ -294,7 +447,7 @@ const Profile = () => {
     });
   };
 
-  // ✅ NEW - Handle Image Upload
+  // Handle Image Upload
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
 
@@ -303,23 +456,20 @@ const Profile = () => {
       return;
     }
 
-    // Create preview URLs
     const newPreviews = files.map((file) => URL.createObjectURL(file));
     setImagePreview([...imagePreview, ...newPreviews]);
 
-    // Store actual files
     setReturnFormData({
       ...returnFormData,
       images: [...returnFormData.images, ...files],
     });
   };
 
-  // ✅ NEW - Remove Image
+  // Remove Image
   const handleRemoveImage = (index) => {
     const newImages = [...returnFormData.images];
     const newPreviews = [...imagePreview];
 
-    // Revoke URL to free memory
     URL.revokeObjectURL(newPreviews[index]);
 
     newImages.splice(index, 1);
@@ -332,10 +482,9 @@ const Profile = () => {
     setImagePreview(newPreviews);
   };
 
-  // ✅ NEW - Submit Return Request
+  // Submit Return Request
   const handleSubmitReturn = async () => {
     try {
-      // Validation
       if (!returnFormData.reason) {
         showToast("Please select a reason for return", "error");
         return;
@@ -346,14 +495,12 @@ const Profile = () => {
         return;
       }
 
-      // ✅ NEW - Validate refund payment details
       if (returnFormData.action === "refund") {
         if (refundPaymentMethod === "upi") {
           if (!refundPaymentDetails.upi_id.trim()) {
             showToast("Please enter UPI ID for refund", "error");
             return;
           }
-          // Basic UPI ID validation
           if (!refundPaymentDetails.upi_id.includes("@")) {
             showToast("Please enter a valid UPI ID", "error");
             return;
@@ -367,7 +514,6 @@ const Profile = () => {
             showToast("Please fill all bank details for refund", "error");
             return;
           }
-          // IFSC code validation (11 characters)
           if (refundPaymentDetails.ifsc_code.length !== 11) {
             showToast("IFSC code must be 11 characters", "error");
             return;
@@ -378,14 +524,12 @@ const Profile = () => {
       setSubmittingReturn(true);
       const token = localStorage.getItem("token");
 
-      // Create FormData for file upload
       const formData = new FormData();
       formData.append("order_id", selectedOrder.id || selectedOrder._id);
       formData.append("reason", returnFormData.reason);
       formData.append("comments", returnFormData.comments);
       formData.append("action", returnFormData.action);
 
-      // ✅ NEW - Add refund payment details
       if (returnFormData.action === "refund") {
         formData.append("refund_method", refundPaymentMethod);
         if (refundPaymentMethod === "upi") {
@@ -404,7 +548,6 @@ const Profile = () => {
         }
       }
 
-      // Append images
       returnFormData.images.forEach((image, index) => {
         formData.append("images", image);
       });
@@ -426,13 +569,10 @@ const Profile = () => {
         return;
       }
 
-      // Success
       showToast("Return request submitted successfully!", "success");
 
-      // Refresh orders
       await fetchUserOrders(token);
 
-      // Close popup
       handleCancelReturn();
     } catch (error) {
       console.error("Error submitting return:", error);
@@ -445,7 +585,6 @@ const Profile = () => {
     }
   };
 
-  // ✅ payment
   const handlePaymentDetailsChange = (e) => {
     const { name, value } = e.target;
     setRefundPaymentDetails({
@@ -454,7 +593,6 @@ const Profile = () => {
     });
   };
 
-  // ✅ NEW - Cancel Return
   const handleCancelReturn = () => {
     setShowReturnPopup(false);
     setSelectedOrder(null);
@@ -516,7 +654,7 @@ const Profile = () => {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        `${BACKEND_URL}/api/addresses/${
+        `${BACKEND_URL}/api/profile/addresses/${
           editingAddress.id || editingAddress._id
         }`,
         {
@@ -769,39 +907,6 @@ const Profile = () => {
     });
   };
 
-  // const setDefaultAddress = async (id) => {
-  //   try {
-  //     const token = localStorage.getItem("token");
-
-  //     const response = await fetch(
-  //       `${BACKEND_URL}/api/addresses/${id}/default`,
-  //       {
-  //         method: "PUT",
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     );
-
-  //     if (!response.ok) {
-  //       throw new Error("Failed to set default address");
-  //     }
-
-  //     setAddresses(
-  //       addresses.map((addr) => ({
-  //         ...addr,
-  //         isDefault: addr.id === id,
-  //       }))
-  //     );
-
-  //     alert("Default address updated!");
-  //   } catch (error) {
-  //     console.error("Error setting default address:", error);
-  //     alert("Failed to update default address. Please try again.");
-  //   }
-  // };
-
   const handleSignInRedirect = () => {
     navigate("/signin");
   };
@@ -818,6 +923,7 @@ const Profile = () => {
       Delivered: <CheckCircle size={14} />,
       Shipped: <Truck size={14} />,
       Processing: <Clock size={14} />,
+      Cancelled: <XCircle size={14} />, // ✅ NEW
     };
 
     return (
@@ -977,7 +1083,7 @@ const Profile = () => {
       variants={pageVariants}
       className="min-h-screen bg-black text-white mt-20 md:mt-28"
     >
-      {/* Authentication Popup - Keep existing */}
+      {/* Authentication Popup */}
       <AnimatePresence>
         {showAuthPopup && !isAuthenticated && (
           <>
@@ -1059,7 +1165,7 @@ const Profile = () => {
       {/* Profile Content */}
       {isAuthenticated && (
         <>
-          {/* Header - Keep existing */}
+          {/* Header */}
           <div className="mx-2 lg:mx-0">
             <motion.div
               variants={headerVariants}
@@ -1078,7 +1184,7 @@ const Profile = () => {
 
           <div className="max-w-7xl mx-auto px-4 py-3 md:py-8">
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              {/* Sidebar - Keep existing */}
+              {/* Sidebar */}
               <motion.div
                 variants={sidebarVariants}
                 initial="hidden"
@@ -1174,7 +1280,7 @@ const Profile = () => {
               {/* Main Content */}
               <div className="lg:col-span-3">
                 <AnimatePresence mode="wait">
-                  {/* Profile Tab - Keep existing */}
+                  {/* Profile Tab */}
                   {activeTab === "profile" && (
                     <motion.div
                       key="profile"
@@ -1351,7 +1457,7 @@ const Profile = () => {
                     </motion.div>
                   )}
 
-                  {/* ✅ UPDATED - Orders Tab with Return Button */}
+                  {/* ✅ UPDATED - Orders Tab with Cancel & Return Buttons */}
                   {activeTab === "orders" && (
                     <motion.div
                       key="orders"
@@ -1389,12 +1495,13 @@ const Profile = () => {
                             custom={index}
                             whileHover={{ scale: 1.02, y: -5 }}
                             transition={{ duration: 0.3 }}
+                            onClick={() => handleOrderDetailsClick(order)}
                             className="rounded-[20px] p-6 bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20"
                           >
                             <div className="flex flex-wrap justify-between items-start mb-4">
                               <div>
                                 <h3 className="text-xl font-bold mb-2">
-                                  {order.order_id || order.id}
+                                  {order.id}
                                 </h3>
                                 <p className="text-gray-400 text-[12px] md:text-[14px]">
                                   {t("profile.orders.order_date")}{" "}
@@ -1433,23 +1540,47 @@ const Profile = () => {
                                   )
                                 )}
                               </div>
-                              <div className="flex justify-between items-center">
+                              <div className="flex justify-between items-center flex-wrap gap-3">
                                 <span className="text-2xl font-sans font-bold text-white">
                                   ₹{order.total || order.total_amount}
                                 </span>
 
-                                {/* ✅ RETURN BUTTON - Only show for Delivered orders */}
-                                {order.status === "Delivered" && (
+                                <div className="flex gap-2">
+                                  {/* ✅ CANCEL BUTTON - Only for Processing */}
+                                  {/* {order.status === "Processing" && (
+                                    <motion.button
+                                      whileHover={{ scale: 1.05 }}
+                                      whileTap={{ scale: 0.95 }}
+                                      onClick={() => handleCancelClick(order)}
+                                      className="bg-red-600/20 border border-red-700 text-white px-4 md:px-6 py-2 text-[12px] md:text-[14px] rounded-full hover:bg-red-700 transition-all duration-300 font-body font-[500] flex items-center gap-2"
+                                    >
+                                      <XCircle size={16} />
+                                      Cancel Order
+                                    </motion.button>
+                                  )} */}
+
                                   <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => handleReturnClick(order)}
-                                    className="bg-white text-black px-6 py-2 text-[12px] md:text-[14px] rounded-full hover:bg-gray-200 transition-all duration-300 font-body font-[500] flex items-center gap-2"
-                                  >
-                                    <RefreshCw size={16} />
-                                    Return Order
-                                  </motion.button>
-                                )}
+                                      whileHover={{ scale: 1.05 }}
+                                      whileTap={{ scale: 0.95 }}
+                                      className="bg-linear-to-br from-white/5 via-black/20 to-white/5 border border-white/10  text-white p-3 text-[12px] md:text-[14px] rounded-full transition-all duration-300 font-body font-[500] flex items-center gap-2"
+                                    >
+                                      <MousePointerClick size={18} />
+                                      
+                                    </motion.button>
+
+                                  {/* ✅ RETURN BUTTON - Only for Delivered */}
+                                  {/* {order.status === "Delivered" && (
+                                    <motion.button
+                                      whileHover={{ scale: 1.05 }}
+                                      whileTap={{ scale: 0.95 }}
+                                      onClick={() => handleReturnClick(order)}
+                                      className="bg-white text-black px-4 md:px-6 py-2 text-[12px] md:text-[14px] rounded-full hover:bg-gray-200 transition-all duration-300 font-body font-[500] flex items-center gap-2"
+                                    >
+                                      <RefreshCw size={16} />
+                                      Return Order
+                                    </motion.button>
+                                  )} */}
+                                </div>
                               </div>
                             </div>
                           </motion.div>
@@ -1458,7 +1589,7 @@ const Profile = () => {
                     </motion.div>
                   )}
 
-                  {/* Addresses Tab - Keep existing */}
+                  {/* Addresses Tab */}
                   {activeTab === "addresses" && (
                     <motion.div
                       key="addresses"
@@ -1579,7 +1710,733 @@ const Profile = () => {
         </>
       )}
 
-      {/* ✅ NEW - Return Order Popup with Refund Details */}
+      {/* ✅ Order Details Popup */}
+      <AnimatePresence>
+        {showOrderDetailsPopup && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50"
+              onClick={handleCloseOrderDetails}
+            />
+
+            <div className="fixed inset-0 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <motion.div
+                variants={popupVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20 max-h-[90vh] overflow-y-scroll rounded-3xl p-6 md:p-8 max-w-4xl w-full shadow-2xl my-8"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Loading State */}
+                {loadingOrderDetails ? (
+                  <div className="flex flex-col items-center justify-center py-20">
+                    <Loader className="w-12 h-12 text-white animate-spin mb-4" />
+                    <p className="text-gray-400 text-lg font-body">
+                      Loading order details...
+                    </p>
+                  </div>
+                ) : selectedOrderDetails ? (
+                  <>
+                    {/* Header */}
+                    <div className="flex justify-between items-start mb-6 bg-linear-to-r from-black/40 to-white/5 backdrop-blur-md py-4 px-6 rounded-t-3xl border-b border-white/10">
+                      <div>
+                        <h2 className="text-2xl md:text-3xl font-bold font-heading flex items-center gap-3">
+                          <Package size={32} className="text-white" />
+                          Order Details
+                        </h2>
+                        <p className="text-gray-400 text-sm mt-2">
+                          Order No:{" "}
+                          <span className="font-mono text-white">
+                            {selectedOrderDetails.order_number ||
+                              selectedOrderDetails.number}
+                          </span>
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <StatusBadge status={selectedOrderDetails.status} />
+                        <motion.button
+                          whileHover={{ scale: 1.1, rotate: 90 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={handleCloseOrderDetails}
+                          className="text-gray-400 hover:text-white transition-colors"
+                        >
+                          <X size={24} />
+                        </motion.button>
+                      </div>
+                    </div>
+
+                    {/* Order Summary Section */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="bg-white/5 border border-white/10 rounded-xl p-4"
+                      >
+                        <div className="flex items-center gap-2 text-gray-400 mb-2">
+                          <Calendar size={18} />
+                          <span className="text-sm">Order Date</span>
+                        </div>
+                        <p className="text-white font-bold text-lg">
+                          {new Date(
+                            selectedOrderDetails.created_at ||
+                              selectedOrderDetails.date ||
+                              selectedOrderDetails.order_date
+                          ).toLocaleDateString("en-IN", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </p>
+                        <p className="text-gray-400 text-xs mt-1">
+                          {new Date(
+                            selectedOrderDetails.created_at ||
+                              selectedOrderDetails.date ||
+                              selectedOrderDetails.order_date
+                          ).toLocaleTimeString("en-IN")}
+                        </p>
+                      </motion.div>
+
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="bg-white/5 border border-white/10 rounded-xl p-4"
+                      >
+                        <div className="flex items-center gap-2 text-gray-400 mb-2">
+                          <ShoppingBag size={18} />
+                          <span className="text-sm">Total Items</span>
+                        </div>
+                        <p className="text-white font-bold text-lg">
+                          {selectedOrderDetails.items?.length ||
+                            selectedOrderDetails.products?.length ||
+                            selectedOrderDetails.total_items ||
+                            selectedOrderDetails.items ||
+                            0}{" "}
+                          Items
+                        </p>
+                      </motion.div>
+
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="bg-white/5 border border-white/10 rounded-xl p-4"
+                      >
+                        <div className="flex items-center gap-2 text-gray-400 mb-2">
+                          <DollarSign size={18} />
+                          <span className="text-sm">Total Amount</span>
+                        </div>
+                        <p className="text-white font-bold text-2xl">
+                          ₹
+                          {selectedOrderDetails.total ||
+                            selectedOrderDetails.total_amount ||
+                            selectedOrderDetails.grand_total}
+                        </p>
+                      </motion.div>
+                    </div>
+
+                    {/* Products Section */}
+                    <div className="mb-6">
+                      <h3 className="text-xl font-bold font-heading mb-4 flex items-center gap-2">
+                        <ShoppingBag size={20} />
+                        Ordered Items
+                      </h3>
+                      <div className="space-y-3">
+                        {(
+                          selectedOrderDetails.products ||
+                          selectedOrderDetails.items ||
+                          selectedOrderDetails.order_items ||
+                          []
+                        ).map((product, idx) => (
+                          <motion.div
+                            key={idx}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: idx * 0.1 }}
+                            className="bg-white/5 border border-white/10 rounded-xl p-4 flex items-center gap-4 hover:bg-white/10 transition-all"
+                          >
+                            {(product.image ||
+                              product.product_image ||
+                              product.thumbnail) && (
+                              <img
+                                src={
+                                  product.image ||
+                                  product.product_image ||
+                                  product.thumbnail
+                                }
+                                alt={product.name || product.product_name}
+                                className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-lg border border-white/20"
+                                onError={(e) => {
+                                  e.target.style.display = "none";
+                                }}
+                              />
+                            )}
+                            <div className="flex-1">
+                              <h4 className="text-white font-bold text-sm md:text-base mb-1">
+                                {product.name ||
+                                  product.product_name ||
+                                  product.title ||
+                                  "Product"}
+                              </h4>
+                              <div className="flex flex-wrap gap-3 text-xs md:text-sm text-gray-400">
+                                {(product.quantity || product.qty) && (
+                                  <span className="flex items-center gap-1">
+                                    <Package size={14} />
+                                    Qty: {product.quantity || product.qty}
+                                  </span>
+                                )}
+                                {product.size && (
+                                  <span className="bg-white/10 px-2 py-0.5 rounded">
+                                    Size: {product.size}
+                                  </span>
+                                )}
+                                {product.color && (
+                                  <span className="bg-white/10 px-2 py-0.5 rounded">
+                                    Color: {product.color}
+                                  </span>
+                                )}
+                                {product.sku && (
+                                  <span className="text-gray-500">
+                                    SKU: {product.sku}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            {(product.price || product.unit_price) && (
+                              <div className="text-right">
+                                <p className="text-white font-bold text-lg">
+                                  ₹{product.price || product.unit_price}
+                                </p>
+                                {(product.quantity || product.qty) && (
+                                  <p className="text-gray-400 text-xs mt-1">
+                                    ₹{product.price || product.unit_price} ×{" "}
+                                    {product.quantity || product.qty}
+                                  </p>
+                                )}
+                                {(product.total || product.subtotal) && (
+                                  <p className="text-green-400 text-sm font-semibold mt-1">
+                                    Total: ₹{product.total || product.subtotal}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </motion.div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Shipping Address Section */}
+                    {(selectedOrderDetails.shipping_address ||
+                      selectedOrderDetails.address ||
+                      selectedOrderDetails.delivery_address) && (
+                      <div className="mb-6">
+                        <h3 className="text-xl font-bold font-heading mb-4 flex items-center gap-2">
+                          <MapPin size={20} />
+                          Shipping Address
+                        </h3>
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="bg-white/5 border border-white/10 rounded-xl p-4"
+                        >
+                          {(() => {
+                            const address =
+                              selectedOrderDetails.shipping_address ||
+                              selectedOrderDetails.address ||
+                              selectedOrderDetails.delivery_address;
+
+                            return (
+                              <div className="text-gray-300 text-sm md:text-base leading-relaxed space-y-1">
+                                {/* {(address.name || address.recipient_name) && (
+                                  <p className="text-white font-semibold">
+                                    {address.customer.name || address.recipient_name}
+                                  </p>
+                                )} */}
+                                {(address.phone || address.mobile) && (
+                                  <p className="text-gray-400 flex items-center gap-2">
+                                    <Phone size={14} />
+                                    {address.phone || address.mobile}
+                                  </p>
+                                )}
+                                {address.area && <p>{address.area}</p>}
+                                {address.landmark && (
+                                  <p>Near {address.landmark}</p>
+                                )}
+                                {address.city && address.state && (
+                                  <p>
+                                    {address.city}, {address.state}
+                                  </p>
+                                )}
+                                {(address.country && address.pincode) ||
+                                  (address.pincode && (
+                                    <>
+                                      <p>{address.country}</p>
+                                      <p>{address.pincode}</p>
+                                    </>
+                                  ))}
+                                {/* Fallback for string address */}
+                                {typeof address === "string" && (
+                                  <p>{address}</p>
+                                )}
+                              </div>
+                            );
+                          })()}
+                        </motion.div>
+                      </div>
+                    )}
+
+                    {/* Payment Information */}
+                    <div className="mb-6">
+                      <h3 className="text-xl font-bold font-heading mb-4 flex items-center gap-2">
+                        <DollarSign size={20} />
+                        Payment Details
+                      </h3>
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3"
+                      >
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-400">Payment Method</span>
+                          <span className="text-white font-semibold uppercase">
+                            {selectedOrderDetails.payment_method ||
+                              selectedOrderDetails.payment_type ||
+                              "COD"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-400">Payment Status</span>
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                              (selectedOrderDetails.payment_status ||
+                                selectedOrderDetails.payment_state) ===
+                                "Paid" ||
+                              (selectedOrderDetails.payment_status ||
+                                selectedOrderDetails.payment_state) ===
+                                "paid" ||
+                              (selectedOrderDetails.payment_status ||
+                                selectedOrderDetails.payment_state) ===
+                                "completed"
+                                ? "bg-green-500/20 text-green-400 border border-green-500"
+                                : "bg-yellow-500/20 text-yellow-400 border border-yellow-500"
+                            }`}
+                          >
+                            {selectedOrderDetails.payment_status ||
+                              selectedOrderDetails.payment_state ||
+                              "Pending"}
+                          </span>
+                        </div>
+                        {selectedOrderDetails.transaction_id && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-400">
+                              Transaction ID
+                            </span>
+                            <span className="text-white font-mono text-xs">
+                              {selectedOrderDetails.transaction_id}
+                            </span>
+                          </div>
+                        )}
+                        <div className="border-t border-white/10 pt-3 mt-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-400">Subtotal</span>
+                            <span className="text-white">
+                              ₹
+                              {selectedOrderDetails.items.subtotal ||
+                                selectedOrderDetails.sub_total}
+                            </span>
+                          </div>
+                          {selectedOrderDetails.shipping_cost && (
+                            <div className="flex justify-between items-center mt-2">
+                              <span className="text-gray-400">Shipping</span>
+                              <span className="text-white">
+                                ₹
+                                {selectedOrderDetails.shipping_cost ||
+                                  selectedOrderDetails.shipping_charges}
+                              </span>
+                            </div>
+                          )}
+                          {selectedOrderDetails.tax && (
+                            <div className="flex justify-between items-center mt-2">
+                              <span className="text-gray-400">Tax</span>
+                              <span className="text-white">
+                                ₹{selectedOrderDetails.tax}
+                              </span>
+                            </div>
+                          )}
+                          {selectedOrderDetails.discount &&
+                            selectedOrderDetails.discount > 0 && (
+                              <div className="flex justify-between items-center mt-2">
+                                <span className="text-gray-400">Discount</span>
+                                <span className="text-green-400">
+                                  -₹{selectedOrderDetails.discount}
+                                </span>
+                              </div>
+                            )}
+                          <div className="flex justify-between items-center mt-3 pt-3 border-t border-white/10">
+                            <span className="text-white font-bold text-lg">
+                              Total
+                            </span>
+                            <span className="text-white font-bold text-2xl">
+                              ₹
+                              {selectedOrderDetails.total ||
+                                selectedOrderDetails.total_amount ||
+                                selectedOrderDetails.grand_total}
+                            </span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    </div>
+
+                    {/* Order Timeline */}
+                    {(selectedOrderDetails.timeline ||
+                      selectedOrderDetails.tracking ||
+                      selectedOrderDetails.status_history) && (
+                      <div className="mb-6">
+                        <h3 className="text-xl font-bold font-heading mb-4 flex items-center gap-2">
+                          <Clock size={20} />
+                          Order Timeline
+                        </h3>
+                        <div className="relative">
+                          {(
+                            selectedOrderDetails.timeline ||
+                            selectedOrderDetails.tracking ||
+                            selectedOrderDetails.status_history ||
+                            []
+                          ).map((event, idx) => (
+                            <motion.div
+                              key={idx}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: idx * 0.1 }}
+                              className="flex gap-4 mb-4 relative"
+                            >
+                              {idx !==
+                                (
+                                  selectedOrderDetails.timeline ||
+                                  selectedOrderDetails.tracking ||
+                                  selectedOrderDetails.status_history
+                                ).length -
+                                  1 && (
+                                <div className="absolute left-2 top-8 bottom-0 w-0.5 bg-white/20" />
+                              )}
+                              <div
+                                className={`w-4 h-4 rounded-full mt-1 z-10 ${
+                                  idx === 0 ? "bg-green-500" : "bg-gray-500"
+                                }`}
+                              />
+                              <div className="flex-1 pb-4">
+                                <p className="text-white font-semibold">
+                                  {event.status || event.event || event.title}
+                                </p>
+                                <p className="text-gray-400 text-sm">
+                                  {new Date(
+                                    event.date ||
+                                      event.timestamp ||
+                                      event.created_at
+                                  ).toLocaleString("en-IN")}
+                                </p>
+                                {(event.description || event.message) && (
+                                  <p className="text-gray-500 text-sm mt-1">
+                                    {event.description || event.message}
+                                  </p>
+                                )}
+                                {event.location && (
+                                  <p className="text-gray-500 text-xs mt-1 flex items-center gap-1">
+                                    <MapPin size={12} />
+                                    {event.location}
+                                  </p>
+                                )}
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Notes/Special Instructions */}
+                    {(selectedOrderDetails.notes ||
+                      selectedOrderDetails.special_instructions ||
+                      selectedOrderDetails.customer_note) && (
+                      <div className="mb-6">
+                        <h3 className="text-xl font-bold font-heading mb-4">
+                          Special Instructions
+                        </h3>
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4"
+                        >
+                          <p className="text-yellow-200 text-sm">
+                            {selectedOrderDetails.notes ||
+                              selectedOrderDetails.special_instructions ||
+                              selectedOrderDetails.customer_note}
+                          </p>
+                        </motion.div>
+                      </div>
+                    )}
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-wrap gap-3 mt-8  bg-linear-to-l from-black/80 to-white/5  backdrop-blur-md py-4 -mb-4 -mx-4 px-6 rounded-b-3xl border-t border-white/10">
+                      {selectedOrderDetails.status === "Processing" && (
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCloseOrderDetails();
+                            handleCancelClick(selectedOrderDetails);
+                          }}
+                          className="flex-1 bg-red-600/20 border border-red-700 text-white px-6 py-3 rounded-full hover:bg-red-700 transition-all duration-300 font-body font-semibold flex items-center justify-center gap-2"
+                        >
+                          <XCircle size={20} />
+                          Cancel Order
+                        </motion.button>
+                      )}
+
+                      {selectedOrderDetails.status === "Delivered" && (
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCloseOrderDetails();
+                            handleReturnClick(selectedOrderDetails);
+                          }}
+                          className="flex-1 bg-white text-black px-6 py-3 rounded-full hover:bg-gray-200 transition-all duration-300 font-body font-semibold flex items-center justify-center gap-2"
+                        >
+                          <RefreshCw size={20} />
+                          Return Order
+                        </motion.button>
+                      )}
+
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={handleCloseOrderDetails}
+                        className="flex-1 bg-white/10 border border-white/20 text-white px-6 py-3 rounded-full hover:bg-white/20 transition-all duration-300 font-body font-semibold"
+                      >
+                        Close
+                      </motion.button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-20">
+                    <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
+                    <p className="text-gray-400 text-lg font-body">
+                      Failed to load order details
+                    </p>
+                    <button
+                      onClick={handleCloseOrderDetails}
+                      className="mt-4 bg-white/10 border border-white/20 text-white px-6 py-2 rounded-full hover:bg-white/20 transition-all"
+                    >
+                      Close
+                    </button>
+                  </div>
+                )}
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* ✅ NEW - Cancel Order Popup */}
+      <AnimatePresence>
+        {showCancelPopup && selectedOrder && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50"
+              onClick={handleCancelClose}
+            />
+
+            <div className="fixed inset-0 flex items-center justify-center z-50 p-4 overflow-y-auto">
+              <motion.div
+                variants={popupVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                className="bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20 max-h-[90vh] overflow-scroll rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl my-8"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="flex justify-between items-center mb-6">
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-bold font-heading flex items-center gap-2">
+                      <AlertCircle className="text-red-500" size={32} />
+                      Cancel Order
+                    </h2>
+                    <p className="text-gray-400 text-sm mt-1">
+                      Order ID: {selectedOrder.id || selectedOrder.id}
+                    </p>
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.1, rotate: 90 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={handleCancelClose}
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    <X size={24} />
+                  </motion.button>
+                </div>
+
+                {/* Warning Message */}
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6">
+                  <p className="text-red-400 text-sm font-body flex items-start gap-2">
+                    <AlertCircle size={18} className="mt-0.5 shrink-0" />
+                    <span>
+                      Are you sure you want to cancel this order? This action
+                      cannot be undone. Your refund will be processed within 5-7
+                      business days.
+                    </span>
+                  </p>
+                </div>
+
+                {/* Form */}
+                <div className="space-y-6">
+                  {/* Reason Dropdown */}
+                  <div>
+                    <label className="text-gray-400 text-sm mb-2 block font-body">
+                      Reason for Cancellation{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="reason"
+                      value={cancelOrderData.reason}
+                      onChange={handleCancelInputChange}
+                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-red-500 transition-colors font-body"
+                    >
+                      <option
+                        value=""
+                        className="bg-white text-black font-body"
+                      >
+                        Select a reason
+                      </option>
+                      <option
+                        value="ordered_by_mistake"
+                        className="bg-white text-black font-body"
+                      >
+                        Ordered by mistake
+                      </option>
+                      <option
+                        value="found_better_price"
+                        className="bg-white text-black font-body"
+                      >
+                        Found better price elsewhere
+                      </option>
+                      <option
+                        value="changed_mind"
+                        className="bg-white text-black font-body"
+                      >
+                        Changed my mind
+                      </option>
+                      <option
+                        value="delivery_time_too_long"
+                        className="bg-white text-black font-body"
+                      >
+                        Delivery time too long
+                      </option>
+                      <option
+                        value="other"
+                        className="bg-white text-black font-body"
+                      >
+                        Other
+                      </option>
+                    </select>
+                  </div>
+
+                  {/* Comments Textarea */}
+                  <div>
+                    <label className="text-gray-400 text-sm mb-2 block font-body">
+                      Additional Comments{" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      name="comments"
+                      value={cancelOrderData.comments}
+                      onChange={handleCancelInputChange}
+                      placeholder="Please tell us more about why you're cancelling..."
+                      rows="4"
+                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-red-500 transition-colors font-body resize-none"
+                    />
+                  </div>
+
+                  {/* Order Summary */}
+                  <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+                    <h3 className="text-white font-body font-bold mb-3">
+                      Order Summary
+                    </h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Items:</span>
+                        <span className="text-white">
+                          {selectedOrder.items?.length || selectedOrder.items}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Total Amount:</span>
+                        <span className="text-white font-bold">
+                          ₹{selectedOrder.total || selectedOrder.total_amount}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Order Date:</span>
+                        <span className="text-white">
+                          {new Date(
+                            selectedOrder.created_at || selectedOrder.date
+                          ).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 mt-8">
+                  <motion.button
+                    type="button"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={()=> handleSubmitCancel(selectedOrder)}
+                    disabled={submittingCancel}
+                    className="flex-1 bg-red-600/20 border border-red-700 text-white font-bold py-3 rounded-lg hover:bg-red-700 transition-all duration-300 flex items-center justify-center gap-2 font-body disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {submittingCancel ? (
+                      <>
+                        <Loader size={20} className="animate-spin" />
+                        Cancelling...
+                      </>
+                    ) : (
+                      <>
+                        <XCircle size={20} />
+                        Yes, Cancel Order
+                      </>
+                    )}
+                  </motion.button>
+                  <motion.button
+                    type="button"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleCancelClose}
+                    className="flex-1 bg-white/10 border border-white/20 text-white font-bold py-3 rounded-lg hover:bg-white/20 transition-all duration-300 flex items-center justify-center gap-2 font-body"
+                  >
+                    <X size={20} />
+                    Keep Order
+                  </motion.button>
+                </div>
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Return Order Popup (existing code) */}
       <AnimatePresence>
         {showReturnPopup && selectedOrder && (
           <>
@@ -1597,7 +2454,7 @@ const Profile = () => {
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-                className="bg-linear-to-br max-h-[90vh] overflow-scroll from-white/10 via-black/10 to-white/10 border border-white/20 rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl my-8"
+                className="bg-linear-to-br from-white/10 via-black/10 to-white/10 border border-white/20  max-h-[90vh] overflow-scroll rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl my-8"
                 onClick={(e) => e.stopPropagation()}
               >
                 {/* Header */}
@@ -1633,19 +2490,34 @@ const Profile = () => {
                       onChange={handleReturnInputChange}
                       className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white outline-none focus:border-gray-500 transition-colors font-body"
                     >
-                      <option value="" className="bg-white text-black font-body">
+                      <option
+                        value=""
+                        className="bg-white text-black font-body"
+                      >
                         Select a reason
                       </option>
-                      <option value="size_not_fitting" className="bg-white text-black font-body">
+                      <option
+                        value="size_not_fitting"
+                        className="bg-white text-black font-body"
+                      >
                         Size not fitting
                       </option>
-                      <option value="wrong_item" className="bg-white text-black font-body">
+                      <option
+                        value="wrong_item"
+                        className="bg-white text-black font-body"
+                      >
                         Received wrong item
                       </option>
-                      <option value="damaged" className="bg-white text-black font-body">
+                      <option
+                        value="damaged"
+                        className="bg-white text-black font-body"
+                      >
                         Damaged/Defective
                       </option>
-                      <option value="quality" className="bg-white text-black font-body">
+                      <option
+                        value="quality"
+                        className="bg-white text-black font-body"
+                      >
                         Quality not good
                       </option>
                     </select>
@@ -1718,7 +2590,7 @@ const Profile = () => {
                     </div>
                   </div>
 
-                  {/* ✅ NEW - Refund Payment Details Section */}
+                  {/* Refund Payment Details Section */}
                   <AnimatePresence>
                     {returnFormData.action === "refund" && (
                       <motion.div
@@ -1854,7 +2726,8 @@ const Profile = () => {
                             {/* Bank Name */}
                             <div>
                               <label className="text-gray-400 text-sm mb-2 block font-body">
-                                Bank Name <span className="text-red-500">*</span>
+                                Bank Name{" "}
+                                <span className="text-red-500">*</span>
                               </label>
                               <input
                                 type="text"

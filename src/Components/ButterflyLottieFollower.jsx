@@ -10,13 +10,20 @@ export default function ButterflyLottieFollower({
   faceOffsetDeg = 90,
   zIndex = 9999,
   wingSpeed = 2,
+  hoverDistance = 50,
+  idleWingSpeed = 0.4, // 🦋 Cursor நிற்கும்போது wing speed
+  idleThreshold = 0.5, // Cursor எத்தனை நேரம் நின்னா idle ஆகும் (seconds)
 }) {
   const [anim, setAnim] = useState(animationData ?? null);
   const [isMobile, setIsMobile] = useState(false);
   const lottieRef = useRef(null);
 
-  const x = useMotionValue(typeof window !== "undefined" ? window.innerWidth / 2 : 0);
-  const y = useMotionValue(typeof window !== "undefined" ? window.innerHeight / 2 : 0);
+  const x = useMotionValue(
+    typeof window !== "undefined" ? window.innerWidth / 2 : 0
+  );
+  const y = useMotionValue(
+    typeof window !== "undefined" ? window.innerHeight / 2 : 0
+  );
   const rotate = useMotionValue(0);
 
   const target = useRef({ x: x.get(), y: y.get() });
@@ -30,12 +37,18 @@ export default function ButterflyLottieFollower({
   const restTimer = useRef(0);
   const flyTimer = useRef(0);
 
+  // 🖱️ Cursor movement tracking
+  const cursorPos = useRef({ x: 0, y: 0 });
+  const lastCursorMoveTime = useRef(0);
+  const orbitAngle = useRef(Math.random() * Math.PI * 2);
+
   // 📱 Detect mobile/tablet
   useEffect(() => {
     const checkMobile = () => {
-      const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent
-      ) || window.innerWidth < 1024;
+      const mobile =
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        ) || window.innerWidth < 1024;
       setIsMobile(mobile);
     };
     checkMobile();
@@ -52,11 +65,13 @@ export default function ButterflyLottieFollower({
         const json = await res.json();
         if (alive) setAnim(json);
       })();
-      return () => { alive = false; };
+      return () => {
+        alive = false;
+      };
     }
   }, [url, anim]);
 
-  // Set wing speed
+  // Set initial wing speed
   useEffect(() => {
     if (lottieRef.current) {
       lottieRef.current.setSpeed(wingSpeed);
@@ -74,12 +89,36 @@ export default function ButterflyLottieFollower({
 
   useEffect(() => {
     let onMove;
-    
-    // Desktop: follow mouse
+
+    // Desktop: follow mouse (but maintain distance)
     if (!isMobile) {
       onMove = (e) => {
-        target.current.x = e.clientX;
-        target.current.y = e.clientY;
+        const prevX = cursorPos.current.x;
+        const prevY = cursorPos.current.y;
+
+        cursorPos.current.x = e.clientX;
+        cursorPos.current.y = e.clientY;
+
+        // Check if cursor actually moved
+        const moved = Math.hypot(e.clientX - prevX, e.clientY - prevY) > 2;
+
+        if (moved) {
+          lastCursorMoveTime.current = Date.now();
+
+          // 🦋 Cursor move ஆகுது - normal wing speed
+          if (lottieRef.current) {
+            lottieRef.current.setSpeed(wingSpeed);
+          }
+        }
+
+        // 🎯 Calculate target position around cursor (orbit style)
+        orbitAngle.current += 0.02;
+
+        const offsetX = Math.cos(orbitAngle.current) * hoverDistance;
+        const offsetY = Math.sin(orbitAngle.current) * hoverDistance;
+
+        target.current.x = e.clientX + offsetX;
+        target.current.y = e.clientY + offsetY;
       };
       window.addEventListener("mousemove", onMove);
     } else {
@@ -93,43 +132,59 @@ export default function ButterflyLottieFollower({
       const dt = Math.min((now - last.current) / 1000, 1 / 30);
       last.current = now;
 
+      // 🖱️ DESKTOP: Check cursor idle time
+      if (!isMobile) {
+        const timeSinceLastMove =
+          (Date.now() - lastCursorMoveTime.current) / 1000;
+
+        // 🦋 Cursor idle ஆ இருக்கா? - slow wings
+        if (lottieRef.current) {
+          if (timeSinceLastMove > idleThreshold) {
+            lottieRef.current.setSpeed(idleWingSpeed); // Slow
+          } else {
+            lottieRef.current.setSpeed(wingSpeed); // Normal
+          }
+        }
+
+        // Continue gentle orbit
+        orbitAngle.current += dt * 0.5;
+        const offsetX = Math.cos(orbitAngle.current) * hoverDistance;
+        const offsetY = Math.sin(orbitAngle.current) * hoverDistance;
+        target.current.x = cursorPos.current.x + offsetX;
+        target.current.y = cursorPos.current.y + offsetY;
+      }
+
       // 🦋 MOBILE: Random flying with rest periods
       if (isMobile) {
         if (isResting.current) {
-          // 😴 Resting/Sitting
           restTimer.current += dt;
-          
-          // Slow down wings when resting
+
           if (lottieRef.current && restTimer.current < 0.5) {
             lottieRef.current.setSpeed(0.3);
           }
 
-          // Rest for 2-3 seconds
-          const restDuration = 2 + Math.random(); 
+          const restDuration = 2 + Math.random();
           if (restTimer.current >= restDuration) {
             isResting.current = false;
             flyTimer.current = 0;
-            target.current = generateRandomTarget(); // New random destination
-            
-            // Resume normal wing speed
+            target.current = generateRandomTarget();
+
             if (lottieRef.current) {
               lottieRef.current.setSpeed(wingSpeed);
             }
           }
         } else {
-          // 🦋 Flying
           flyTimer.current += dt;
 
           const dx = target.current.x - pos.current.x;
           const dy = target.current.y - pos.current.y;
           const dist = Math.hypot(dx, dy);
 
-          // Check if reached destination or flew too long
-          const flyDuration = 10 + Math.random() * 5; // 3-5 seconds
+          const flyDuration = 10 + Math.random() * 5;
           if (dist < 50 || flyTimer.current >= flyDuration) {
             isResting.current = true;
             restTimer.current = 0;
-            vel.current.x *= 0.1; // Slow down
+            vel.current.x *= 0.1;
             vel.current.y *= 0.1;
           }
         }
@@ -195,12 +250,19 @@ export default function ButterflyLottieFollower({
 
       // Keep within bounds
       const m = 10;
-      pos.current.x = Math.max(m, Math.min(window.innerWidth - m, pos.current.x));
-      pos.current.y = Math.max(m, Math.min(window.innerHeight - m, pos.current.y));
+      pos.current.x = Math.max(
+        m,
+        Math.min(window.innerWidth - m, pos.current.x)
+      );
+      pos.current.y = Math.max(
+        m,
+        Math.min(window.innerHeight - m, pos.current.y)
+      );
 
       // Face movement direction
       if (!isMobile || !isResting.current) {
-        const angleDeg = (Math.atan2(vel.current.y, vel.current.x) * 180) / Math.PI;
+        const angleDeg =
+          (Math.atan2(vel.current.y, vel.current.x) * 180) / Math.PI;
         rotate.set(angleDeg + faceOffsetDeg);
       }
 
@@ -209,14 +271,26 @@ export default function ButterflyLottieFollower({
 
       raf = requestAnimationFrame(loop);
     };
-    
+
     raf = requestAnimationFrame(loop);
 
     return () => {
       cancelAnimationFrame(raf);
       if (onMove) window.removeEventListener("mousemove", onMove);
     };
-  }, [x, y, rotate, faceOffsetDeg, seed, anim, isMobile, wingSpeed]);
+  }, [
+    x,
+    y,
+    rotate,
+    faceOffsetDeg,
+    seed,
+    anim,
+    isMobile,
+    wingSpeed,
+    hoverDistance,
+    idleWingSpeed,
+    idleThreshold,
+  ]);
 
   if (!anim) return null;
 

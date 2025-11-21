@@ -108,7 +108,7 @@ const BannerCarousel = () => {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-      className="w-[90%] mx-auto relative overflow-hidden rounded-2xl h-[200px] md:h-[280px] lg:h-[350px] group"
+      className="w-[90%] mx-auto relative overflow-hidden rounded-2xl h-[150px] md:h-[280px] lg:h-[350px] group"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
@@ -139,18 +139,18 @@ const BannerCarousel = () => {
             <div className="absolute inset-0 bg-black/40" />
           </div>
 
-          <div className="relative h-full flex items-center px-6 md:px-12 lg:px-16">
+          <div className="relative h-full flex items-center px-5 md:px-12 lg:px-16">
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2, duration: 0.6 }}
-              className="max-w-2xl"
+              className="md:max-w-2xl"
             >
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.5 }}
-                className="text-white/90 text-[10px] md:text-sm lg:text-base font-['Poppins'] tracking-wider mb-2"
+                className="text-white/90 text-[8px] md:text-sm lg:text-base font-['Poppins'] tracking-wider mb-1 md:mb-2"
               >
                 {banners[currentIndex].subtitle}
               </motion.p>
@@ -159,7 +159,7 @@ const BannerCarousel = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.5 }}
-                className="text-white text-2xl md:text-4xl lg:text-6xl font-bold font-heading mb-2 md:mb-4 drop-shadow-lg"
+                className="text-white text-xl md:text-4xl lg:text-6xl font-bold font-heading md:mb-4 drop-shadow-lg"
               >
                 {banners[currentIndex].title}
               </motion.h1>
@@ -168,7 +168,7 @@ const BannerCarousel = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5, duration: 0.5 }}
-                className="text-white text-sm md:text-xl lg:text-2xl font-semibold font-['Poppins'] mb-4 md:mb-6"
+                className="text-white text-[10px] md:text-xl lg:text-2xl font-semibold font-['Poppins'] mb-4 md:mb-6"
               >
                 {banners[currentIndex].description}
               </motion.p>
@@ -195,7 +195,7 @@ const BannerCarousel = () => {
         <ChevronRight className="w-4 h-4 md:w-6 md:h-6 text-white" />
       </motion.button>
 
-      <div className="absolute bottom-4 md:bottom-6 left-1/2 -translate-x-1/2 flex gap-2 md:gap-3 z-10">
+      <div className="absolute bottom-2 md:bottom-6 left-1/2 -translate-x-1/2 flex gap-2 md:gap-3 z-10">
         {banners.map((_, index) => (
           <motion.button
             key={index}
@@ -221,7 +221,7 @@ const BannerCarousel = () => {
                   currentIndex === index ? "#955E30" : "rgba(255,255,255,0.5)",
               }}
               transition={{ duration: 0.3 }}
-              className="h-2 rounded-full"
+              className="h-1 md:h-2 rounded-full"
             />
 
             {currentIndex === index && !isPaused && (
@@ -717,7 +717,7 @@ const Product = () => {
               </motion.div>
             ) : (
               <>
-                <div className="w-full flex flex-wrap gap-1">
+                <div className="w-full flex justify-items-stretch flex-wrap gap-1">
                   {subcategories
                     .slice(0, visibleSubcategories)
                     .map((subcategory, index) => (
@@ -728,7 +728,7 @@ const Product = () => {
                         whileHover={{ scale: 1.05, y: -2 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => handleSubcategoryClick(subcategory)}
-                        className={`px-2 md:px-3 py-1.5 rounded-full text-[10px] md:text-[12px] font-body transition-all duration-300 ${
+                        className={`px-2 md:px-3 py-1.5 rounded-full text-[8px] md:text-[12px] font-body transition-all duration-300 ${
                           selectedSubcategory === subcategory
                             ? "bg-accet text-white shadow-lg shadow-accet/50"
                             : "bg-white/10 text-white hover:bg-white/20 border border-white/20"

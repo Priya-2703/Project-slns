@@ -6,7 +6,6 @@ import { FiPackage } from "react-icons/fi";
 import { getImageUrl } from "../utils/imageHelper";
 
 function PaymentSuccess() {
-  const BACKEND_URL = import.meta.env.VITE_API_URL
   const location = useLocation();
   const navigate = useNavigate();
   const paymentData = location.state;
@@ -24,11 +23,6 @@ function PaymentSuccess() {
   }, []);
 
   if (!paymentData) return null;
-
-
-  const CreateOrder =()=>{
-    
-  }
 
   // ✅ Safe Currency Function
   const currency = (n) => {
