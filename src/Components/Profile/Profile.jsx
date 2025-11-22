@@ -1636,8 +1636,8 @@ const Profile = () => {
                       <option value="" className="bg-white text-black font-body">
                         Select a reason
                       </option>
-                      <option value="size_not_fitting" className="bg-white text-black font-body">
-                        Size not fitting
+                      <option value="size/fitting_issue" className="bg-white text-black font-body">
+                        Size/fitting issue
                       </option>
                       <option value="wrong_item" className="bg-white text-black font-body">
                         Received wrong item
@@ -1646,7 +1646,10 @@ const Profile = () => {
                         Damaged/Defective
                       </option>
                       <option value="quality" className="bg-white text-black font-body">
-                        Quality not good
+                        Quality issue
+                      </option>
+                      <option value="item_missing" className="bg-white text-black font-body">
+                        Item missing in the package (Part of product is missing)
                       </option>
                     </select>
                   </div>
