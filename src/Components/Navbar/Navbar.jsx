@@ -5,7 +5,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { IoBusiness } from "react-icons/io5";
 import { GoHeart } from "react-icons/go";
-import { WishlistContext } from "../../Context/UseWishListContext";
+import { WishlistContext } from "../../Context/UseWishlistContext";
 import { ToastContext } from "../../Context/UseToastContext";
 import { CartContext } from "../../Context/UseCartContext";
 import { AuthContext } from "../../Context/UseAuthContext";
@@ -272,7 +272,7 @@ const Navbar = () => {
               onMouseLeave={() => setShowTooltip(false)}
             />
 
-            <div
+            {/* <div
               className={`absolute left-10 top-[70px] md:top-[100px] whitespace-nowrap
                 bg-[#955E30] text-white text-[8px] md:text-[10px] px-3 py-1.5 rounded-lg
                 font-body font-medium shadow-lg
@@ -282,7 +282,7 @@ const Navbar = () => {
             >
               Tap to open menu
               <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#955E30] rotate-45"></div>
-            </div>
+            </div> */}
           </div>
 
           <div className="flex justify-center items-center gap-8 md:gap-16">

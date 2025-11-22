@@ -23,6 +23,7 @@ import {
   Package,
   Truck,
   RefreshCw,
+  Check,
 } from "lucide-react";
 import DarkVeil from "../DarkVeil";
 import Trending from "../pages/Trending";
@@ -91,7 +92,7 @@ const images = [
 ];
 
 const ProductDetail = () => {
-  const {t} = useTranslation()
+  const { t } = useTranslation();
   const BACKEND_URL = import.meta.env.VITE_API_URL;
   const [product, setProduct] = useState({});
   const [loading, setLoading] = useState(true);
@@ -102,6 +103,22 @@ const ProductDetail = () => {
   const [reviewsToShow, setReviewsToShow] = useState(4);
   const [similarProducts, setSimilarProducts] = useState([]);
   const [selectedSize, setSelectedSize] = useState(null);
+  const [stockInfo, setStockInfo] = useState({
+    quantity: 0,
+    isLowStock: false,
+    isOutOfStock: false,
+  });
+
+  // Update stock info when product loads
+  useEffect(() => {
+    if (product.stock_quantity !== undefined) {
+      setStockInfo({
+        quantity: product.stock_quantity,
+        isLowStock: product.stock_quantity > 0 && product.stock_quantity < 20,
+        isOutOfStock: product.stock_quantity === 0,
+      });
+    }
+  }, [product.stock_quantity]);
 
   useEffect(() => {
     if (product.product_name) {
@@ -187,11 +204,18 @@ const ProductDetail = () => {
   };
 
   const canAddToCart = useMemo(() => {
+    // ✅ Check stock first
+    if (stockInfo.isOutOfStock) {
+      return false;
+    }
+
+    // Then check size selection
     if (product.sizes && product.sizes.length > 0) {
       return selectedSize !== null;
     }
+
     return true;
-  }, [product.sizes, selectedSize]);
+  }, [product.sizes, selectedSize, stockInfo.isOutOfStock]);
 
   const isInCart = useMemo(() => {
     if (!product || !product.product_id) return false;
@@ -246,8 +270,29 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = async () => {
+    // ✅ Check stock first
+    if (stockInfo.isOutOfStock) {
+      showToast(t("product_detail.stock.out_of_stock_toast"), "error");
+      return;
+    }
+
+    // ✅ Check size selection
     if (!canAddToCart) {
       showToast("Please select a size first! 📏", "error");
+      return;
+    }
+
+    // ✅ Check if adding quantity exceeds stock
+    const itemInCart = cart.find(
+      (item) => item.product_id === product.product_id
+    );
+    const currentQuantityInCart = itemInCart ? itemInCart.quantity : 0;
+
+    if (currentQuantityInCart >= stockInfo.quantity) {
+      showToast(
+        `Only ${stockInfo.quantity} items available in stock!`,
+        "error"
+      );
       return;
     }
 
@@ -407,7 +452,7 @@ const ProductDetail = () => {
           animate={{ opacity: 1, scale: 1 }}
           className="text-white text-2xl font2"
         >
-          {t('product_detail.not_found')}
+          {t("product_detail.not_found")}
         </motion.div>
       </div>
     );
@@ -570,7 +615,7 @@ const ProductDetail = () => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5 }}
-              className="w-full mb-3 md:mb-6"
+              className="w-full"
             >
               <div className="bg-linear-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-sm border border-white/10 rounded-lg md:rounded-2xl p-4 md:px-4 md:py-2 shadow-xl">
                 <div className="flex justify-between items-center">
@@ -579,7 +624,7 @@ const ProductDetail = () => {
                       ₹{parseInt(product.price)}
                     </p>
                     <p className="text-[8px] md:text-[10px] text-white/50 font-body">
-                      {t('product_detail.tax_text')}
+                      {t("product_detail.tax_text")}
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-1">
@@ -592,11 +637,95 @@ const ProductDetail = () => {
                       transition={{ delay: 0.7, type: "spring", bounce: 0.5 }}
                       className="font-['Poppins'] text-[8px] md:text-[10px] text-white bg-linear-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-sm border border-white/10 px-3 md:px-4 py-1.5 rounded-full font-bold shadow-lg"
                     >
-                      {parseInt(product.discount)}{t('product_detail.off_text')}
+                      {parseInt(product.discount)}
+                      {t("product_detail.off_text")}
                     </motion.span>
                   </div>
                 </div>
               </div>
+            </motion.div>
+
+            {/* stock */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.65 }}
+              className="w-full mb-3 md:mb-5"
+            >
+              {/* Out of Stock */}
+              {stockInfo.isOutOfStock && (
+                <motion.div
+                  initial={{ scale: 0.9 }}
+                  animate={{ scale: 1 }}
+                  className="bg-linear-to-r mt-3 from-red-500/20 to-orange-500/20 backdrop-blur-sm border-2 border-red-500/40 rounded-xl p-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-red-500/30 flex items-center justify-center">
+                      <Package className="w-5 h-5 text-red-400" />
+                    </div>
+                    <div>
+                      <p className="text-red-400 font-bold text-[14px] md:text-[16px] font-body">
+                        {t("product_detail.stock.out_of_stock")}
+                      </p>
+                      <p className="text-red-300/70 text-[10px] md:text-[12px] font-body">
+                        {t("product_detail.stock.notify_text")}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Low Stock Warning */}
+              {stockInfo.isLowStock && (
+                <motion.div
+                  initial={{ scale: 0.9 }}
+                  animate={{ scale: 1 }}
+                  className="bg-linear-to-r mt-3 md:mt-5 from-yellow-500/20 to-orange-500/20 backdrop-blur-sm border border-yellow-500/40 rounded-2xl p-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-yellow-500/30 flex items-center justify-center">
+                        <Package className="w-5 h-5 text-yellow-400 animate-pulse" />
+                      </div>
+                      <div>
+                        <p className="text-yellow-400 font-bold text-[13px] md:text-[15px] font-body">
+                          {t("product_detail.stock.hurry_up")}
+                        </p>
+                        <p className="text-yellow-300/70 text-[10px] md:text-[12px] font-body">
+                          {t("product_detail.stock.limited_stock")}
+                        </p>
+                      </div>
+                    </div>
+                    <motion.div
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ repeat: Infinity, duration: 2 }}
+                      className="bg-yellow-500/30 px-4 py-1 rounded-full border border-yellow-500/40"
+                    >
+                      <p className="text-yellow-400 font-bold text-[12px] md:text-[12px] font-body">
+                        {stockInfo.quantity} {t("product_detail.stock.left")}
+                      </p>
+                    </motion.div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* In Stock (above 20) */}
+              {/* {!stockInfo.isOutOfStock && !stockInfo.isLowStock && (
+                <motion.div
+                  initial={{ scale: 0.9 }}
+                  animate={{ scale: 1 }}
+                  className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-sm border-2 border-green-500/40 rounded-xl p-3 shadow-xl shadow-green-500/20"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-green-500/30 flex items-center justify-center">
+                      <Check className="w-4 h-4 text-green-400" />
+                    </div>
+                    <p className="text-green-400 font-bold text-[12px] md:text-[14px] font-body">
+                      {t("product_detail.stock.in_stock")}
+                    </p>
+                  </div>
+                </motion.div>
+              )} */}
             </motion.div>
 
             {/* Similar Versions */}
@@ -609,7 +738,7 @@ const ProductDetail = () => {
               >
                 <h3 className="text-white text-[10px] md:text-[12px] tracking-wide font-body font-medium flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-purple-400" />
-                  {t('product_detail.choose_versions')}
+                  {t("product_detail.choose_versions")}
                 </h3>
                 <div className="flex items-center gap-1 md:gap-2 flex-wrap">
                   {similarProducts.map((item, index) => (
@@ -640,66 +769,68 @@ const ProductDetail = () => {
             )}
 
             {/* Size Selection */}
-            {product.sizes && product.sizes.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7 }}
-                className="flex flex-col gap-2 md:gap-4 mb-5 md:mb-8 w-full"
-              >
-                <h3 className="text-white text-[13px] md:text-[15px] font-body tracking-wide font-medium flex items-center gap-1">
-                  {t('product_detail.select_size')}
-                  <AnimatePresence>
-                    {selectedSize && (
-                      <motion.span
-                        initial={{ scale: 0, rotate: -180 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        exit={{ scale: 0, rotate: 180 }}
-                        className="text-green-400 ml-2 flex text-[10px] md:text-[15px] items-center gap-2 bg-green-500/20 px-2 md:px-3 py-1 rounded-[10px] border border-green-500/40 shadow-lg shadow-green-500/20"
+            {product.sizes &&
+              product.sizes.length > 0 &&
+              product.stock_quantity > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7 }}
+                  className="flex flex-col gap-2 md:gap-4 mb-5 md:mb-8 w-full"
+                >
+                  <h3 className="text-white text-[13px] md:text-[15px] font-body tracking-wide font-medium flex items-center gap-1">
+                    {t("product_detail.select_size")}
+                    <AnimatePresence>
+                      {selectedSize && (
+                        <motion.span
+                          initial={{ scale: 0, rotate: -180 }}
+                          animate={{ scale: 1, rotate: 0 }}
+                          exit={{ scale: 0, rotate: 180 }}
+                          className="text-green-400 ml-2 flex text-[10px] md:text-[15px] items-center gap-2 bg-green-500/20 px-2 md:px-3 py-1 rounded-[10px] border border-green-500/40 shadow-lg shadow-green-500/20"
+                        >
+                          <span className="text-[10px] md:text-[14px]">✓</span>{" "}
+                          {selectedSize}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </h3>
+
+                  <div className="flex flex-wrap items-center gap-1 md:gap-2">
+                    {product.sizes.map((size, id) => (
+                      <motion.button
+                        key={id}
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{
+                          delay: 0.8 + id * 0.1,
+                          type: "spring",
+                          bounce: 0.4,
+                        }}
+                        whileHover={{ scale: 1.1, y: -3 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleSizeSelect(size)}
+                        className={`relative capitalize rounded-lg md:rounded-xl min-w-[40px] md:min-w-[75px] px-3 py-1.5 flex justify-center items-center font-body text-[10px] text-white md:text-[14px] font-medium transition-all duration-300 cursor-pointer overflow-hidden ${
+                          selectedSize === size
+                            ? "bg-green-500/20 border border-green-500/40 shadow-lg scale-110 shadow-green-700/40"
+                            : "bg-linear-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-sm border border-white/10 shadow-lg"
+                        }`}
                       >
-                        <span className="text-[10px] md:text-[14px]">✓</span>{" "}
-                        {selectedSize}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </h3>
+                        <span className="relative z-10">{size}</span>
+                      </motion.button>
+                    ))}
+                  </div>
 
-                <div className="flex flex-wrap items-center gap-1 md:gap-2">
-                  {product.sizes.map((size, id) => (
-                    <motion.button
-                      key={id}
-                      initial={{ opacity: 0, scale: 0 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{
-                        delay: 0.8 + id * 0.1,
-                        type: "spring",
-                        bounce: 0.4,
-                      }}
-                      whileHover={{ scale: 1.1, y: -3 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => handleSizeSelect(size)}
-                      className={`relative capitalize rounded-lg md:rounded-xl min-w-[40px] md:min-w-[75px] px-3 py-1.5 flex justify-center items-center font-body text-[10px] text-white md:text-[14px] font-medium transition-all duration-300 cursor-pointer overflow-hidden ${
-                        selectedSize === size
-                          ? "bg-green-500/20 border border-green-500/40 shadow-lg scale-110 shadow-green-700/40"
-                          : "bg-linear-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-sm border border-white/10 shadow-lg"
-                      }`}
+                  {!selectedSize && (
+                    <motion.p
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="text-yellow-400 text-[8px] md:text-[10px] font-body flex items-center gap-3 bg-yellow-500/10 p-2 md:px-2.5 md:py-2.5 rounded-md border border-yellow-500/30 backdrop-blur-sm shadow-lg"
                     >
-                      <span className="relative z-10">{size}</span>
-                    </motion.button>
-                  ))}
-                </div>
-
-                {!selectedSize && (
-                  <motion.p
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="text-yellow-400 text-[8px] md:text-[10px] font-body flex items-center gap-3 bg-yellow-500/10 p-2 md:px-2.5 md:py-2.5 rounded-md border border-yellow-500/30 backdrop-blur-sm shadow-lg"
-                  >
-                    {t('product_detail.size_warning')}
-                  </motion.p>
-                )}
-              </motion.div>
-            )}
+                      {t("product_detail.size_warning")}
+                    </motion.p>
+                  )}
+                </motion.div>
+              )}
 
             {/* Action Buttons */}
             <motion.div
@@ -712,17 +843,27 @@ const ProductDetail = () => {
                 whileHover={{ scale: canAddToCart ? 1.03 : 1 }}
                 whileTap={{ scale: canAddToCart ? 0.97 : 1 }}
                 onClick={() => {
+                  if (stockInfo.isOutOfStock) {
+                    showToast(
+                      t("product_detail.stock.out_of_stock_toast"),
+                      "error"
+                    );
+                    return;
+                  }
                   handleAddToCart();
                   handleCart();
+                  showToast("Item Added Successfully in Cart");
                 }}
                 disabled={!canAddToCart}
                 className={`relative text-[12px] md:text-[15px] p-2 md:p-4 font-body rounded-lg md:rounded-xl w-full transition-all duration-300 overflow-hidden group ${
-                  canAddToCart
-                    ? "bg-linear-to-r from-accet/90 to-accet/20 text-white hover:shadow-2xl hover:shadow-accet/50 cursor-pointer hover:border-2 border-0  border-accet"
+                  stockInfo.isOutOfStock
+                    ? "bg-linear-to-r from-red-500/20 to-red-500/10 border-2 border-red-500/40 text-red-400 cursor-not-allowed"
+                    : canAddToCart
+                    ? "bg-linear-to-r from-accet/90 to-accet/20 text-white hover:shadow-2xl hover:shadow-accet/50 cursor-pointer hover:border-2 border-0 border-accet"
                     : "bg-linear-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-sm border border-white/10 text-white/60 cursor-not-allowed"
                 }`}
               >
-                {canAddToCart && (
+                {canAddToCart && !stockInfo.isOutOfStock && (
                   <>
                     <motion.div
                       className="absolute inset-0 bg-linear-to-r from-accet/20 to-accet/90"
@@ -733,9 +874,21 @@ const ProductDetail = () => {
                     <div className="absolute inset-0 bg-linear-to-r from-transparent via-accet to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   </>
                 )}
+
                 <span className="relative z-10 flex items-center justify-center gap-3">
-                  <ShoppingCart className="w-4 h-4" />
-                  {canAddToCart ? `${t('product_detail.add_to_cart')}` : `${t('product_detail.select_size_btn')}`}
+                  {stockInfo.isOutOfStock ? (
+                    <>
+                      <X className="w-4 h-4" />
+                      {t("product_detail.stock.out_of_stock")}
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="w-4 h-4" />
+                      {canAddToCart
+                        ? t("product_detail.add_to_cart")
+                        : t("product_detail.select_size_btn")}
+                    </>
+                  )}
                 </span>
               </motion.button>
 
@@ -750,7 +903,7 @@ const ProductDetail = () => {
                 <motion.div className="absolute inset-0 bg-linear-to-r from-purple-500 via-pink-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <span className="relative z-10 flex items-center justify-center gap-3">
                   <Sparkles className="w-4 h-4" />
-                  {t('product_detail.virtual_try_on')}
+                  {t("product_detail.virtual_try_on")}
                   <span className="text-[14px]">👗</span>
                 </span>
               </motion.button>
@@ -773,7 +926,7 @@ const ProductDetail = () => {
                 >
                   <span className="flex items-center gap-3 font-semibold">
                     <span className="w-2 h-2 bg-white blur-[1px] rounded-full" />
-                    {t('product_detail.sections.description')}
+                    {t("product_detail.sections.description")}
                   </span>
                   <motion.svg
                     animate={{ rotate: openIndex === 0 ? 180 : 0 }}
@@ -833,7 +986,7 @@ const ProductDetail = () => {
                 >
                   <span className="flex items-center gap-3 font-semibold">
                     <span className="w-2 h-2 bg-white blur-[1px] rounded-full" />
-                    {t('product_detail.sections.details')}
+                    {t("product_detail.sections.details")}
                   </span>
                   <motion.svg
                     animate={{ rotate: openIndex === 1 ? 180 : 0 }}
@@ -885,7 +1038,7 @@ const ProductDetail = () => {
                 >
                   <span className="flex items-center gap-3 font-semibold">
                     <span className="w-2 h-2 bg-white blur-[1px] rounded-full" />
-                    {t('product_detail.sections.delivery_return')}
+                    {t("product_detail.sections.delivery_return")}
                   </span>
                   <motion.svg
                     animate={{ rotate: openIndex === 2 ? 180 : 0 }}
@@ -915,20 +1068,20 @@ const ProductDetail = () => {
                         <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 p-5 rounded-xl border border-blue-500/20">
                           <h3 className="font-body text-white text-[15px] md:text-[16px] flex items-center gap-2 mb-3 font-semibold">
                             <Truck className="w-5 h-5 text-blue-400" />
-                            {t('product_detail.delivery_info.title')}
+                            {t("product_detail.delivery_info.title")}
                           </h3>
                           <ul className="list-disc list-inside space-y-2.5 text-[10px] md:text-[13px] leading-relaxed font-body text-white/70">
                             <li className="pl-2">
-                              {t('product_detail.delivery_info.text_1')}
+                              {t("product_detail.delivery_info.text_1")}
                             </li>
                             <li className="pl-2">
-                              {t('product_detail.delivery_info.text_2')}
+                              {t("product_detail.delivery_info.text_2")}
                             </li>
                             <li className="pl-2">
-                             {t('product_detail.delivery_info.text_3')}
+                              {t("product_detail.delivery_info.text_3")}
                             </li>
                             <li className="pl-2">
-                              {t('product_detail.delivery_info.text_4')}
+                              {t("product_detail.delivery_info.text_4")}
                             </li>
                           </ul>
                         </div>
@@ -937,23 +1090,23 @@ const ProductDetail = () => {
                         <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 p-5 rounded-xl border border-orange-500/20">
                           <h3 className="font-body text-white text-[15px] md:text-[16px] flex items-center gap-2 mb-3 font-semibold">
                             <RefreshCw className="w-5 h-5 text-orange-400" />
-                            {t('product_detail.return_info.title')}
+                            {t("product_detail.return_info.title")}
                           </h3>
                           <ul className="list-disc list-inside space-y-2.5 text-[10px] md:text-[13px] leading-relaxed font-body text-white/70">
                             <li className="pl-2">
-                              {t('product_detail.return_info.text_1')}
+                              {t("product_detail.return_info.text_1")}
                             </li>
                             <li className="pl-2">
-                             {t('product_detail.return_info.text_2')}
+                              {t("product_detail.return_info.text_2")}
                             </li>
                             <li className="pl-2">
-                              {t('product_detail.return_info.text_3')}
+                              {t("product_detail.return_info.text_3")}
                             </li>
                             <li className="pl-2">
-                              {t('product_detail.return_info.text_4')}
+                              {t("product_detail.return_info.text_4")}
                             </li>
                             <li className="pl-2">
-                              {t('product_detail.return_info.text_5')}
+                              {t("product_detail.return_info.text_5")}
                             </li>
                           </ul>
                         </div>
@@ -962,14 +1115,14 @@ const ProductDetail = () => {
                         <div className="bg-gradient-to-r from-red-500/10 to-pink-500/10 p-5 rounded-xl border border-red-500/20">
                           <h3 className="font-body text-white text-[15px] md:text-[16px] flex items-center gap-2 mb-3 font-semibold">
                             <X className="w-5 h-5 text-red-400" />
-                            {t('product_detail.exceptions_info.title')}
+                            {t("product_detail.exceptions_info.title")}
                           </h3>
                           <ul className="list-disc list-inside space-y-2.5 text-[10px] md:text-[13px] leading-relaxed font-body text-white/70">
                             <li className="pl-2">
-                              {t('product_detail.exceptions_info.text_1')}
+                              {t("product_detail.exceptions_info.text_1")}
                             </li>
                             <li className="pl-2">
-                             {t('product_detail.exceptions_info.text_2')}
+                              {t("product_detail.exceptions_info.text_2")}
                             </li>
                           </ul>
                         </div>
@@ -998,10 +1151,10 @@ const ProductDetail = () => {
           <div className="flex justify-between items-center mb-4 md:mb-6">
             <div>
               <h2 className="text-white font-heading text-[26px] md:text-[52px] font-[950] capitalize bg-linear-to-r from-white to-gray-400 bg-clip-text">
-                {t('product_detail.reviews.title')}
+                {t("product_detail.reviews.title")}
               </h2>
               <p className="text-white/50 text-[12px] md:text-[15px] font-body">
-                {productReviews.length}  {t('product_detail.reviews.subtitle')}
+                {productReviews.length} {t("product_detail.reviews.subtitle")}
               </p>
             </div>
           </div>
@@ -1041,7 +1194,7 @@ const ProductDetail = () => {
                           {review.name}
                         </p>
                         <p className="text-[8px] md:text-[12px] font-body flex items-center gap-1 text-white/60 md:mt-1">
-                          {t('product_detail.verified_buyer')}
+                          {t("product_detail.verified_buyer")}
                           <MdVerified className="text-green-400 text-[10px] md:text-[13px]" />
                         </p>
                       </div>
@@ -1102,7 +1255,7 @@ const ProductDetail = () => {
                 >
                   <Star className="w-10 h-10 text-white/20 mx-auto mb-4" />
                   <p className="text-white/50 font-body text-[13px]">
-                   {t('product_detail.no_reviews')}
+                    {t("product_detail.no_reviews")}
                   </p>
                 </motion.div>
               </div>
@@ -1135,7 +1288,7 @@ const ProductDetail = () => {
               whileTap={{ scale: 0.98 }}
               className="w-full py-3 bg-linear-to-r from-accet/90 to-accet/20 hover:from-accet/20 hover:via-accet cursor-pointer text-[10px] md:text-[15px] text-white font-body font-bold mt-4 md:mt-8 rounded-lg md:rounded-2xl hover:border-2 border-0  border-accet/70 transition-all duration-300"
             >
-              {t('product_detail.write_review_btn')}
+              {t("product_detail.write_review_btn")}
             </motion.button>
           </Link>
         </motion.div>
@@ -1156,7 +1309,7 @@ const ProductDetail = () => {
               viewport={{ once: true }}
               className="text-[10px] md:text-[13px] text-white/60 capitalize tracking-[0.3em] leading-none font-body"
             >
-               {t('product_detail.wardrobe_hub.subtitle')}
+              {t("product_detail.wardrobe_hub.subtitle")}
             </motion.p>
             <motion.h2
               initial={{ opacity: 0, y: 30 }}
@@ -1165,7 +1318,7 @@ const ProductDetail = () => {
               transition={{ delay: 0.2 }}
               className="text-[28px] md:text-[34px] lg:text-[44px] text-center text-white capitalize tracking-wide leading-tight font-[950] font-heading bg-gradient-to-r from-white via-purple-100 to-pink-100 bg-clip-text"
             >
-              {t('product_detail.wardrobe_hub.title')}
+              {t("product_detail.wardrobe_hub.title")}
             </motion.h2>
           </div>
 
@@ -1209,7 +1362,7 @@ const ProductDetail = () => {
               viewport={{ once: true }}
               className="text-[8px] md:text-[13px] text-white/60 uppercase tracking-[0.3em] leading-none font-body"
             >
-              {t('product_detail.similar_products.subtitle')}
+              {t("product_detail.similar_products.subtitle")}
             </motion.p>
             <motion.h2
               initial={{ opacity: 0, y: 30 }}
@@ -1218,7 +1371,7 @@ const ProductDetail = () => {
               transition={{ delay: 0.2 }}
               className="text-[28px] md:text-[34px] lg:text-[44px] text-center text-white capitalize tracking-wide leading-tight font-[950] font-heading bg-gradient-to-r from-white via-blue-100 to-cyan-100 bg-clip-text"
             >
-              {t('product_detail.similar_products.title')}
+              {t("product_detail.similar_products.title")}
             </motion.h2>
           </div>
 
@@ -1233,7 +1386,7 @@ const ProductDetail = () => {
               <div className="inline-block bg-linear-to-r from-white/5 via-white/10 to-white/5 backdrop-blur-sm border border-white/10 p-6 rounded-[10px]">
                 <Sparkles className="w-10 h-10 mx-auto mb-4 text-white/20" />
                 <p className="text-white/40 font-body text-[10px] md:text-[16px]">
-                  {t('product_detail.similar_products.no_products')}
+                  {t("product_detail.similar_products.no_products")}
                 </p>
               </div>
             </motion.div>
@@ -1254,7 +1407,7 @@ const ProductDetail = () => {
               viewport={{ once: true }}
               className="text-[24px] md:text-[32px] lg:text-[44px] text-center text-white capitalize tracking-wide leading-tight font-[950] font-heading bg-linear-to-r from-white via-orange-100 to-red-100 bg-clip-text"
             >
-              {t('product_detail.curated_styles.title')}
+              {t("product_detail.curated_styles.title")}
             </motion.h2>
           </div>
           <Trending />
@@ -1284,10 +1437,10 @@ const ProductDetail = () => {
                     <div>
                       <h2 className="text-[22px] md:text-2xl font-heading font-bold text-white flex items-center gap-3">
                         <Sparkles className="w-7 h-7 text-purple-400" />
-                        {t('product_detail.try_on_modal.title')}
+                        {t("product_detail.try_on_modal.title")}
                       </h2>
                       <p className="text-white/50 text-[12px] md:text-sm font-body mt-1">
-                        {t('product_detail.try_on_modal.subtitle')}
+                        {t("product_detail.try_on_modal.subtitle")}
                       </p>
                     </div>
                     <motion.button
@@ -1312,10 +1465,10 @@ const ProductDetail = () => {
                   >
                     <Sparkles className="w-24 h-24 text-purple-400 mx-auto mb-6 animate-pulse" />
                     <p className="text-white text-[32px] md:text-[40px] font-heading font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent mb-3">
-                      {t('product_detail.try_on_modal.coming_soon')}
+                      {t("product_detail.try_on_modal.coming_soon")}
                     </p>
                     <p className="text-white/50 text-[15px] font-body max-w-md mx-auto">
-                     {t('product_detail.try_on_modal.coming_soon_desc')}
+                      {t("product_detail.try_on_modal.coming_soon_desc")}
                     </p>
                   </motion.div>
                 </div>

@@ -260,13 +260,21 @@
     "no_reviews": "No reviews yet. Be the first to review this product!",
     "verified_buyer": "Verified Buyer",
     "video_label": "Product Video",
-    
+    "stock": {
+      "out_of_stock": "Out of Stock",
+      "notify_text": "This item is currently unavailable",
+      "hurry_up": "Hurry Up!",
+      "limited_stock": "Only few items left in stock",
+      "left": "left",
+      "in_stock": "In Stock",
+      "out_of_stock_toast": "Sorry! This product is currently out of stock 😔"
+    },
     "sections": {
       "description": "Product Description",
       "details": "Item Details",
       "delivery_return": "Delivery and Return"
     },
-    
+
     "delivery_info": {
       "title": "Delivery:",
       "text_1": "Delivery is made by express courier, within 2-5 working days from the confirmation of the order.",
@@ -274,7 +282,7 @@
       "text_3": "You can choose to have your order delivered to an address specified by you or to a pick-up point.",
       "text_4": "You will receive an email with the delivery confirmation and a tracking code for the parcel."
     },
-    
+
     "return_info": {
       "title": "Return:",
       "text_1": "You can return the products within 14 days of receipt, without giving any reason.",
@@ -283,7 +291,7 @@
       "text_4": "Products must be returned in their original packaging, with labels intact and with the documents received in the parcel.",
       "text_5": "The refund of the value of the products will be made within 14 days of receipt of the return."
     },
-    
+
     "exceptions_info": {
       "title": "Exceptions to return:",
       "text_1": "Products that have been worn, damaged or modified cannot be returned.",
@@ -294,13 +302,13 @@
       "subtitle": "We give you more",
       "title": "The Wardrobe Hub"
     },
-    
+
     "similar_products": {
       "subtitle": "RECOMMENDATIONS FOR YOU",
       "title": "Similar products",
       "no_products": "No similar products found"
     },
-    
+
     "curated_styles": {
       "title": "Curated Styles for Everyone"
     },
@@ -311,7 +319,7 @@
       "coming_soon": "Coming Soon",
       "coming_soon_desc": "Revolutionary AI-powered virtual try-on experience"
     },
-    
+
     "reviews": {
       "title": "Reviews",
       "subtitle": "verified customer reviews"
