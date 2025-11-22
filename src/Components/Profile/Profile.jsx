@@ -2515,7 +2515,7 @@ const Profile = () => {
                         value="quality"
                         className="bg-white text-black font-body"
                       >
-                        Quality not good
+                        Quality issue
                       </option>
                     </select>
                   </div>
